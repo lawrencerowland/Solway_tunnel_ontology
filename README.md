@@ -15,7 +15,7 @@ The suite currently includes:
 - **Projects Portfolio** – Directory of all innovation projects with brief summaries, allowing users to explore and navigate to individual project pages.
 - **Interactive Tools Sandbox** – A playground of lightweight, interactive tools (e.g. control-signal tiles, sandbox workbenches, use case mappers) where teams can prototype and experiment.
 - **AI Tools & Collaboration** – Showcases AI-assisted features for project work – from planning and decision support to assurance and performance measurement – and how they enhance team collaboration.
-- **Systems Thinking & Stakeholders** – Guides users in applying a systems-thinking lens, mapping stakeholder networks and decision processes to handle complexity and reduce decision latency.
+- **Brief for AI agent** – Provides guidance for building an explainable work breakdown structure using ontologies and PDDL comparisons.
 - **Project Lifecycle & Governance** – Provides a generic project lifecycle framework with governance checkpoints, aligning with best-practice methodologies in a flexible, user-friendly way.
 - **Insights & Learning Hub** – Repository of shared knowledge – including lessons learned, case studies, and reference materials – to promote reflection and continuous learning across projects.
 
