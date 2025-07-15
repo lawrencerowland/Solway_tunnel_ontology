@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WBS Generation Comparison: Solway Tunnel</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; }
+        h1, h2, h3 { color: #333; }
+        details { border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; }
+        summary { font-weight: bold; padding: 10px; background-color: #f4f4f4; cursor: pointer; }
+        .content { padding: 10px; border-top: 1px solid #ccc; }
+        pre { background-color: #eee; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        code { font-family: monospace; }
+        ul { margin-top: 0; }
+        li { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<h1>WBS Generation Comparison: Solway Tunnel Project</h1>
+
+<p>This document compares two approaches for generating a Work Breakdown Structure (WBS) for the Solway Tunnel project:</p>
+<ol>
+    <li>An approach using formal ontologies (BFO, Project, Tunnel domain) to reason about the end state and processes.</li>
+    <li>An approach using PDDL (Planning Domain Definition Language) to define states, actions, and generate a plan.</li>
+</ol>
+
+<details>
+    <summary>1. Ontologies Used</summary>
+    <div class="content">
+        <h3>Ontology Definitions (Conceptual RDF/Turtle)</h3>
+        <p>We use a combination of a foundational ontology (BFO), a project ontology (ProjO), a domain ontology (TCO), and a project-specific ontology (STPO).</p>
+        <h4>Key Concepts & Prefixes:</h4>
+        <pre><code class="language-turtle">
+# --- Prefixes ---
+@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt; .
+@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt; .
+@prefix owl: &lt;http://www.w3.org/2002/07/owl#&gt; .
+@prefix xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt; .
+@prefix bfo: &lt;http://purl.obolibrary.org/obo/bfo/&gt; .
+@prefix projo: &lt;http://example.org/projo#&gt; .
+@prefix tco: &lt;http://example.org/tco#&gt; .
+@prefix stpo: &lt;http://example.org/stpo#&gt; .
+
+# --- BFO (Conceptual Placeholders) ---
+# bfo:0000002 # Continuant
+# bfo:0000004 # Independent Continuant
+# bfo:0000015 # Process
+# bfo:0000020 # Object
+# bfo:0000031 # Site
+# bfo:0000051 # has_part
+# bfo:0000050 # part_of
+
+# --- Project Ontology (ProjO) ---
+projo:Project rdfs:subClassOf bfo:0000015 .
+projo:WorkBreakdownStructure rdfs:subClassOf bfo:0000002 .
+projo:WorkPackage rdfs:subClassOf bfo:0000015 .
+projo:Task rdfs:subClassOf bfo:0000015 .
+projo:Deliverable rdfs:subClassOf bfo:0000004 .
+projo:hasWBS rdfs:subPropertyOf bfo:0000051 .
+projo:hasWorkPackage rdfs:subPropertyOf bfo:0000051 .
+projo:hasTask rdfs:subPropertyOf bfo:0000051 .
+projo:contributesToObject rdfs:domain projo:WorkPackage ; rdfs:range bfo:0000020 . # Process contributes to object creation/modification
+projo:createsObjectPart rdfs:domain projo:WorkPackage ; rdfs:range bfo:0000020 . # Process specifically creates an object part
+bfo:realizes rdfs:domain projo:Task ; rdfs:range bfo:0000015 . # Task realizes a specific type of process
+
+# --- Tunnel Construction Ontology (TCO) ---
+tco:Tunnel rdfs:subClassOf bfo:0000020 .
+tco:TunnelSegment rdfs:subClassOf bfo:0000020 .
+tco:Portal rdfs:subClassOf bfo:0000020 .
+tco:ExcavationProcess rdfs:subClassOf bfo:0000015 .
+tco:LiningProcess rdfs:subClassOf bfo:0000015 .
+
+# --- Solway Tunnel Project Ontology (STPO) ---
+stpo:SolwayFirthTunnelProject rdf:type projo:Project .
+stpo:SolwayTunnel rdf:type tco:Tunnel .
+</code></pre>
+    </div>
+</details>
+
+<details open>
+    <summary>2. Ontology-Driven WBS</summary>
+    <div class="content">
+        <h3>Approach:</h3>
+        <p>Reasoning about the target end-state (<code>stpo:SolwayTunnel</code>, composed of parts like portals and the main tube) and the necessary processes (design, site prep, excavation, lining, installation) derived from domain knowledge (<code>tco:ExcavationProcess</code>, etc.) and project management principles (<code>projo:Project</code>, <code>projo:WorkPackage</code>). Relationships like <code>bfo:part_of</code>, <code>projo:createsObjectPart</code>, and <code>bfo:realizes</code> link WBS elements.</p>
+
+        <h3>Resulting WBS Structure (Conceptual Hierarchy):</h3>
+        
+<ul>
+    <li>1. Solway Firth Tunnel Project
+        <ul>
+            <li>1.1 Project Management</li>
+            <li>1.2 Design &amp; Engineering</li>
+            <li>1.3 Site Preparation &amp; Enabling Works</li>
+            <li>1.4 North Portal Construction</li>
+            <li>1.5 South Portal Construction</li>
+            <li>1.6 Main Tunnel Construction
+                <ul>
+                    <li>1.6.1 TBM Procurement, Assembly &amp; Launch</li>
+                    <li>1.6.2 Tunnel Excavation &amp; Lining</li>
+                    <li>1.6.3 TBM Reception &amp; Dismantling</li>
+                    <li>1.6.4 Cross-Passage Construction</li>
+                </ul>
+            </li>
+            <li>1.7 Tunnel Systems Installation (Ventilation, Power, Comms)</li>
+            <li>1.8 Testing &amp; Commissioning</li>
+        </ul>
+    </li>
+</ul>
+
+
+        <h3>Explanation Snippet (RDF/Turtle):</h3>
+        <p>The structure and its rationale are captured formally. For example, WP6 'Main Tunnel Construction' (<code>stpo:WP6_MainTunnel</code>) is part of the overall project process, contributes to the main tunnel tube object (<code>stpo:MainTunnelTube</code>), and contains sub-packages like 'Tunnel Excavation & Lining' (<code>stpo:WP6.2_ExcavationLining</code>) which realizes specific tunnel construction process types (<code>tco:ExcavationProcess</code>, <code>tco:LiningProcess</code>) and creates physical parts (<code>stpo:MainTunnelStructure</code>).</p>
+        <pre><code class="language-turtle">
+# --- WBS Instance Data (using STPO prefix) ---
+
+stpo:SolwayFirthTunnelProject rdf:type projo:Project ;
+    rdfs:label &quot;Solway Firth Tunnel Construction Project&quot;@en ;
+    projo:hasWBS stpo:SolwayTunnelWBS ;
+    projo:hasGoal [
+        a projo:GoalState ;
+        projo:specifiesObject stpo:SolwayTunnel ;
+        projo:requiresQuality [ a bfo:0000019 ; rdfs:label &quot;Operational and Safe Status&quot; ]
+    ] .
+
+stpo:SolwayTunnel rdf:type tco:Tunnel ;
+    rdfs:label &quot;Solway Firth Tunnel (End Product)&quot;@en .
+
+stpo:SolwayTunnelWBS rdf:type projo:WorkBreakdownStructure ;
+    rdfs:label &quot;Solway Tunnel WBS&quot;@en ;
+    projo:representsProject stpo:SolwayFirthTunnelProject ;
+    # Level 1 Work Packages (Processes contributing to the overall project process)
+    projo:hasWorkPackage
+        stpo:WP1_ProjMgmt,
+        stpo:WP2_Design,
+        stpo:WP3_SitePrep,
+        stpo:WP4_NorthPortal,
+        stpo:WP5_SouthPortal,
+        stpo:WP6_MainTunnel,
+        stpo:WP7_SystemsInstall,
+        stpo:WP8_Commissioning .
+
+# --- Detail WP6: Main Tunnel Construction ---
+stpo:WP6_MainTunnel rdf:type projo:WorkPackage ;
+    rdfs:label &quot;1.6 Main Tunnel Construction&quot;@en ;
+    bfo:part_of stpo:SolwayFirthTunnelProject ; # Process Partonomy
+    projo:wbsIdentifier &quot;1.6&quot; ;
+    # This WP aims to realize the physical tunnel structure component
+    projo:contributesToObject stpo:MainTunnelTube ;
+    # Level 2 Breakdown (Processes contributing to WP6)
+    projo:hasWorkPackage # Or hasTask
+        stpo:WP6.1_TBM,
+        stpo:WP6.2_ExcavationLining,
+        stpo:WP6.3_TBMReception,
+        stpo:WP6.4_CrossPassages .
+
+stpo:WP6.1_TBM rdf:type projo:WorkPackage ;
+    rdfs:label &quot;1.6.1 TBM Procurement, Assembly &amp; Launch&quot;@en ;
+    bfo:part_of stpo:WP6_MainTunnel ;
+    projo:wbsIdentifier &quot;1.6.1&quot; .
+
+stpo:WP6.2_ExcavationLining rdf:type projo:WorkPackage ;
+    rdfs:label &quot;1.6.2 Tunnel Excavation &amp; Lining&quot;@en ;
+    bfo:part_of stpo:WP6_MainTunnel ;
+    projo:wbsIdentifier &quot;1.6.2&quot; ;
+    # This process realizes the core tunnel creation activities
+    bfo:realizes tco:ExcavationProcess ; # A task within would realize this
+    bfo:realizes tco:LiningProcess ;    # A task within would realize this
+    projo:createsObjectPart stpo:MainTunnelStructure .
+
+stpo:WP6.3_TBMReception rdf:type projo:WorkPackage ;
+    rdfs:label &quot;1.6.3 TBM Reception &amp; Dismantling&quot;@en ;
+    bfo:part_of stpo:WP6_MainTunnel ;
+    projo:wbsIdentifier &quot;1.6.3&quot; .
+
+stpo:WP6.4_CrossPassages rdf:type projo:WorkPackage ;
+    rdfs:label &quot;1.6.4 Cross-Passage Construction&quot;@en ;
+    bfo:part_of stpo:WP6_MainTunnel ;
+    projo:wbsIdentifier &quot;1.6.4&quot; ;
+    projo:createsObjectPart stpo:TunnelCrossPassages .
+
+# --- Relating Process to End State Component ---
+stpo:MainTunnelTube rdf:type tco:TunnelSegment ; # Conceptual main tube
+    rdfs:label &quot;Main Tunnel Tube Component&quot;@en ;
+    bfo:part_of stpo:SolwayTunnel ; # Object Partonomy
+    bfo:has_part stpo:MainTunnelStructure ;
+    bfo:has_part stpo:TunnelCrossPassages .
+
+# --- Other illustrative WPs ---
+stpo:WP1_ProjMgmt rdf:type projo:WorkPackage ; rdfs:label &quot;1.1 Project Management&quot;@en ; projo:wbsIdentifier &quot;1.1&quot; .
+stpo:WP2_Design rdf:type projo:WorkPackage ; rdfs:label &quot;1.2 Design &amp; Engineering&quot;@en ; projo:wbsIdentifier &quot;1.2&quot; .
+stpo:WP3_SitePrep rdf:type projo:WorkPackage ; rdfs:label &quot;1.3 Site Preparation &amp; Enabling Works&quot;@en ; projo:wbsIdentifier &quot;1.3&quot; .
+# ... etc ...
+</code></pre>
+    </div>
+</details>
+
+<details>
+    <summary>3. PDDL-Derived WBS</summary>
+    <div class="content">
+        <h3>Approach:</h3>
+        <p>Model the core construction sequence using PDDL states (e.g., <code>site_prepared</code>, <code>tbm_at</code>, <code>segment_lined</code>) and actions (e.g., <code>prepare_site</code>, <code>excavate_and_line_segment</code>) that transition between these states. Use a planner (conceptually) to find a sequence of actions from the initial state to the goal state (tunnel segments lined, TBM received). Structure this plan hierarchically.</p>
+
+        <h3>PDDL Domain File (`tunnel-domain.pddl`):</h3>
+        <pre><code class="language-pddl">
+(define (domain tunnel-construction)
+  (:requirements :strips :typing)
+
+  (:types
+    site tbm segment
+  )
+
+  (:predicates
+    (site_prepared ?s - site)
+    (site_at ?s - site ?seg - segment)
+    (tbm_available ?m - tbm)
+    (tbm_assembled ?m - tbm ?s - site)
+    (tbm_launched ?m - tbm ?s - site)
+    (tbm_at ?m - tbm ?seg - segment)
+    (tbm_received ?m - tbm ?s - site)
+    (segment_connected ?seg1 - segment ?seg2 - segment)
+    (segment_excavated ?seg - segment)
+    (segment_lined ?seg - segment)
+    (tunnel_complete)
+    (can_excavate_from ?seg - segment)
+  )
+
+  (:action prepare_site
+    :parameters (?s - site)
+    :precondition (not (site_prepared ?s))
+    :effect (site_prepared ?s)
+  )
+
+  (:action assemble_tbm
+    :parameters (?m - tbm ?s - site)
+    :precondition (and (site_prepared ?s) (tbm_available ?m))
+    :effect (and (tbm_assembled ?m ?s) (not (tbm_available ?m)))
+  )
+
+  (:action launch_tbm
+    :parameters (?m - tbm ?s - site ?start_seg - segment)
+    :precondition (and (tbm_assembled ?m ?s) (site_at ?s ?start_seg))
+    :effect (and (tbm_launched ?m ?s) (tbm_at ?m ?start_seg) (can_excavate_from ?start_seg) (not (tbm_assembled ?m ?s)))
+  )
+
+  (:action excavate_and_line_segment
+    :parameters (?m - tbm ?from_seg - segment ?to_seg - segment)
+    :precondition (and (tbm_at ?m ?from_seg) (can_excavate_from ?from_seg) (segment_connected ?from_seg ?to_seg) (not (segment_excavated ?to_seg)))
+    :effect (and (segment_excavated ?to_seg) (segment_lined ?to_seg) (tbm_at ?m ?to_seg) (can_excavate_from ?to_seg) (not (tbm_at ?m ?from_seg)) (not (can_excavate_from ?from_seg)))
+  )
+
+  (:action receive_tbm
+      :parameters (?m - tbm ?s_dest - site ?final_seg - segment)
+      :precondition (and (tbm_at ?m ?final_seg) (site_at ?s_dest ?final_seg) (site_prepared ?s_dest))
+      :effect (and (tbm_received ?m ?s_dest) (not (tbm_at ?m ?final_seg)) (not (can_excavate_from ?final_seg)))
+  )
+)
+</code></pre>
+
+        <h3>PDDL Problem File (`solway-problem.pddl`):</h3>
+        <pre><code class="language-pddl">
+(define (problem solway-tunnel-construction)
+  (:domain tunnel-construction)
+
+  (:objects
+    north_site south_site - site
+    tbm1 - tbm
+    seg_entry seg1 seg2 seg3 seg_exit - segment
+  )
+
+  (:init
+    (not (site_prepared north_site)) (not (site_prepared south_site))
+    (site_at north_site seg_entry) (site_at south_site seg_exit)
+    (tbm_available tbm1)
+    (segment_connected seg_entry seg1) (segment_connected seg1 seg2)
+    (segment_connected seg2 seg3) (segment_connected seg3 seg_exit)
+    (not (segment_excavated seg_entry)) (not (segment_lined seg_entry))
+    (not (segment_excavated seg1)) (not (segment_lined seg1))
+    (not (segment_excavated seg2)) (not (segment_lined seg2))
+    (not (segment_excavated seg3)) (not (segment_lined seg3))
+    (not (segment_excavated seg_exit)) (not (segment_lined seg_exit))
+    (not (tunnel_complete))
+  )
+
+  (:goal
+    (and
+        (site_prepared north_site) (site_prepared south_site)
+        (tbm_received tbm1 south_site)
+        (segment_excavated seg1) (segment_lined seg1)
+        (segment_excavated seg2) (segment_lined seg2)
+        (segment_excavated seg3) (segment_lined seg3)
+    )
+  )
+)
+</code></pre>
+
+        <h3>Resulting WBS Structure (Derived from Plan):</h3>
+        
+<ul>
+    <li>1. Solway Tunnel Construction (PDDL Plan Derived)
+        <ul>
+            <li>1.1 Site Preparation
+                <ul>
+                    <li>1.1.1 Prepare North Site (<code>prepare_site(north_site)</code>)</li>
+                    <li>1.1.2 Prepare South Site (<code>prepare_site(south_site)</code>)</li>
+                </ul>
+            </li>
+            <li>1.2 TBM Mobilization
+                <ul>
+                    <li>1.2.1 Assemble TBM (<code>assemble_tbm(tbm1, north_site)</code>)</li>
+                    <li>1.2.2 Launch TBM (<code>launch_tbm(tbm1, north_site, seg_entry)</code>)</li>
+                </ul>
+            </li>
+            <li>1.3 Tunnel Drive
+                <ul>
+                    <li>1.3.1 Excavate &amp; Line Segment 1 (<code>excavate_and_line_segment(tbm1, seg_entry, seg1)</code>)</li>
+                    <li>1.3.2 Excavate &amp; Line Segment 2 (<code>excavate_and_line_segment(tbm1, seg1, seg2)</code>)</li>
+                    <li>1.3.3 Excavate &amp; Line Segment 3 (<code>excavate_and_line_segment(tbm1, seg2, seg3)</code>)</li>
+                    <li>1.3.4 Excavate &amp; Line Segment Exit (<code>excavate_and_line_segment(tbm1, seg3, seg_exit)</code>)</li>
+                </ul>
+            </li>
+            <li>1.4 TBM Demobilization
+                <ul>
+                    <li>1.4.1 Receive TBM (<code>receive_tbm(tbm1, south_site, seg_exit)</code>)</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+        <p><em>Note: This WBS reflects the specific sequence of actions in the plan generated for the core tunneling task. It omits broader project aspects like design, management, or detailed portal construction unless explicitly modeled in PDDL.</em></p>
+    </div>
+</details>
+
+<details open>
+    <summary>4. Comparison and Conclusion</summary>
+    <div class="content">
+        
+<p><strong>Ontology-Driven WBS:</strong></p>
+<ul>
+    <li><strong>Strengths:</strong> Rich semantics, explainability (links process to product and purpose), handles broad scope (mgmt, design), meaningful hierarchical decomposition based on partonomy/process relations.</li>
+    <li><strong>Weaknesses:</strong> Manual/semi-automated construction, potential complexity of ontology development.</li>
+</ul>
+<p><strong>PDDL-Derived WBS:</strong></p>
+<ul>
+    <li><strong>Strengths:</strong> Generates valid action sequences, validates goal reachability, strong for process-heavy sequences, automation potential via planners.</li>
+    <li><strong>Weaknesses:</strong> Limited expressiveness for non-procedural aspects (product structure, quality, resources, mgmt), explainability limited to state transitions, abstraction challenges.</li>
+</ul>
+<p><strong>Conclusion: Which is Better?</strong></p>
+<p>For creating a <strong>robust and explainable WBS for a complex project</strong>, the <strong>Ontology-Driven approach is generally better</strong> due to its superior explainability, completeness, and ability to integrate product and process views within a rich semantic framework. It provides the 'why'.</p>
+<p>The <strong>PDDL-Derived WBS</strong> is a valuable <strong>complementary tool</strong> for detailing and validating the operational sequence of specific, process-intensive work packages identified within the ontology-driven WBS. It provides the 'how' for specific action sequences.</p>
+<p>The ideal scenario uses the ontology for the overall structure and meaning, and PDDL for validating/detailing executable sub-plans where appropriate.</p>
+
+    </div>
+</details>
+
+</body>
+</html>

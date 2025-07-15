@@ -1,0 +1,50 @@
+(define (problem solway-firth-tunnel)
+  (:domain tunnel-construction)
+  
+  (:objects
+    north_shore south_shore tunnel_section_1 tunnel_section_2 tunnel_section_3 - location
+    north_portal south_portal - portal
+    main_tunnel - tunnel
+    tunnel_lining - lining
+    waterproofing_layer - waterproofing
+    ventilation_system electrical_system safety_system - systems
+    tbm_1 - TBM
+    excavator_1 excavator_2 - excavator
+    vehicle_1 vehicle_2 - vehicle
+    chief_engineer engineer_1 engineer_2 - engineer
+    chief_geologist geologist_1 - geologist
+    worker_team_1 worker_team_2 worker_team_3 - worker
+  )
+  
+  (:init
+    (adjacent north_shore tunnel_section_1)
+    (adjacent tunnel_section_1 tunnel_section_2)
+    (adjacent tunnel_section_2 tunnel_section_3)
+    (adjacent tunnel_section_3 south_shore)
+    
+    (at excavator_1 north_shore)
+    (at excavator_2 south_shore)
+    (available excavator_1)
+    (available excavator_2)
+    
+    (assigned chief_geologist north_shore)
+    (assigned geologist_1 south_shore)
+    (assigned worker_team_1 north_shore)
+    (assigned worker_team_2 south_shore)
+    (assigned chief_engineer north_shore)
+  )
+  
+  (:goal
+    (and
+      (constructed north_portal)
+      (constructed south_portal)
+      (excavated main_tunnel)
+      (reinforced main_tunnel)
+      (waterproofed main_tunnel)
+      (systems_installed ventilation_system)
+      (systems_installed electrical_system)
+      (systems_installed safety_system)
+      (tested main_tunnel)
+    )
+  )
+)

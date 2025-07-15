@@ -1,0 +1,91 @@
+(define (domain tunnel-construction)
+  (:requirements :strips :typing :durative-actions :fluents)
+  
+  (:types
+    location - object
+    section - object
+    equipment - object
+    resource - object
+    TBM excavator vehicle - equipment
+    engineer geologist worker - resource
+    portal tunnel lining waterproofing systems - section
+  )
+  
+  (:predicates
+    (at ?e - equipment ?l - location)
+    (adjacent ?l1 ?l2 - location)
+    (excavated ?s - section)
+    (constructed ?s - section)
+    (reinforced ?s - section)
+    (waterproofed ?s - section)
+    (systems_installed ?s - section)
+    (tested ?s - section)
+    (available ?e - equipment)
+    (assigned ?r - resource ?l - location)
+    (geological_assessment_complete ?l - location)
+    (procurement_complete ?e - equipment)
+  )
+  
+  (:action procure_equipment
+    :parameters (?e - equipment)
+    :precondition (not (procurement_complete ?e))
+    :effect (procurement_complete ?e)
+  )
+  
+  (:action conduct_geological_assessment
+    :parameters (?l - location ?g - geologist)
+    :precondition (and (assigned ?g ?l)
+                       (not (geological_assessment_complete ?l)))
+    :effect (geological_assessment_complete ?l)
+  )
+  
+  (:action excavate_section
+    :parameters (?t - TBM ?l - location ?s - section)
+    :precondition (and (at ?t ?l)
+                       (available ?t)
+                       (geological_assessment_complete ?l)
+                       (not (excavated ?s)))
+    :effect (excavated ?s)
+  )
+  
+  (:action construct_portal
+    :parameters (?l - location ?p - portal ?w - worker ?e - excavator)
+    :precondition (and (at ?e ?l)
+                       (assigned ?w ?l)
+                       (available ?e)
+                       (not (constructed ?p)))
+    :effect (constructed ?p)
+  )
+  
+  (:action install_lining
+    :parameters (?l - location ?s - section ?w - worker)
+    :precondition (and (assigned ?w ?l)
+                       (excavated ?s)
+                       (not (reinforced ?s)))
+    :effect (reinforced ?s)
+  )
+  
+  (:action install_waterproofing
+    :parameters (?l - location ?s - section ?w - worker)
+    :precondition (and (assigned ?w ?l)
+                       (reinforced ?s)
+                       (not (waterproofed ?s)))
+    :effect (waterproofed ?s)
+  )
+  
+  (:action install_systems
+    :parameters (?l - location ?s - section ?e - engineer)
+    :precondition (and (assigned ?e ?l)
+                       (waterproofed ?s)
+                       (not (systems_installed ?s)))
+    :effect (systems_installed ?s)
+  )
+  
+  (:action test_section
+    :parameters (?l - location ?s - section ?e - engineer)
+    :precondition (and (assigned ?e ?l)
+                       (systems_installed ?s)
+                       (not (tested ?s)))
+    :effect (tested ?s)
+  )
+)

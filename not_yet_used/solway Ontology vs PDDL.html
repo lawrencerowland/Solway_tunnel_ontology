@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solway Tunnel WBS Generation: Ontology vs PDDL</title>
+    <!-- Using PrismJS for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; max-width: 900px; margin: auto; }
+        h1, h2, h3 { color: #333; }
+        h2 { border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 30px; }
+        pre[class*="language-"] { background: #f5f5f5; padding: 15px; border-radius: 5px; overflow: auto; }
+        details { border: 1px solid #ddd; border-radius: 4px; margin-bottom: 1em; }
+        summary { padding: 10px; font-weight: bold; cursor: pointer; background-color: #f9f9f9; }
+        .wbs ul { list-style-type: none; padding-left: 20px; }
+        .wbs li { margin-bottom: 5px; }
+        .wbs .grounding { font-style: italic; color: #555; font-size: 0.9em; margin-left: 15px;}
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        code { font-family: monospace; }
+    </style>
+</head>
+<body>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <!-- Load Turtle and Lisp (for PDDL approximation) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-turtle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-lisp.min.js"></script>
+
+
+    <h1>Solway Tunnel WBS Generation: Ontology vs PDDL Comparison</h1>
+
+    <p>This report details the process of generating a Work Breakdown Structure (WBS) for the hypothetical "Build a tunnel underneath the Solway Firth" project using two distinct methods:</p>
+    <ol>
+        <li>An approach leveraging formal ontologies (BFO, domain ontology concepts) to model both the end-state (product) and the processes, deriving an explainable WBS.</li>
+        <li>An approach using the Planning Domain Definition Language (PDDL) to define the problem and extracting a WBS from the resulting plan.</li>
+    </ol>
+    <p>The goal is to compare these methods and determine which produces a more robust and explainable WBS for project management purposes.</p>
+
+    <h2>Step 1: Ontology Selection & Setup</h2>
+    <p>We selected Basic Formal Ontology (BFO) as the foundation, conceptual terms from Digital Construction (DiCon) as a domain ontology starting point, and created a local 'Solway' namespace (`solway:`) for project specifics. RDF Turtle was chosen as the representation format. Key BFO classes (`bfo:Object`, `bfo:ObjectAggregate`, `bfo:process`) and properties (`bfo:has_part`, `bfo:has_participant`, `solway:has_output`) were identified.</p>
+    <details>
+        <summary>Click to view initial RDF Turtle Setup (Step 1)</summary>
+        <pre><code class="language-turtle">
+# -- Prefixes --
+@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt; .
+@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt; .
+@prefix owl: &lt;http://www.w3.org/2002/07/owl#&gt; .
+@prefix xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt; .
+
+# Foundation Ontology (BFO 2.0)
+@prefix bfo: &lt;http://purl.obolibrary.org/obo/BFO_&gt; .
+
+# Domain Ontology (Placeholder - DiCon conceptual usage)
+@prefix diccon: &lt;http://example.org/diccon/&gt; . # Placeholder URI
+
+# Local Ontology (Solway Tunnel Project Specifics)
+@prefix solway: &lt;http://example.org/solway/&gt; . # Placeholder URI
+
+# -- Basic Ontology Declarations --
+&lt;http://purl.obolibrary.org/obo/bfo.owl&gt; a owl:Ontology ;
+    rdfs:label "Basic Formal Ontology (BFO) 2.0" .
+&lt;http://example.org/diccon/&gt; a owl:Ontology ;
+    rdfs:label "Digital Construction Ontology (Placeholder)" .
+&lt;http://example.org/solway/&gt; a owl:Ontology ;
+    rdfs:label "Solway Tunnel Project Ontology" ;
+    owl:imports &lt;http://purl.obolibrary.org/obo/bfo.owl&gt; .
+
+# -- Key Class Declarations (Examples) --
+bfo:0000007 a owl:Class ; rdfs:subClassOf bfo:0000004 ; rdfs:label "object aggregate" .
+bfo:0000005 a owl:Class ; rdfs:subClassOf bfo:0000004 ; rdfs:label "object" .
+bfo:0000015 a owl:Class ; rdfs:subClassOf bfo:0000003 ; rdfs:label "process" .
+bfo:0000034 a owl:Class ; rdfs:subClassOf bfo:0000020 ; rdfs:label "function" .
+# ... other BFO classes ...
+
+diccon:Project a owl:Class ; rdfs:label "Project" .
+diccon:BuiltElement a owl:Class ; rdfs:label "Built Element" .
+
+solway:SolwayTunnelProject a owl:Class ;
+    rdfs:subClassOf diccon:Project ;
+    rdfs:label "Solway Tunnel Project" .
+solway:SolwayTunnel a owl:Class ;
+    rdfs:subClassOf diccon:BuiltElement , bfo:0000007 ;
+    rdfs:label "Solway Firth Tunnel (End Product)" .
+
+# -- Basic Property Declarations (Examples) --
+bfo:0000051 a owl:ObjectProperty ; rdfs:label "has part" .
+bfo:0000050 a owl:ObjectProperty ; rdfs:label "part of" .
+bfo:0000056 a owl:ObjectProperty ; rdfs:label "has participant" .
+bfo:0000132 a owl:ObjectProperty ; rdfs:label "output of" .
+solway:has_output a owl:ObjectProperty ;
+    owl:inverseOf bfo:0000132 ;
+    rdfs:label "has output" .
+# ... other properties ...
+        </code></pre>
+    </details>
+
+    <h2>Step 2: End-State Modeling (Ontology Method)</h2>
+    <p>We modeled the *completed* Solway Firth Tunnel as the target product. This involved defining classes for its main components (Portals, Tunnel Tube, Segments, Systems like Ventilation, Drainage, etc.) and classifying them using BFO and DiCon concepts (e.g., `solway:Portal` as `diccon:BuiltElement`, `bfo:ObjectAggregate`). Specific instances (e.g., `solway:TheSolwayTunnel`, `solway:TheNorthPortal`) were created and linked using `bfo:has_part` / `bfo:part_of` to represent the physical decomposition.</p>
+    <details>
+        <summary>Click to view RDF Turtle for End-State Model (Step 2)</summary>
+        <pre><code class="language-turtle">
+# -- Define Classes for Tunnel Components --
+solway:Portal a owl:Class ; rdfs:subClassOf diccon:BuiltElement , bfo:0000007 ; rdfs:label "Tunnel Portal" .
+solway:TunnelTube a owl:Class ; rdfs:subClassOf diccon:BuiltElement , bfo:0000007 ; rdfs:label "Tunnel Tube Structure" .
+solway:VentilationSystem a owl:Class ; rdfs:subClassOf solway:TunnelSystem ; rdfs:label "Ventilation System" .
+# ... other component classes ...
+
+# -- Define Functions --
+solway:ProvidePassageFunction a owl:Class ; rdfs:subClassOf bfo:0000034 ; rdfs:label "Function to provide passage" .
+
+# -- Create Instance for the Specific Tunnel (End State) --
+solway:TheSolwayTunnel a solway:SolwayTunnel ;
+    rdfs:label "The Solway Firth Tunnel (Physical Product)" ;
+    bfo:0000051 # bfo:has_part
+        solway:TheNorthPortal ,
+        solway:TheSouthPortal ,
+        solway:TheTunnelTube ,
+        solway:TheVentilationSystem ,
+        # ... other parts ... ;
+    bfo:0000034 solway:TheProvidePassageFunction .
+
+# -- Create Instances for Major Components --
+solway:TheNorthPortal a solway:Portal ;
+    rdfs:label "North Portal Structure" ;
+    bfo:0000050 solway:TheSolwayTunnel . # bfo:part_of
+
+solway:TheTunnelTube a solway:TunnelTube ;
+    rdfs:label "Main Tunnel Tube Structure" ;
+    bfo:0000050 solway:TheSolwayTunnel .
+
+solway:TheVentilationSystem a solway:VentilationSystem ;
+    rdfs:label "Tunnel Ventilation System" ;
+    bfo:0000050 solway:TheSolwayTunnel .
+# ... other component instances ...
+        </code></pre>
+    </details>
+
+    <h2>Step 3: Process Modeling (Ontology Method)</h2>
+    <p>We modeled the high-level processes required to create the end-state components. Classes for processes like `solway:SitePreparation`, `solway:PortalConstruction`, `solway:TunnelBoringProcess`, `solway:SystemInstallation` were defined as subclasses of `bfo:process`. Instances of these processes (e.g., `solway:TheNorthPortalConstruction`) were created and linked to their outputs (the component instances from Step 2, e.g., `solway:TheNorthPortal`) using the `solway:has_output` property. Participants like `solway:TunnelBoringMachine` and `solway:ConstructionTeam` were also modeled and linked using `bfo:has_participant`.</p>
+    <details>
+        <summary>Click to view RDF Turtle for Process Model (Step 3)</summary>
+        <pre><code class="language-turtle">
+# -- Define General Process Classes --
+solway:ProjectManagementProcess a owl:Class ; rdfs:subClassOf bfo:0000015 ; rdfs:label "Project Management Process" .
+solway:DesignProcess a owl:Class ; rdfs:subClassOf bfo:0000015 ; rdfs:label "Design Process" .
+solway:SitePreparation a owl:Class ; rdfs:subClassOf bfo:0000015 ; rdfs:label "Site Preparation Process" .
+solway:PortalConstruction a owl:Class ; rdfs:subClassOf bfo:0000015 ; rdfs:label "Portal Construction Process" .
+solway:TunnelBoringProcess a owl:Class ; rdfs:subClassOf bfo:0000015 ; rdfs:label "Tunnel Boring Process" .
+solway:SystemInstallation a owl:Class ; rdfs:subClassOf bfo:0000015 ; rdfs:label "System Installation Process" .
+# ... other process classes ...
+
+# -- Define Participant/Equipment Classes --
+solway:TunnelBoringMachine a owl:Class ; rdfs:subClassOf bfo:0000005 ; rdfs:label "Tunnel Boring Machine (TBM)" .
+solway:ConstructionTeam a owl:Class ; rdfs:subClassOf bfo:0000007 ; rdfs:label "Construction Team" .
+
+# -- Define Instances of Processes --
+solway:TheProjectManagement a solway:ProjectManagementProcess ; rdfs:label "The overall Project Management..." .
+solway:TheDesignPhase a solway:DesignProcess ; rdfs:label "The Design Phase..." .
+solway:TheNorthPortalConstruction a solway:PortalConstruction ;
+    rdfs:label "Construction of the North Portal" ;
+    solway:has_output solway:TheNorthPortal ; # Links process to its physical output
+    bfo:0000056 solway:ThePortalTeam .       # Links process to participant
+
+solway:TheTunnelBoringAndLining a solway:TunnelBoringProcess, solway:TunnelLiningProcess ;
+    rdfs:label "Main Tunnel Boring and Lining Process" ;
+    solway:has_output solway:TheTunnelTube ;
+    bfo:0000056 solway:TheTBM_Alpha , solway:TheTunnelingTeam .
+
+solway:TheSystemsInstallation a solway:SystemInstallation ;
+    rdfs:label "Installation of Tunnel Systems (Ventilation, Power, etc.)" ;
+    solway:has_output solway:TheVentilationSystem , solway:TheDrainageSystem , #... ;
+    bfo:0000056 solway:TheMEPTeam .
+# ... other process instances ...
+
+# -- Define Instances of Participants/Equipment --
+solway:TheTBM_Alpha a solway:TunnelBoringMachine ; rdfs:label "TBM Alpha..." .
+solway:ThePortalTeam a solway:ConstructionTeam ; rdfs:label "Portal Construction Team" .
+# ... other participant instances ...
+        </code></pre>
+    </details>
+
+    <h2>Step 4: WBS Generation (Ontology Method)</h2>
+    <p>Based on the end-state components and the processes linked to them, we derived the following WBS. Each item's existence is justified by its grounding in the ontology (either a necessary `bfo:process` or a deliverable `bfo:ObjectAggregate`/`bfo:Object` which is `bfo:part_of` the final product).</p>
+    <div class="wbs">
+        <ul>
+            <li><strong>1. Solway Tunnel Project</strong>
+                <div class="grounding">Ontological Grounding: `solway:TheSolwayTunnelProject` instance.</div>
+                <ul>
+                    <li><strong>1.1 Project Management</strong>
+                        <div class="grounding">Grounding: `solway:TheProjectManagement` (instance of `solway:ProjectManagementProcess`, `bfo:process`).</div>
+                    </li>
+                    <li><strong>1.2 Design &amp; Engineering</strong>
+                         <div class="grounding">Grounding: `solway:TheDesignPhase` (instance of `solway:DesignProcess`, `bfo:process`).</div>
+                   </li>
+                    <li><strong>1.3 Site Preparation</strong>
+                         <div class="grounding">Grounding: Groups `solway:TheSitePreparationNorth`, `solway:TheSitePreparationSouth` (instances of `solway:SitePreparation`, `bfo:process`).</div>
+                    </li>
+                    <li><strong>1.4 Portal Construction</strong>
+                        <div class="grounding">Grounding: Groups `solway:TheNorthPortalConstruction`, `solway:TheSouthPortalConstruction` (instances of `solway:PortalConstruction`, `bfo:process`) which have outputs `solway:TheNorthPortal`, `solway:TheSouthPortal` (instances of `solway:Portal`, `bfo:part_of` `solway:TheSolwayTunnel`).</div>
+                        <ul>
+                            <li>1.4.1 North Portal</li>
+                            <li>1.4.2 South Portal</li>
+                        </ul>
+                    </li>
+                    <li><strong>1.5 Tunnel Tube Construction</strong>
+                        <div class="grounding">Grounding: Groups `solway:TheTunnelBoringAndLining` (`bfo:process` with output `solway:TheTunnelTube`) and `solway:TheInternalInfrastructureInstallation` (`bfo:process` with output `solway:TheTransportInfrastructure`). `solway:TheTunnelTube` is `bfo:part_of` `solway:TheSolwayTunnel`.</div>
+                         <ul>
+                            <li>1.5.1 Tunnel Boring &amp; Lining</li>
+                            <li>1.5.2 Internal Infrastructure (Road/Rail)</li>
+                        </ul>
+                    </li>
+                    <li><strong>1.6 Tunnel Systems Installation</strong>
+                        <div class="grounding">Grounding: `solway:TheSystemsInstallation` (`bfo:process`) which has multiple system instances (e.g., `solway:TheVentilationSystem`) as outputs, which are `bfo:part_of` `solway:TheSolwayTunnel`.</div>
+                         <ul>
+                            <li>1.6.1 Ventilation System</li>
+                            <li>1.6.2 Drainage System</li>
+                            <li>1.6.3 Power System</li>
+                            <li>1.6.4 Lighting System</li>
+                            <li>1.6.5 Safety System</li>
+                        </ul>
+                    </li>
+                    <li><strong>1.7 Commissioning</strong>
+                        <div class="grounding">Grounding: `solway:TheCommissioningPhase` (instance of `solway:CommissioningProcess`, `bfo:process`). Verifies function of `solway:TheSolwayTunnel` parts.</div>
+                    </li>
+                     <li><strong>1.8 Handover</strong>
+                        <div class="grounding">Grounding: `solway:TheHandoverPhase` (instance of `solway:HandoverProcess`, `bfo:process`). Final output is the commissioned `solway:TheSolwayTunnel`.</div>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <p><strong>Benefits Highlighted:</strong> Explainability (traceability to ontology), integrated product/process view, structure justification, robustness via formal grounding.</p>
+
+    <h2>Step 5: PDDL Setup</h2>
+    <p>We defined a simplified PDDL domain (`solway-tunnel-construction`) with types (`location`, `portal`, `tbm`), predicates (`(site-prepared ?l)`, `(portal-exists ?p ?l)`, `(tunnel-commissioned ?t)`), and actions (`prepare-site`, `build-portal`, `bore-and-line-tunnel`, etc.) with preconditions and effects. A problem file (`solway-tunnel-task`) defined specific objects (`north-loc`, `south-loc`, `solway-tunnel`) and set the initial state (empty) and goal state (a fully commissioned tunnel connecting the locations).</p>
+    <details>
+        <summary>Click to view PDDL Domain File (`solway-domain.pddl`)</summary>
+        <pre><code class="language-lisp">
+(define (domain solway-tunnel-construction)
+  (:requirements :strips :typing)
+
+  (:types location portal tunnel tbm system - object)
+
+  (:predicates
+    (site-prepared ?l - location)
+    (portal-exists ?p - portal ?l - location)
+    (tbm-at ?m - tbm ?l - location)
+    (tunnel-boring-possible ?t - tunnel)
+    (tunnel-bored ?t - tunnel)
+    (tunnel-lined ?t - tunnel)
+    (systems-installed ?t - tunnel)
+    (tunnel-commissioned ?t - tunnel)
+    (connected ?l1 - location ?l2 - location)
+  )
+
+  (:action prepare-site
+    :parameters (?l - location)
+    :precondition ()
+    :effect (and (site-prepared ?l))
+  )
+
+  (:action build-portal
+    :parameters (?p - portal ?l - location)
+    :precondition (and (site-prepared ?l))
+    :effect (and (portal-exists ?p ?l))
+  )
+
+  (:action launch-tbm
+     :parameters (?m - tbm ?p - portal ?l - location ?t - tunnel)
+     :precondition (and (portal-exists ?p ?l))
+     :effect (and (tbm-at ?m ?l) (tunnel-boring-possible ?t))
+  )
+
+  (:action bore-and-line-tunnel
+    :parameters (?m - tbm ?l_start - location ?l_end - location ?p_end - portal ?t - tunnel)
+    :precondition (and (tbm-at ?m ?l_start)
+                       (tunnel-boring-possible ?t)
+                       (portal-exists ?p_end ?l_end))
+    :effect (and (tunnel-bored ?t) (tunnel-lined ?t)
+                 (connected ?l_start ?l_end)
+                 (tbm-at ?m ?l_end)
+                 (not (tunnel-boring-possible ?t)))
+  )
+
+  (:action install-systems
+    :parameters (?t - tunnel)
+    :precondition (and (tunnel-lined ?t))
+    :effect (and (systems-installed ?t))
+  )
+
+  (:action commission-tunnel
+    :parameters (?t - tunnel)
+    :precondition (and (systems-installed ?t))
+    :effect (and (tunnel-commissioned ?t))
+  )
+)
+        </code></pre>
+    </details>
+    <details>
+        <summary>Click to view PDDL Problem File (`solway-problem.pddl`)</summary>
+        <pre><code class="language-lisp">
+(define (problem solway-tunnel-task)
+  (:domain solway-tunnel-construction)
+
+  (:objects
+    north-loc south-loc - location
+    north-portal south-portal - portal
+    solway-tunnel - tunnel
+    tbm1 - tbm
+  )
+
+  (:init ) ; Empty initial state
+
+  (:goal
+    (and
+      (portal-exists north-portal north-loc)
+      (portal-exists south-portal south-loc)
+      (connected north-loc south-loc)
+      (tunnel-bored solway-tunnel)
+      (tunnel-lined solway-tunnel)
+      (systems-installed solway-tunnel)
+      (tunnel-commissioned solway-tunnel)
+    )
+  )
+)
+        </code></pre>
+    </details>
+
+     <h2>Step 6: PDDL Planning & WBS Extraction</h2>
+    <p>A conceptual run of a PDDL planner on the domain and problem would yield a sequence of actions to achieve the goal state. This sequence forms the basis of the PDDL-derived WBS.</p>
+    <p><strong>Conceptual Plan Sequence:</strong></p>
+    <ol>
+        <li>`(prepare-site north-loc)`</li>
+        <li>`(prepare-site south-loc)`</li>
+        <li>`(build-portal north-portal north-loc)`</li>
+        <li>`(build-portal south-portal south-loc)`</li>
+        <li>`(launch-tbm tbm1 north-portal north-loc solway-tunnel)`</li>
+        <li>`(bore-and-line-tunnel tbm1 north-loc south-loc south-portal solway-tunnel)`</li>
+        <li>`(install-systems solway-tunnel)`</li>
+        <li>`(commission-tunnel solway-tunnel)`</li>
+    </ol>
+    <p><strong>PDDL-Derived WBS:</strong></p>
+     <div class="wbs">
+        <ul>
+            <li><strong>1. Solway Tunnel Construction (from PDDL Plan)</strong>
+                 <ul>
+                    <li>1.1 Prepare North Site <span class="grounding">(Action: prepare-site north-loc)</span></li>
+                    <li>1.2 Prepare South Site <span class="grounding">(Action: prepare-site south-loc)</span></li>
+                    <li>1.3 Build North Portal <span class="grounding">(Action: build-portal north-portal north-loc)</span></li>
+                    <li>1.4 Build South Portal <span class="grounding">(Action: build-portal south-portal south-loc)</span></li>
+                    <li>1.5 Launch TBM <span class="grounding">(Action: launch-tbm ...)</span></li>
+                    <li>1.6 Bore and Line Tunnel <span class="grounding">(Action: bore-and-line-tunnel ...)</span></li>
+                    <li>1.7 Install Systems <span class="grounding">(Action: install-systems solway-tunnel)</span></li>
+                    <li>1.8 Commission Tunnel <span class="grounding">(Action: commission-tunnel solway-tunnel)</span></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <p>This WBS is essentially a sequential task list derived directly from the plan needed to satisfy the PDDL goal conditions.</p>
+
+    <h2>Step 7: Comparison</h2>
+    <p>We compared the two WBS approaches based on several criteria:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>Ontology-Derived WBS</th>
+                <th>PDDL-Derived WBS</th>
+                <th>Winner</th>
+                <th>Why</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Explainability</strong></td>
+                <td>Rich: Links tasks to product parts & formal process types (BFO). Why = Purpose & Part.</td>
+                <td>Mechanistic: Links tasks to state changes (preconditions/effects). Why = Logic Step.</td>
+                <td><strong>Ontology</strong></td>
+                <td>Provides deeper semantic grounding and connects activities directly to the physical deliverables and their nature.</td>
+            </tr>
+            <tr>
+                <td><strong>Robustness</strong></td>
+                <td>High: Models product structure explicitly (`bfo:part_of`). Includes non-physical processes.</td>
+                <td>Moderate: Focuses on states for goal. Can miss aspects not in goal preds. Harder to add mgmt/design.</td>
+                <td><strong>Ontology</strong></td>
+                <td>Explicit product decomposition ensures better coverage. Accommodates broader project activities naturally.</td>
+            </tr>
+            <tr>
+                <td><strong>Structure</strong></td>
+                <td>Hierarchical: Reflects product breakdown & process phases. Aligns with standard WBS.</td>
+                <td>Flat/Sequential: Primarily a task list derived from plan steps.</td>
+                <td><strong>Ontology</strong></td>
+                <td>Better reflects project decomposition into manageable parts (deliverables & activities), suitable for classic WBS use.</td>
+            </tr>
+             <tr>
+                <td><strong>Completeness</strong></td>
+                <td>Encourages completeness via product decomposition (`bfo:ObjectAggregate`).</td>
+                <td>Completeness depends heavily on goal state definition & action models.</td>
+                <td><strong>Ontology</strong></td>
+                <td>Focus on decomposing the end-state (product) provides a better framework for ensuring all parts are considered.</td>
+            </tr>
+            <tr>
+                <td><strong>Product Focus</strong></td>
+                <td>Strong: Explicitly models end-state components and links processes to them.</td>
+                <td>Weak: Product is implicit in goal predicates. Focus is on state transformation.</td>
+                <td><strong>Ontology</strong></td>
+                <td>The WBS clearly shows *what* is being built alongside *how*.</td>
+            </tr>
+             <tr>
+                <td><strong>Process Focus</strong></td>
+                <td>Strong: Explicitly models processes (`bfo:process`) and links them to outputs.</td>
+                <td>Very Strong: Directly derived from the sequence of planned process actions.</td>
+                <td><strong>PDDL</strong></td>
+                <td>PDDL's core strength is modeling actions and their sequential dependencies.</td>
+            </tr>
+             <tr>
+                <td><strong>Flexibility</strong></td>
+                <td>High: Easy to add detail (properties, roles, functions) within the ontology.</td>
+                <td>Moderate: Adding detail increases PDDL complexity significantly, may impact planning.</td>
+                <td><strong>Ontology</strong></td>
+                <td>Ontology is designed for rich, flexible knowledge representation.</td>
+            </tr>
+            <tr>
+                <td><strong>Automation</strong></td>
+                <td>WBS generation is interpretive from model. Reasoning can check consistency.</td>
+                <td>Plan generation (basis for WBS) is automated via planner.</td>
+                <td><strong>PDDL</strong></td>
+                <td>PDDL planners automatically find *a* valid sequence of actions.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Step 8: Conclusion</h2>
+    <p>For the purpose of creating a **robust and explainable Work Breakdown Structure for project management**, the **Ontology-based method proved superior** in this Solway Tunnel scenario.</p>
+    <p>Key advantages of the Ontology approach:</p>
+    <ul>
+        <li><strong>Richer Explanation:</strong> Connects WBS items to the purpose (product parts) and nature (formal process types).</li>
+        <li><strong>Balanced Product/Process View:</strong> Integrates deliverables and activities effectively.</li>
+        <li><strong>Comprehensive Scope:</strong> Easily includes management, design, and other phases.</li>
+        <li><strong>Meaningful Hierarchy:</strong> Reflects project decomposition suitable for management.</li>
+        <li><strong>Extensibility:</strong> Provides a foundation for linking more project information (resources, risks, requirements).</li>
+    </ul>
+    <p>While PDDL offers automation in plan generation and is strong for analyzing sequential dependencies (useful for scheduling), its resulting task list is less comprehensive and less explainable in the context of a full project WBS compared to the structure derived from reasoning about the end-state product and the associated processes within a formal ontology framework like BFO.</p>
+
+</body>
+</html>
