@@ -1,23 +1,7 @@
-# PMO Prototype Suite
+# Solway tunnel innovation project
 
-This repository contains a set of lightweight web apps for program management offices. Every app is self‑contained and can be deployed straight to GitHub Pages.
+An example of how to use ontologies to form reliable project plans, profiiling different approaches all focused around the example of building a tunnel under the Solway Firth
 
-The suite currently includes:
-- **Integrated Controls Command Board** – baseline vs actual cost/schedule, FTE utilisation and efficiency KPIs.
-- **Decision Latency Tracker** – days from first signal to decision closure for changes, risks and approvals.
-- **Lessons-to-Action Synthesiser** – searchable catalogue of lessons with quick copy‑to‑clipboard summaries.
-- **Organisational Heatmap & Efficiency Tracker** – colour‑coded matrix of teams vs processes with utilisation drill‑downs.
-- **Digital Controls Landscape Diagram** – Mermaid diagram showing how all components link together.
-
-## Platform Sections
-
-- **Home – Welcome & Overview** – Introductory page that welcomes users and explains the platform’s mission and structure in general terms.
-- **Projects Portfolio** – Directory of all innovation projects with brief summaries, allowing users to explore and navigate to individual project pages.
-- **Interactive Tools Sandbox** – A playground of lightweight, interactive tools (e.g. control-signal tiles, sandbox workbenches, use case mappers) where teams can prototype and experiment.
-- **AI Tools & Collaboration** – Showcases AI-assisted features for project work – from planning and decision support to assurance and performance measurement – and how they enhance team collaboration.
-- **Brief for AI agent** – Provides guidance for building an explainable work breakdown structure using ontologies and PDDL comparisons.
-- **Project Lifecycle & Governance** – Provides a generic project lifecycle framework with governance checkpoints, aligning with best-practice methodologies in a flexible, user-friendly way.
-- **Insights & Learning Hub** – Repository of shared knowledge – including lessons learned, case studies, and reference materials – to promote reflection and continuous learning across projects.
 
 ## Getting Started
 

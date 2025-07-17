@@ -1,3 +1,4 @@
 #,name,description,origin,model,tags,explainer post,notes
 1,semantic-tunnel-planner,a game to learn how to see the ontology behind the WBS,Gemini,cant remember,"education, ontology, WBS",,
 2,push-out-pull-back,"stop getting mixed up between push outs and pullbacks, products and Co products",Claude,Sonnet 3.5,"education, pushout, product",,
+3,tunnel-ontology-visualizer,a knowledge graph for the tunnel based on an ontology with tabs for each type of entitity,Claude,cant remember,"ontology, WBS, knowledge_graph, alternate_perspectives",,
