@@ -7,7 +7,7 @@ import Projects from './pages/Projects.jsx';
 import Sandbox from './pages/Sandbox.jsx';
 import AITools from './pages/AITools.jsx';
 import Brief from './pages/Brief.jsx';
-import Lifecycle from './pages/Lifecycle.jsx';
+import Storyboard from './pages/Storyboard.jsx';
 import Insights from './pages/Insights.jsx';
 
 function Navbar() {
@@ -18,7 +18,7 @@ function Navbar() {
       <Link className="hover:text-accent-600 hover:underline decoration-2" to="/sandbox">Tools Sandbox</Link>
       <Link className="hover:text-accent-600 hover:underline decoration-2" to="/ai-tools">AI Tools</Link>
       <Link className="hover:text-accent-600 hover:underline decoration-2" to="/brief">Brief for AI agent</Link>
-      <Link className="hover:text-accent-600 hover:underline decoration-2" to="/lifecycle">Lifecycle</Link>
+      <Link className="hover:text-accent-600 hover:underline decoration-2" to="/storyboard">Storyboard</Link>
       <Link className="hover:text-accent-600 hover:underline decoration-2" to="/insights">Insights</Link>
       <a className="hover:text-accent-600 hover:underline decoration-2" href="../../app-index.html">App Index</a>
     </nav>
@@ -36,7 +36,7 @@ function App() {
           <Route path="/sandbox" element={<Sandbox />} />
           <Route path="/ai-tools" element={<AITools />} />
           <Route path="/brief" element={<Brief />} />
-          <Route path="/lifecycle" element={<Lifecycle />} />
+          <Route path="/storyboard" element={<Storyboard />} />
           <Route path="/insights" element={<Insights />} />
         </Routes>
       </div>
