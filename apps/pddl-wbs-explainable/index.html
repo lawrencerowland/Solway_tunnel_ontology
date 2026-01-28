@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>PDDL → Explainable WBS (with PROV)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="../../common.css">
+<style>
+  body{margin:0;display:grid;grid-template-rows:auto 1fr;background:#f3f4f6;color:#111827}
+  header{padding:12px 16px;border-bottom:1px solid #e5e7eb;background:#fff;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  header h1{font-size:18px;margin:0}
+  main{display:grid;grid-template-columns:360px 1fr;gap:16px;padding:16px;min-height:0}
+  textarea{width:100%;height:180px;font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  .panel{border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#fff;display:flex;flex-direction:column;min-height:0}
+  .panel h2{margin:0;padding:10px 12px;border-bottom:1px solid #f3f4f6;background:#f9fafb;font-size:13px;letter-spacing:0.02em;text-transform:uppercase}
+  .panel .body{padding:12px 14px;overflow:auto}
+  .tree ul{list-style:none;padding-left:16px;margin:4px 0}
+  .tree li{margin:2px 0;position:relative}
+  .badge{display:inline-block;padding:1px 6px;border-radius:999px;border:1px solid #e5e7eb;background:#f9fafb;margin-left:6px;font-size:11px;color:#374151}
+  .wp{cursor:pointer}
+  .deps{font-size:12px;color:#4b5563}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .row label{display:flex;gap:6px;align-items:center}
+  button{padding:6px 10px;border-radius:8px;border:1px solid #d1d5db;background:#fff;cursor:pointer}
+  button:hover{background:#f3f4f6}
+  button.primary{background:#2563eb;color:#fff;border-color:#1d4ed8}
+  button.primary:hover{background:#1d4ed8}
+  pre{white-space:pre-wrap;background:#f9fafb;border-radius:8px;padding:8px;border:1px solid #e5e7eb}
+  .small{font-size:12px;color:#6b7280}
+  canvas{width:100%;height:320px;border:1px dashed #e5e7eb;border-radius:8px;background:#fff}
+  .kv{display:grid;grid-template-columns:120px 1fr;gap:6px 12px}
+  .why{color:#16a34a;cursor:pointer;text-decoration:underline dotted}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#ecfeff;border:1px solid #bae6fd;font-size:12px;color:#0369a1}
+  .legend{display:flex;gap:8px;flex-wrap:wrap}
+  dialog{border:none;border-radius:12px;box-shadow:0 20px 40px rgba(15,23,42,0.2);width:min(640px,90vw)}
+  dialog::backdrop{background:rgba(15,23,42,0.5)}
+  .dialog-header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:12px 16px}
+  .dialog-body{padding:16px;display:grid;gap:12px}
+  .callout{border-left:3px solid #22c55e;background:#f0fdf4;padding:8px 12px;border-radius:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>PDDL → WBS (Explainable &amp; Auditable)</h1>
+  <div class="row">
+    <button class="primary" id="btnPlan">Parse &amp; Build</button>
+    <button id="btnExportWBS">Export WBS JSON‑LD</button>
+    <button id="btnExportPROV">Export PROV JSON‑LD</button>
+    <button id="btnExplain">Explain Mapping</button>
+    <button id="btnExplainProv">Explain PROV</button>
+    <span class="small">Tip: hover nodes, click <span class="why">“why?”</span> badges</span>
+  </div>
+</header>
+
+<main>
+  <div class="panel">
+    <h2>Inputs</h2>
+    <div class="body">
+      <p><a href="../../index.html">Back to app index</a></p>
+      <div class="kv">
+        <div>PDDL Domain</div>
+        <div><textarea id="domainInput">(define (domain gimmer-shelter)
+  (:requirements :strips :typing)
+  (:types person material tool location)
+  (:predicates (at ?x - (either person material tool) ?l - location)
+               (assembled ?l - location)
+               (anchored ?l - location))
+  (:action carry
+    :parameters (?m - material ?from - location ?to - location ?p - person)
+    :precondition (and (at ?m ?from) (at ?p ?from))
+    :effect (and (not (at ?m ?from)) (at ?m ?to)))
+  (:action assemble
+    :parameters (?m1 - material ?m2 - material ?l - location ?p - person)
+    :precondition (and (at ?m1 ?l) (at ?m2 ?l) (at ?p ?l))
+    :effect (assembled ?l))
+  (:action anchor
+    :parameters (?m - material ?l - location ?p - person)
+    :precondition (and (assembled ?l) (at ?m ?l) (at ?p ?l))
+    :effect (anchored ?l)))</textarea></div>
+
+        <div>PDDL Problem</div>
+        <div><textarea id="problemInput">(define (problem shelter-1)
+  (:domain gimmer-shelter)
+  (:objects alice - person rockwood plank - material base gimmer-mid - location)
+  (:init (at alice base) (at rockwood base) (at plank base))
+  (:goal (and (assembled gimmer-mid) (anchored gimmer-mid))))</textarea></div>
+
+        <div>Plan (mock)</div>
+        <div><textarea id="planInput">0: (carry rockwood base gimmer-mid alice)
+1: (carry plank    base gimmer-mid alice)
+2: (assemble plank rockwood gimmer-mid alice)
+3: (anchor rockwood gimmer-mid alice)</textarea></div>
+      </div>
+      <div class="legend" style="margin-top:12px">
+        <span class="pill">Action → Work‑Package</span>
+        <span class="pill">Goal → Deliverable</span>
+        <span class="pill">Plan Order → Dependency</span>
+      </div>
+      <p class="small">
+        This demo uses a lightweight plan text format. In production, feed a planner output and keep the same extraction steps.
+      </p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Outputs</h2>
+    <div class="body" style="display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:12px;min-height:0">
+      <div class="panel" style="margin:0">
+        <h2>WBS (tree)</h2>
+        <div class="body tree">
+          <div class="row" style="margin-bottom:8px">
+            <label><input type="checkbox" id="toggleExplain" checked> show explainability hints</label>
+            <label><input type="checkbox" id="toggleMeta" checked> show metadata</label>
+          </div>
+          <div class="row" style="margin-bottom:8px">
+            <label>Deliverable filter
+              <select id="deliverableFilter"></select>
+            </label>
+          </div>
+          <div id="wbsTree"></div>
+        </div>
+      </div>
+      <div class="panel" style="margin:0">
+        <h2>Dependencies (plan order)</h2>
+        <div class="body">
+          <canvas id="depCanvas" width="1000" height="320"></canvas>
+          <div id="depList" class="deps"></div>
+          <div class="row" style="margin-top:8px">
+            <button id="btnExplainDeps">Explain dependency rule</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h2>Selected Work‑Package</h2>
+      <div class="body" id="wpDetail"><em>No selection yet.</em></div>
+    </div>
+  </div>
+</main>
+
+<dialog id="infoDialog">
+  <div class="dialog-header">
+    <strong id="dialogTitle">Explanation</strong>
+    <button id="btnCloseDialog">Close</button>
+  </div>
+  <div class="dialog-body" id="dialogBody"></div>
+</dialog>
+
+<script>
+const byId = (id)=>document.getElementById(id);
+const download = (name, obj)=> {
+  const blob = new Blob([typeof obj==='string'?obj:JSON.stringify(obj,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+};
+
+function openDialog(title, html){
+  const dialog = byId('infoDialog');
+  byId('dialogTitle').textContent = title;
+  byId('dialogBody').innerHTML = html;
+  if(!dialog.open){dialog.showModal();}
+}
+
+// --- Plan parser (trivial, expects "i: (name args...)" lines) ---
+function parsePlan(txt){
+  const steps = [];
+  txt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).forEach(line=>{
+    const m = line.match(/^\s*(\d+)\s*:\s*\(([^)]+)\)\s*$/);
+    if(!m) return;
+    const idx = +m[1];
+    const parts = m[2].split(/\s+/);
+    const name = parts.shift();
+    steps.push({idx, name, args:parts});
+  });
+  steps.sort((a,b)=>a.idx-b.idx);
+  return steps;
+}
+
+// --- Goal grouping heuristic: group by goal predicate mentioned in domain/problem ---
+function extractGoals(problem){
+  const m = problem.match(/\(:goal\s*\((?:and\s*)?\s*([\s\S]*?)\)\s*\)/i);
+  if(!m) return [];
+  const inner = m[1];
+  return inner.replace(/[()]/g,' ').split(/\s+/).filter(Boolean)
+              .reduce((acc,t,i,arr)=>{
+                if(i%2===0) acc.push(arr[i]);
+                return acc;
+              },[]);
+}
+
+// --- Extract action schemas (lightweight regex) ---
+function extractActionSchemas(domain){
+  const schemas = {};
+  const actionBlocks = domain.match(/:action[\s\S]*?\)\s*\)/g) || [];
+  actionBlocks.forEach(block=>{
+    const nameM = block.match(/:action\s+([^\s]+)/); if(!nameM) return;
+    const name = nameM[1];
+    const pre = (block.match(/:precondition\s*\(([\s\S]*?)\)\s*:effect/i)||[])[1]||'';
+    const eff = (block.match(/:effect\s*\(([\s\S]*?)\)\s*\)/i)||[])[1]||'';
+    schemas[name] = {pre: pre.trim(), eff: eff.trim()};
+  });
+  return schemas;
+}
+
+// --- Build WBS nodes from plan ---
+function buildWBS({steps, goals, schemas}){
+  const deliverables = goals.length ? goals : ['deliverable'];
+  const guessGroup = (step)=>{
+    if(step.name==='assemble') return 'assembled';
+    if(step.name==='anchor')   return 'anchored';
+    return deliverables[0];
+  };
+
+  const nodes = [];
+  const idOf = (s)=>`wp_${s.idx}_${s.name}`;
+  steps.forEach((s,i)=>{
+    const parent = guessGroup(s);
+    nodes.push({
+      id: idOf(s),
+      label: `${s.name} ${s.args.join(' ')}`,
+      action: s.name,
+      args: s.args,
+      parent,
+      dependsOn: i>0 ? [idOf(steps[i-1])] : [],
+      meta: {
+        duration_h: s.name==='carry'? 0.5 : (s.name==='assemble'? 2 : 1),
+        assignee: 'alice',
+        risk: s.name==='anchor' ? 'wind/edge risk; confirm anchors' : 'low'
+      },
+      xaip: {
+        preconditions: (schemas[s.name]?.pre)||'',
+        effects: (schemas[s.name]?.eff)||'',
+        why_ordering: s.name==='anchor' ? 'Requires (assembled ?l) true before anchoring.' :
+                       s.name==='assemble' ? 'Requires materials at location; carry actions ensure at(?m ?l).' :
+                       'Positions materials at target location for later steps.'
+      },
+      prov: {
+        entity: { id:`ent:${idOf(s)}`, type:'wbs:WorkPackage' },
+        activity: { id:`act:map_${idOf(s)}`, type:'wbs:Mapping' },
+        agent: { id:'agt:demo-tool', label:'PDDL→WBS Demo' },
+        used: [`plan:${s.idx}`],
+        generatedAtTime: new Date().toISOString()
+      }
+    });
+  });
+  return nodes;
+}
+
+// --- Render WBS tree ---
+function renderTree(nodes, container){
+  const showExplain = byId('toggleExplain').checked;
+  const showMeta = byId('toggleMeta').checked;
+  const filter = byId('deliverableFilter').value || 'all';
+  const byParent = {};
+  nodes.forEach(n=>{
+    if(filter !== 'all' && n.parent !== filter) return;
+    byParent[n.parent] = byParent[n.parent] || [];
+    byParent[n.parent].push(n);
+  });
+  const rootUl = document.createElement('ul');
+  Object.keys(byParent).forEach(group=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<strong>${group}</strong>`;
+    const ul = document.createElement('ul');
+    byParent[group].forEach(n=>{
+      const meta = showMeta ? `<span class="badge">${n.meta.duration_h}h</span><span class="badge">${n.meta.risk}</span>` : '';
+      const why = showExplain ? `<span class="badge why" data-id="${n.id}">why?</span>` : '';
+      const li2 = document.createElement('li');
+      li2.innerHTML = `<span class="wp" title="Click for details" data-id="${n.id}">• ${n.label}</span>
+        <span class="badge">id:${n.id}</span>
+        ${meta}
+        ${why}`;
+      ul.appendChild(li2);
+    });
+    li.appendChild(ul);
+    rootUl.appendChild(li);
+  });
+  container.innerHTML = '';
+  container.appendChild(rootUl);
+}
+
+// --- Render dependencies (simple left→right lanes) ---
+function renderDeps(nodes){
+  const c = byId('depCanvas'), ctx = c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  const laneH = 60, x0 = 40, dx = 220, y0 = 40;
+  const pos = {};
+  nodes.forEach((n,i)=>{
+    const x = x0 + i*dx, y = y0 + laneH;
+    pos[n.id] = {x,y};
+    ctx.fillStyle = '#111827'; ctx.font = '12px sans-serif';
+    ctx.strokeStyle = '#9ca3af'; ctx.strokeRect(x-6,y-18,180,36);
+    ctx.fillText(n.label, x, y+4);
+  });
+  ctx.strokeStyle = '#16a34a';
+  nodes.forEach(n=>{
+    (n.dependsOn||[]).forEach(d=>{
+      if(!pos[d]) return;
+      const a = pos[d], b = pos[n.id];
+      ctx.beginPath(); ctx.moveTo(a.x+174, a.y); ctx.lineTo(b.x-6, b.y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(b.x-10,b.y-4); ctx.lineTo(b.x-6,b.y); ctx.lineTo(b.x-10,b.y+4); ctx.stroke();
+    });
+  });
+  const list = nodes.flatMap(n => (n.dependsOn||[]).map(d=>`${d} → ${n.id}`));
+  byId('depList').textContent = list.length ? ('Dependencies: ' + list.join(', ')) : 'No dependencies.';
+}
+
+// --- Details panel ---
+function showDetails(node){
+  const el = byId('wpDetail');
+  const html = `
+    <div class="kv">
+      <div><strong>ID</strong></div><div>${node.id}</div>
+      <div><strong>Label</strong></div><div>${node.label}</div>
+      <div><strong>Parent</strong></div><div>${node.parent}</div>
+      <div><strong>Depends</strong></div><div>${(node.dependsOn||[]).join(', ')||'—'}</div>
+      <div><strong>Duration</strong></div><div>${node.meta.duration_h} h</div>
+      <div><strong>Assignee</strong></div><div>${node.meta.assignee}</div>
+      <div><strong>Risk</strong></div><div>${node.meta.risk}</div>
+      <div><strong>Preconditions</strong></div><div><code>${node.xaip.preconditions||'—'}</code></div>
+      <div><strong>Effects</strong></div><div><code>${node.xaip.effects||'—'}</code></div>
+      <div><strong>Why this order?</strong></div><div>${node.xaip.why_ordering}</div>
+      <div><strong>PROV</strong></div><div class="small">activity=${node.prov.activity.id}, agent=${node.prov.agent.label}</div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="why" data-id="${node.id}">Why this sequence?</button>
+      <button data-provid="${node.id}">Explain PROV for this WP</button>
+    </div>`;
+  el.innerHTML = html;
+}
+
+// --- JSON‑LD exporters ---
+function exportWBS(nodes){
+  const jsonld = {
+    "@context": {
+      "wbs":"https://example.org/wbs#",
+      "prov":"http://www.w3.org/ns/prov#",
+      "id":"@id","type":"@type",
+      "label":"rdfs:label","dependsOn":{"@id":"wbs:dependsOn","@type":"@id"}
+    },
+    "@graph": nodes.map(n=>({
+      id: n.prov.entity.id,
+      type: "wbs:WorkPackage",
+      label: n.label,
+      "wbs:parent": n.parent,
+      "wbs:dependsOn": (n.dependsOn||[]).map(d=>`ent:${d}`),
+      "wbs:durationHours": n.meta.duration_h,
+      "wbs:assignee": n.meta.assignee,
+      "wbs:risk": n.meta.risk,
+      "wbs:action": n.action,
+      "wbs:args": n.args
+    }))
+  };
+  download('wbs.jsonld', jsonld);
+}
+
+function exportPROV(nodes){
+  const jsonld = {
+    "@context": {"prov":"http://www.w3.org/ns/prov#","id":"@id","type":"@type"},
+    "@graph": nodes.flatMap(n=>[
+      { id:n.prov.entity.id, type:"prov:Entity" },
+      { id:n.prov.activity.id, type:"prov:Activity", "prov:generatedAtTime": n.prov.generatedAtTime,
+        "prov:used": (n.prov.used||[]).map(u=>({id:u})) },
+      { id:n.prov.agent.id, type:"prov:Agent", "prov:label": n.prov.agent.label },
+      { id:`link:wasGeneratedBy:${n.id}`, type:"prov:Association",
+        "prov:entity": {id:n.prov.entity.id},
+        "prov:activity": {id:n.prov.activity.id},
+        "prov:agent": {id:n.prov.agent.id}
+      }
+    ])
+  };
+  download('prov.jsonld', jsonld);
+}
+
+let CURRENT = {nodes:[], goals:[]};
+function rebuild(){
+  const domain = byId('domainInput').value;
+  const problem = byId('problemInput').value;
+  const planTxt = byId('planInput').value;
+  const steps = parsePlan(planTxt);
+  const goals = extractGoals(problem);
+  const schemas = extractActionSchemas(domain);
+  const nodes = buildWBS({steps, goals, schemas});
+  CURRENT.nodes = nodes;
+  CURRENT.goals = goals;
+  renderDeliverableFilter(nodes, goals);
+  renderTree(nodes, byId('wbsTree'));
+  renderDeps(nodes);
+  byId('wpDetail').innerHTML = '<em>Select a work‑package from the tree.</em>';
+}
+
+function renderDeliverableFilter(nodes, goals){
+  const select = byId('deliverableFilter');
+  const deliverables = Array.from(new Set(nodes.map(n=>n.parent))).filter(Boolean);
+  select.innerHTML = '<option value="all">All deliverables</option>' +
+    deliverables.map(g=>`<option value="${g}">${g}</option>`).join('');
+  if(!select.dataset.ready){
+    select.dataset.ready = 'true';
+    select.addEventListener('change', ()=>renderTree(CURRENT.nodes, byId('wbsTree')));
+  }
+}
+
+byId('btnPlan').onclick = rebuild;
+byId('btnExportWBS').onclick = ()=>exportWBS(CURRENT.nodes);
+byId('btnExportPROV').onclick = ()=>exportPROV(CURRENT.nodes);
+byId('btnExplain').onclick = ()=>openDialog('Mapping rules (Action → WBS)', `
+  <div class="callout"><strong>Explainable mapping:</strong> each plan step is turned into a Work‑Package node with action, arguments, and metadata. Each goal predicate becomes a deliverable grouping.</div>
+  <div>1) <strong>Action → Work‑Package:</strong> step i maps to <code>wp_i_action</code>, carrying preconditions/effects.</div>
+  <div>2) <strong>Subgoal → Deliverable:</strong> goal predicates (e.g., <code>assembled</code>) group work‑packages.</div>
+  <div>3) <strong>Plan order → Dependency:</strong> step i depends on step i-1 with a traceable justification.</div>
+`);
+byId('btnExplainProv').onclick = ()=>openDialog('PROV in this demo', `
+  <div class="callout"><strong>PROV:</strong> every Work‑Package is an <code>Entity</code>, created by a mapping <code>Activity</code> performed by a demo <code>Agent</code>.</div>
+  <div>Use the PROV export to audit when, how, and why the plan step was transformed.</div>
+`);
+byId('btnExplainDeps').onclick = ()=>openDialog('Dependency rule', `
+  <div class="callout">Dependencies follow plan order: step <em>i</em> must complete before step <em>i+1</em>.</div>
+  <div>Use the "why?" badge to see the preconditions/effects that justify each ordering.</div>
+`);
+byId('btnCloseDialog').onclick = ()=>byId('infoDialog').close();
+byId('toggleExplain').addEventListener('change', ()=>renderTree(CURRENT.nodes, byId('wbsTree')));
+byId('toggleMeta').addEventListener('change', ()=>renderTree(CURRENT.nodes, byId('wbsTree')));
+
+// --- interactions ---
+document.addEventListener('click', (e)=>{
+  const id = e.target?.dataset?.id;
+  if(id){
+    const node = CURRENT.nodes.find(n=>n.id===id || `ent:${n.id}`===id);
+    if(node){ showDetails(node); }
+  }
+  if(e.target?.classList.contains('why')){
+    const node = CURRENT.nodes.find(n=>n.id===id);
+    if(node) openDialog('Why this ordering?', `
+      <div class="callout">${node.xaip.why_ordering}</div>
+      <div><strong>Preconditions</strong></div><pre>${node.xaip.preconditions||'—'}</pre>
+      <div><strong>Effects</strong></div><pre>${node.xaip.effects||'—'}</pre>
+    `);
+  }
+  const provId = e.target?.dataset?.provid;
+  if(provId){
+    const node = CURRENT.nodes.find(n=>n.id===provId);
+    if(node){
+      openDialog('PROV trace for work‑package', `
+        <div class="callout">Entity <code>${node.prov.entity.id}</code> was generated by activity <code>${node.prov.activity.id}</code> attributed to agent <strong>${node.prov.agent.label}</strong>.</div>
+        <div>Used: <code>${node.prov.used.join(', ')}</code></div>
+      `);
+    }
+  }
+});
+
+rebuild();
+</script>
+</body>
+</html>
