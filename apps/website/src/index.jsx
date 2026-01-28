@@ -9,6 +9,8 @@ import AITools from './pages/AITools.jsx';
 import Brief from './pages/Brief.jsx';
 import Storyboard from './pages/Storyboard.jsx';
 import Insights from './pages/Insights.jsx';
+import Glossary from './pages/Glossary.jsx';
+import SolwayTunnel from './pages/projects/SolwayTunnel.jsx';
 
 function Navbar() {
   return (
@@ -20,6 +22,7 @@ function Navbar() {
       <Link className="hover:text-accent-600 hover:underline decoration-2" to="/brief">Brief for AI agent</Link>
       <Link className="hover:text-accent-600 hover:underline decoration-2" to="/storyboard">Storyboard</Link>
       <Link className="hover:text-accent-600 hover:underline decoration-2" to="/insights">Insights</Link>
+      <Link className="hover:text-accent-600 hover:underline decoration-2" to="/glossary">Glossary</Link>
       <a className="hover:text-accent-600 hover:underline decoration-2" href="../../app-index.html">App Index</a>
     </nav>
   );
@@ -38,6 +41,8 @@ function App() {
           <Route path="/brief" element={<Brief />} />
           <Route path="/storyboard" element={<Storyboard />} />
           <Route path="/insights" element={<Insights />} />
+          <Route path="/glossary" element={<Glossary />} />
+          <Route path="/projects/solway-tunnel" element={<SolwayTunnel />} />
         </Routes>
       </div>
     </BrowserRouter>
