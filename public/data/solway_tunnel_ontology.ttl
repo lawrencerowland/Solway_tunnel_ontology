@@ -1,0 +1,612 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Digital Construction Ontology prefixes
+@prefix bfo: <http://purl.obolibrary.org/obo/BFO_> .
+@prefix dice: <https://w3id.org/digitalconstruction/Entities#> .
+@prefix dicbm: <https://w3id.org/digitalconstruction/BuildingMaterials#> .
+@prefix dicp: <https://w3id.org/digitalconstruction/Processes#> .
+@prefix dica: <https://w3id.org/digitalconstruction/Agents#> .
+@prefix dici: <https://w3id.org/digitalconstruction/Information#> .
+@prefix dicc: <https://w3id.org/digitalconstruction/Contexts#> .
+@prefix dicl: <https://w3id.org/digitalconstruction/Lifecycle#> .
+@prefix dicv: <https://w3id.org/digitalconstruction/Variables#> .
+
+# Application-specific prefixes
+@prefix st: <http://example.org/solwaytunnel#> .
+@prefix geo: <http://www.opengis.net/ont/geosparql#> .
+
+# Ontology declaration
+st: rdf:type owl:Ontology ;
+    rdfs:label "Solway Firth Tunnel Ontology" ;
+    owl:versionInfo "1.0" ;
+    rdfs:comment "Application ontology for the Solway Firth Tunnel project based on Digital Construction Ontology" .
+
+#################################################################
+# Classes
+#################################################################
+
+# Core Project Entity
+st:SolwayTunnel rdf:type owl:Class ;
+    rdfs:subClassOf dice:Object ;
+    rdfs:label "Solway Firth Tunnel" ;
+    rdfs:comment "The main tunnel connecting England and Scotland under the Solway Firth" .
+
+# Physical Components
+st:TunnelSection rdf:type owl:Class ;
+    rdfs:subClassOf dice:Object ;
+    rdfs:label "Tunnel Section" ;
+    rdfs:comment "A segment of the tunnel with specific properties" .
+
+st:TunnelBore rdf:type owl:Class ;
+    rdfs:subClassOf dice:Object ;
+    rdfs:label "Tunnel Bore" ;
+    rdfs:comment "The excavated cylindrical space of the tunnel" .
+
+st:TunnelLining rdf:type owl:Class ;
+    rdfs:subClassOf dice:Object ;
+    rdfs:label "Tunnel Lining" ;
+    rdfs:comment "The structural lining system that provides support to the tunnel" .
+
+st:LiningSegment rdf:type owl:Class ;
+    rdfs:subClassOf dice:Object ;
+    rdfs:label "Lining Segment" ;
+    rdfs:comment "Individual precast concrete segments that form a ring of the tunnel lining" .
+
+st:VentilationSystem rdf:type owl:Class ;
+    rdfs:subClassOf dice:Object ;
+    rdfs:label "Ventilation System" ;
+    rdfs:comment "System for maintaining air quality in the tunnel" .
+
+st:EmergencyExit rdf:type owl:Class ;
+    rdfs:subClassOf dice:Object ;
+    rdfs:label "Emergency Exit" ;
+    rdfs:comment "Safety exits positioned at intervals along the tunnel" .
+
+# Materials
+st:Concrete rdf:type owl:Class ;
+    rdfs:subClassOf dicbm:Material ;
+    rdfs:label "Concrete" ;
+    rdfs:comment "Concrete material used in construction" .
+
+st:Steel rdf:type owl:Class ;
+    rdfs:subClassOf dicbm:Material ;
+    rdfs:label "Steel" ;
+    rdfs:comment "Steel material used for reinforcement" .
+
+st:Waterproofing rdf:type owl:Class ;
+    rdfs:subClassOf dicbm:Material ;
+    rdfs:label "Waterproofing" ;
+    rdfs:comment "Materials used to prevent water ingress" .
+
+# Processes
+st:ExcavationProcess rdf:type owl:Class ;
+    rdfs:subClassOf dicp:Process ;
+    rdfs:label "Excavation Process" ;
+    rdfs:comment "Process of excavating the tunnel bore" .
+
+st:SegmentInstallation rdf:type owl:Class ;
+    rdfs:subClassOf dicp:Process ;
+    rdfs:label "Segment Installation" ;
+    rdfs:comment "Process of installing lining segments" .
+
+st:GroundTreatment rdf:type owl:Class ;
+    rdfs:subClassOf dicp:Process ;
+    rdfs:label "Ground Treatment" ;
+    rdfs:comment "Processes for stabilizing the ground around the tunnel" .
+
+st:SitePreparation rdf:type owl:Class ;
+    rdfs:subClassOf dicp:Process ;
+    rdfs:label "Site Preparation" ;
+    rdfs:comment "Initial preparation of the tunnel sites" .
+
+# Stakeholders/Agents
+st:ContractingCompany rdf:type owl:Class ;
+    rdfs:subClassOf dica:FormalOrganization ;
+    rdfs:label "Contracting Company" ;
+    rdfs:comment "Company responsible for construction work" .
+
+st:EngineeringFirm rdf:type owl:Class ;
+    rdfs:subClassOf dica:FormalOrganization ;
+    rdfs:label "Engineering Firm" ;
+    rdfs:comment "Organization providing engineering services" .
+
+st:GovernmentAgency rdf:type owl:Class ;
+    rdfs:subClassOf dica:FormalOrganization ;
+    rdfs:label "Government Agency" ;
+    rdfs:comment "Government body with oversight of the project" .
+
+st:ProjectManager rdf:type owl:Class ;
+    rdfs:subClassOf dica:Agent ;
+    rdfs:label "Project Manager" ;
+    rdfs:comment "Individual responsible for managing the project" .
+
+# Information entities
+st:TunnelDesign rdf:type owl:Class ;
+    rdfs:subClassOf dici:Design ;
+    rdfs:label "Tunnel Design" ;
+    rdfs:comment "Design specifications for the tunnel" .
+
+st:GeotechnicalReport rdf:type owl:Class ;
+    rdfs:subClassOf dici:InformationContentEntity ;
+    rdfs:label "Geotechnical Report" ;
+    rdfs:comment "Report on ground conditions" .
+
+st:ConstructionPlan rdf:type owl:Class ;
+    rdfs:subClassOf dici:Plan ;
+    rdfs:label "Construction Plan" ;
+    rdfs:comment "Detailed plan for the construction phase" .
+
+st:EnvironmentalAssessment rdf:type owl:Class ;
+    rdfs:subClassOf dici:InformationContentEntity ;
+    rdfs:label "Environmental Assessment" ;
+    rdfs:comment "Assessment of environmental impacts" .
+
+# Contexts
+st:AsDesignedContext rdf:type owl:Class ;
+    rdfs:subClassOf dicc:Context ;
+    rdfs:label "As-Designed Context" ;
+    rdfs:comment "Context representing the design specifications" .
+
+st:AsBuiltContext rdf:type owl:Class ;
+    rdfs:subClassOf dicc:Context ;
+    rdfs:label "As-Built Context" ;
+    rdfs:comment "Context representing the actual construction" .
+
+# Lifecycle phases
+st:FeasibilityPhase rdf:type owl:Class ;
+    rdfs:subClassOf dicl:LifecyclePhase ;
+    rdfs:label "Feasibility Phase" ;
+    rdfs:comment "Initial project feasibility assessment phase" .
+
+st:DesignPhase rdf:type owl:Class ;
+    rdfs:subClassOf dicl:LifecyclePhase ;
+    rdfs:label "Design Phase" ;
+    rdfs:comment "Phase for detailed design work" .
+
+st:ConstructionPhase rdf:type owl:Class ;
+    rdfs:subClassOf dicl:LifecyclePhase ;
+    rdfs:label "Construction Phase" ;
+    rdfs:comment "Phase during which construction occurs" .
+
+st:CommissioningPhase rdf:type owl:Class ;
+    rdfs:subClassOf dicl:LifecyclePhase ;
+    rdfs:label "Commissioning Phase" ;
+    rdfs:comment "Phase for testing and preparation for operation" .
+
+st:OperationalPhase rdf:type owl:Class ;
+    rdfs:subClassOf dicl:LifecyclePhase ;
+    rdfs:label "Operational Phase" ;
+    rdfs:comment "Phase during which the tunnel is in operation" .
+
+#################################################################
+# Properties
+#################################################################
+
+# Object properties for physical composition
+st:hasBore rdf:type owl:ObjectProperty ;
+    rdfs:domain st:TunnelSection ;
+    rdfs:range st:TunnelBore ;
+    rdfs:label "has bore" ;
+    rdfs:comment "Relates a tunnel section to its bore" .
+
+st:hasLining rdf:type owl:ObjectProperty ;
+    rdfs:domain st:TunnelSection ;
+    rdfs:range st:TunnelLining ;
+    rdfs:label "has lining" ;
+    rdfs:comment "Relates a tunnel section to its lining" .
+
+st:hasSegment rdf:type owl:ObjectProperty ;
+    rdfs:domain st:TunnelLining ;
+    rdfs:range st:LiningSegment ;
+    rdfs:label "has segment" ;
+    rdfs:comment "Relates a tunnel lining to its segments" .
+
+st:hasVentilation rdf:type owl:ObjectProperty ;
+    rdfs:domain st:SolwayTunnel ;
+    rdfs:range st:VentilationSystem ;
+    rdfs:label "has ventilation" ;
+    rdfs:comment "Relates the tunnel to its ventilation system" .
+
+st:hasEmergencyExit rdf:type owl:ObjectProperty ;
+    rdfs:domain st:SolwayTunnel ;
+    rdfs:range st:EmergencyExit ;
+    rdfs:label "has emergency exit" ;
+    rdfs:comment "Relates the tunnel to its emergency exits" .
+
+# Properties for material relationships
+st:madeOf rdf:type owl:ObjectProperty ;
+    rdfs:domain st:LiningSegment ;
+    rdfs:range st:Concrete ;
+    rdfs:label "made of" ;
+    rdfs:comment "Relates a component to its primary material" .
+
+st:reinforcedWith rdf:type owl:ObjectProperty ;
+    rdfs:domain st:LiningSegment ;
+    rdfs:range st:Steel ;
+    rdfs:label "reinforced with" ;
+    rdfs:comment "Relates a component to its reinforcement material" .
+
+st:protectedBy rdf:type owl:ObjectProperty ;
+    rdfs:domain st:TunnelLining ;
+    rdfs:range st:Waterproofing ;
+    rdfs:label "protected by" ;
+    rdfs:comment "Relates a component to its protective material" .
+
+# Properties for process relationships
+st:creates rdf:type owl:ObjectProperty ;
+    rdfs:domain st:ExcavationProcess ;
+    rdfs:range st:TunnelBore ;
+    rdfs:label "creates" ;
+    rdfs:comment "Relates a process to what it creates" .
+
+st:installs rdf:type owl:ObjectProperty ;
+    rdfs:domain st:SegmentInstallation ;
+    rdfs:range st:LiningSegment ;
+    rdfs:label "installs" ;
+    rdfs:comment "Relates an installation process to the component being installed" .
+
+st:stabilizes rdf:type owl:ObjectProperty ;
+    rdfs:domain st:GroundTreatment ;
+    rdfs:range st:TunnelSection ;
+    rdfs:label "stabilizes" ;
+    rdfs:comment "Relates a ground treatment process to the area being stabilized" .
+
+# Properties for agent relationships
+st:performs rdf:type owl:ObjectProperty ;
+    rdfs:domain st:ContractingCompany ;
+    rdfs:range dicp:Process ;
+    rdfs:label "performs" ;
+    rdfs:comment "Relates an agent to a process they perform" .
+
+st:creates rdf:type owl:ObjectProperty ;
+    rdfs:domain st:EngineeringFirm ;
+    rdfs:range st:TunnelDesign ;
+    rdfs:label "creates" ;
+    rdfs:comment "Relates an agent to something they create" .
+
+st:approves rdf:type owl:ObjectProperty ;
+    rdfs:domain st:GovernmentAgency ;
+    rdfs:range dici:InformationContentEntity ;
+    rdfs:label "approves" ;
+    rdfs:comment "Relates an agent to something they approve" .
+
+st:manages rdf:type owl:ObjectProperty ;
+    rdfs:domain st:ProjectManager ;
+    rdfs:range st:ConstructionPlan ;
+    rdfs:label "manages" ;
+    rdfs:comment "Relates a manager to what they manage" .
+
+# Properties for information relationships
+st:specifies rdf:type owl:ObjectProperty ;
+    rdfs:domain st:TunnelDesign ;
+    rdfs:range st:SolwayTunnel ;
+    rdfs:label "specifies" ;
+    rdfs:comment "Relates design information to what it specifies" .
+
+st:informs rdf:type owl:ObjectProperty ;
+    rdfs:domain st:GeotechnicalReport ;
+    rdfs:range st:TunnelSection ;
+    rdfs:label "informs" ;
+    rdfs:comment "Relates information to what it informs" .
+
+st:schedules rdf:type owl:ObjectProperty ;
+    rdfs:domain st:ConstructionPlan ;
+    rdfs:range dicp:Process ;
+    rdfs:label "schedules" ;
+    rdfs:comment "Relates a plan to what it schedules" .
+
+st:evaluates rdf:type owl:ObjectProperty ;
+    rdfs:domain st:EnvironmentalAssessment ;
+    rdfs:range st:SolwayTunnel ;
+    rdfs:label "evaluates" ;
+    rdfs:comment "Relates an assessment to what it evaluates" .
+
+# Properties for context relationships
+st:contains rdf:type owl:ObjectProperty ;
+    rdfs:domain dicc:Context ;
+    rdfs:range dici:InformationContentEntity ;
+    rdfs:label "contains" ;
+    rdfs:comment "Relates a context to the information it contains" .
+
+st:represents rdf:type owl:ObjectProperty ;
+    rdfs:domain dicc:Context ;
+    rdfs:range dice:Entity ;
+    rdfs:label "represents" ;
+    rdfs:comment "Relates a context to what it represents" .
+
+# Properties for lifecycle relationships
+st:precedes rdf:type owl:ObjectProperty ;
+    rdfs:domain dicl:LifecyclePhase ;
+    rdfs:range dicl:LifecyclePhase ;
+    rdfs:label "precedes" ;
+    rdfs:comment "Relates a phase to the one that follows it" ;
+    rdf:type owl:TransitiveProperty .
+
+# Additional intra-category relationships for materials
+st:similarTo rdf:type owl:ObjectProperty ;
+    rdfs:domain dicbm:Material ;
+    rdfs:range dicbm:Material ;
+    rdfs:label "similar to" ;
+    rdfs:comment "Indicates materials with similar properties or applications" .
+
+st:compatibleWith rdf:type owl:ObjectProperty ;
+    rdfs:domain dicbm:Material ;
+    rdfs:range dicbm:Material ;
+    rdfs:label "compatible with" ;
+    rdfs:comment "Indicates materials that work well together in construction" .
+
+st:complementsProperties rdf:type owl:ObjectProperty ;
+    rdfs:domain dicbm:Material ;
+    rdfs:range dicbm:Material ;
+    rdfs:label "complements properties" ;
+    rdfs:comment "Indicates one material enhances properties of another" .
+
+# Additional intra-category relationships for processes
+st:dependsOn rdf:type owl:ObjectProperty ;
+    rdfs:domain dicp:Process ;
+    rdfs:range dicp:Process ;
+    rdfs:label "depends on" ;
+    rdfs:comment "Indicates a process that depends on another process" .
+
+st:sharesResources rdf:type owl:ObjectProperty ;
+    rdfs:domain dicp:Process ;
+    rdfs:range dicp:Process ;
+    rdfs:label "shares resources" ;
+    rdfs:comment "Indicates processes that use the same equipment or resources" .
+
+st:partOfPhase rdf:type owl:ObjectProperty ;
+    rdfs:domain dicp:Process ;
+    rdfs:range dicl:LifecyclePhase ;
+    rdfs:label "part of phase" ;
+    rdfs:comment "Relates a process to the lifecycle phase it belongs to" .
+
+# Additional intra-category relationships for stakeholders
+st:collaboratesWith rdf:type owl:ObjectProperty ;
+    rdfs:domain dica:Agent ;
+    rdfs:range dica:Agent ;
+    rdfs:label "collaborates with" ;
+    rdfs:comment "Indicates agents working together" .
+
+st:contractsWith rdf:type owl:ObjectProperty ;
+    rdfs:domain dica:Agent ;
+    rdfs:range dica:Agent ;
+    rdfs:label "contracts with" ;
+    rdfs:comment "Indicates contractual relationships between agents" .
+
+st:partOfConsortium rdf:type owl:ObjectProperty ;
+    rdfs:domain dica:FormalOrganization ;
+    rdfs:range dica:FormalOrganization ;
+    rdfs:label "part of consortium" ;
+    rdfs:comment "Indicates organizations that are part of the same consortium" .
+
+# Additional intra-category relationships for information
+st:references rdf:type owl:ObjectProperty ;
+    rdfs:domain dici:InformationContentEntity ;
+    rdfs:range dici:InformationContentEntity ;
+    rdfs:label "references" ;
+    rdfs:comment "Indicates one document refers to another" .
+
+st:updatesInformation rdf:type owl:ObjectProperty ;
+    rdfs:domain dici:InformationContentEntity ;
+    rdfs:range dici:InformationContentEntity ;
+    rdfs:label "updates information" ;
+    rdfs:comment "Indicates a newer document that updates an older one" .
+
+st:complementsData rdf:type owl:ObjectProperty ;
+    rdfs:domain dici:InformationContentEntity ;
+    rdfs:range dici:InformationContentEntity ;
+    rdfs:label "complements data" ;
+    rdfs:comment "Indicates documents with complementary information" .
+
+st:diameter rdf:type owl:DatatypeProperty ;
+    rdfs:domain [
+        rdf:type owl:Class ;
+        owl:unionOf (st:SolwayTunnel st:TunnelBore)
+    ] ;
+    rdfs:range xsd:float ;
+    rdfs:label "diameter" ;
+    rdfs:comment "Diameter in meters" .
+
+st:thickness rdf:type owl:DatatypeProperty ;
+    rdfs:domain [
+        rdf:type owl:Class ;
+        owl:unionOf (st:TunnelLining st:Waterproofing)
+    ] ;
+    rdfs:range xsd:float ;
+    rdfs:label "thickness" ;
+    rdfs:comment "Thickness in millimeters" .
+
+st:ringCount rdf:type owl:DatatypeProperty ;
+    rdfs:domain st:TunnelLining ;
+    rdfs:range xsd:integer ;
+    rdfs:label "ring count" ;
+    rdfs:comment "Number of rings in the lining" .
+
+st:weight rdf:type owl:DatatypeProperty ;
+    rdfs:domain st:LiningSegment ;
+    rdfs:range xsd:float ;
+    rdfs:label "weight" ;
+    rdfs:comment "Weight in kilograms" .
+
+st:strength rdf:type owl:DatatypeProperty ;
+    rdfs:domain st:Concrete ;
+    rdfs:range xsd:float ;
+    rdfs:label "strength" ;
+    rdfs:comment "Concrete strength in MPa" .
+
+st:waterResistance rdf:type owl:DatatypeProperty ;
+    rdfs:domain st:Concrete ;
+    rdfs:range xsd:float ;
+    rdfs:label "water resistance" ;
+    rdfs:comment "Water resistance rating" .
+
+st:chainage rdf:type owl:DatatypeProperty ;
+    rdfs:domain st:TunnelSection ;
+    rdfs:range xsd:float ;
+    rdfs:label "chainage" ;
+    rdfs:comment "Distance from the starting point in meters" .
+
+st:startDate rdf:type owl:DatatypeProperty ;
+    rdfs:domain [
+        rdf:type owl:Class ;
+        owl:unionOf (dicp:Process dicl:LifecyclePhase)
+    ] ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "start date" ;
+    rdfs:comment "Start date and time" .
+
+st:endDate rdf:type owl:DatatypeProperty ;
+    rdfs:domain [
+        rdf:type owl:Class ;
+        owl:unionOf (dicp:Process dicl:LifecyclePhase)
+    ] ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "end date" ;
+    rdfs:comment "End date and time" .
+
+#################################################################
+# Individuals (Examples)
+#################################################################
+
+# Main project
+st:solwayTunnel rdf:type st:SolwayTunnel ;
+    st:identifier "STN-2025" ;
+    rdfs:label "Solway Firth Tunnel" ;
+    st:length 22.0 ;
+    st:diameter 12.0 ;
+    dice:purpose "Connect England and Scotland under the Solway Firth" .
+
+# Physical sections
+st:section1 rdf:type st:TunnelSection ;
+    st:identifier "SEC-001" ;
+    rdfs:label "Scottish Approach Section" ;
+    st:length 5.2 ;
+    st:chainage 0.0 .
+
+st:section2 rdf:type st:TunnelSection ;
+    st:identifier "SEC-002" ;
+    rdfs:label "Main Undersea Section" ;
+    st:length 14.5 ;
+    st:chainage 5.2 .
+
+st:section3 rdf:type st:TunnelSection ;
+    st:identifier "SEC-003" ;
+    rdfs:label "English Approach Section" ;
+    st:length 2.3 ;
+    st:chainage 19.7 .
+
+# Tunnel bore sections
+st:bore1 rdf:type st:TunnelBore ;
+    st:identifier "BOR-001" ;
+    rdfs:label "Scottish Approach Bore" ;
+    st:diameter 12.0 ;
+    st:length 5.2 .
+
+# Sample lining
+st:lining1 rdf:type st:TunnelLining ;
+    st:identifier "LIN-001" ;
+    rdfs:label "Section 1 Lining" ;
+    st:thickness 400.0 ;
+    st:ringCount 1040 .
+
+# Sample lining segment
+st:segment1 rdf:type st:LiningSegment ;
+    st:identifier "SEG-00001" ;
+    rdfs:label "Standard Segment A-Type" ;
+    st:weight 8500.0 .
+
+# Materials
+st:highStrengthConcrete rdf:type st:Concrete ;
+    rdfs:label "High Strength Marine Concrete" ;
+    st:strength 60.0 ;
+    st:waterResistance 8.5 .
+
+st:marineGradeSteel rdf:type st:Steel ;
+    rdfs:label "Marine Grade Reinforcement Steel" .
+
+st:membraneWaterproofing rdf:type st:Waterproofing ;
+    rdfs:label "HDPE Membrane Waterproofing" ;
+    st:thickness 2.5 .
+
+# Construction processes
+st:tbmExcavation rdf:type st:ExcavationProcess ;
+    st:identifier "PRO-EXC-001" ;
+    rdfs:label "TBM Excavation - Main Drive" ;
+    st:startDate "2025-06-01T00:00:00Z"^^xsd:dateTime ;
+    st:endDate "2027-12-31T00:00:00Z"^^xsd:dateTime .
+
+# Project stakeholders
+st:tunnelContractor rdf:type st:ContractingCompany ;
+    rdfs:label "Solway Tunnel Construction Joint Venture" ;
+    dica:role "Main Contractor" .
+
+st:engineeringConsultant rdf:type st:EngineeringFirm ;
+    rdfs:label "Marine Infrastructure Design Partners" ;
+    dica:role "Lead Designer" .
+
+# Information content
+st:designDoc rdf:type st:TunnelDesign ;
+    rdfs:label "Solway Tunnel Detailed Design" ;
+    dici:version "3.2" ;
+    dici:approvalStatus "Approved for Construction" .
+
+# Phases
+st:constructionPhase rdf:type st:ConstructionPhase ;
+    rdfs:label "Tunnel Construction Phase" ;
+    st:startDate "2025-01-15T00:00:00Z"^^xsd:dateTime ;
+    st:endDate "2028-06-30T00:00:00Z"^^xsd:dateTime .
+
+#################################################################
+# Relationships between individuals
+#################################################################
+
+# Physical composition
+st:solwayTunnel dice:hasSubOrganization st:section1 .
+st:solwayTunnel dice:hasSubOrganization st:section2 .
+st:solwayTunnel dice:hasSubOrganization st:section3 .
+
+st:section1 st:hasBore st:bore1 .
+st:section1 st:hasLining st:lining1 .
+st:lining1 st:hasSegment st:segment1 .
+
+# Material relationships
+st:segment1 st:madeOf st:highStrengthConcrete .
+st:segment1 st:reinforcedWith st:marineGradeSteel .
+st:lining1 st:protectedBy st:membraneWaterproofing .
+
+# Process relationships
+st:tbmExcavation st:creates st:bore1 .
+
+#################################################################
+# Relationships between individuals - Additional connections
+#################################################################
+
+# Material relationships
+st:highStrengthConcrete st:compatibleWith st:marineGradeSteel .
+st:highStrengthConcrete st:complementsProperties st:membraneWaterproofing .
+st:marineGradeSteel st:complementsProperties st:highStrengthConcrete .
+st:membraneWaterproofing st:compatibleWith st:highStrengthConcrete .
+
+# Process relationships
+st:tbmExcavation st:dependsOn st:sitePreparation .
+st:segmentInstallation st:dependsOn st:tbmExcavation .
+st:groundTreatment st:sharesResources st:tbmExcavation .
+st:tbmExcavation st:partOfPhase st:constructionPhase .
+st:segmentInstallation st:partOfPhase st:constructionPhase .
+st:groundTreatment st:partOfPhase st:constructionPhase .
+st:sitePreparation st:partOfPhase st:constructionPhase .
+
+# Agent relationships
+st:tunnelContractor st:contractsWith st:engineeringConsultant .
+st:engineeringConsultant st:collaboratesWith st:transportAuthority .
+st:projectManager st:collaboratesWith st:engineeringConsultant .
+st:tunnelContractor st:collaboratesWith st:projectManager .
+
+# Information relationships
+st:designDoc st:references st:geotechnicalReport .
+st:constructionPlan st:references st:designDoc .
+st:environmentalAssessment st:complementsData st:geotechnicalReport .
+st:constructionPlan st:updatesInformation st:designDoc .
