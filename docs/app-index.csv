@@ -1,0 +1,9 @@
+#,name,path,description,origin,model,tags,explainer post,notes
+1,semantic-tunnel-planner,,a game to learn how to see the ontology behind the WBS,Gemini,cant remember,"education, ontology, WBS",,
+2,push-out-pull-back,,"stop getting mixed up between push outs and pullbacks, products and Co products",Claude,Sonnet 3.5,"education, pushout, product",,
+3,tunnel-ontology-visualizer,,a knowledge graph for the tunnel based on an ontology with tabs for each type of entitity,Claude,cant remember,"ontology, WBS, knowledge_graph, alternate_perspectives",,
+4,WBS-comparison-ontology-or-PDDL,,"WBS via PDDL language or via ontology, a comparison",cant remember,cant remember,"ontology, WBS, PDDL",,
+5,pddl-wbs-explainable,,interactive PDDL plan to explainable WBS with PROV,GPT-5.2-Codex,,"explainable-ai, WBS, PDDL, provenance, planning",,screenshot pending (placeholder removed)
+6,global-WBS-by-sheaf,,local data to global WBS using a sheaf canvas concept + prototype,GPT-5.2-Codex,,"ontology, WBS, sheaf, diagnostics",,
+7,sheaf-wbs-prototype,apps/sheaf_wbs_prototype.html,local data to global WBS via sheaves (single-file prototype),GPT-5.2-Codex,,"ontology, WBS, sheaf, prototype",,
+8,two-possible-means,,local data to global WBS proposal with sheaf-based mini-demo,GPT-5.2-Codex,,"ontology, WBS, sheaf, proposal",,
