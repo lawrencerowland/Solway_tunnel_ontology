@@ -18,6 +18,7 @@ export default defineConfig({
       : '/',
   build: {
     outDir: resolve(__dirname, `docs/apps/${appName}`),
+    emptyOutDir: true,
     rollupOptions: {
       input: (() => {
         const inputs = {
