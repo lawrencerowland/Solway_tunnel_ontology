@@ -1,0 +1,1137 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Proposal: Local Data → Global WBS via Sheaves (PySheaf + Neural Sheaf Diffusion)</title>
+  <link rel="stylesheet" href="../../common.css" />
+  <style>
+    :root{
+      --bg:#0b0f17;
+      --panel:#111827;
+      --panel2:#0f172a;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --accent:#60a5fa;
+      --accent2:#34d399;
+      --danger:#fb7185;
+      --warn:#fbbf24;
+      --ok:#22c55e;
+      --border:rgba(255,255,255,.10);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: radial-gradient(1200px 700px at 20% 10%, rgba(96,165,250,.18), transparent 60%),
+                  radial-gradient(1000px 600px at 80% 20%, rgba(52,211,153,.12), transparent 60%),
+                  var(--bg);
+      color:var(--text);
+    }
+    header{
+      padding:20px 22px;
+      border-bottom:1px solid var(--border);
+      position:sticky; top:0; backdrop-filter: blur(10px);
+      background: rgba(11,15,23,.75);
+      z-index:10;
+    }
+    header h1{
+      margin:0;
+      font-size:18px;
+      letter-spacing:.2px;
+      font-weight:650;
+    }
+    header .sub{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.4;
+      max-width:1100px;
+    }
+
+    .wrap{
+      display:grid;
+      grid-template-columns: 280px 1fr;
+      gap:18px;
+      padding:18px;
+      max-width:1400px;
+      margin:0 auto;
+    }
+    @media (max-width: 980px){
+      .wrap{grid-template-columns: 1fr}
+      .sidebar{position:relative; top:auto}
+    }
+
+    .sidebar{
+      position: sticky;
+      top:78px;
+      align-self:start;
+      background: rgba(17,24,39,.75);
+      border:1px solid var(--border);
+      border-radius:16px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .sidebar .title{
+      padding:14px 14px 10px 14px;
+      border-bottom:1px solid var(--border);
+      background: rgba(15,23,42,.65);
+    }
+    .sidebar .title .kicker{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:6px;
+    }
+    .sidebar .title strong{
+      font-size:13px;
+      letter-spacing:.2px;
+    }
+    .nav{
+      display:flex;
+      flex-direction:column;
+      padding:10px;
+      gap:8px;
+    }
+    .nav button{
+      text-align:left;
+      border:1px solid var(--border);
+      background: rgba(17,24,39,.65);
+      color:var(--text);
+      padding:10px 10px;
+      border-radius:12px;
+      cursor:pointer;
+      transition: transform .08s ease, border-color .15s ease, background .15s ease;
+      font-size:13px;
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .nav button:hover{transform: translateY(-1px); border-color: rgba(96,165,250,.45)}
+    .nav button.active{
+      background: rgba(96,165,250,.14);
+      border-color: rgba(96,165,250,.55);
+    }
+    .pill{
+      font-size:11px;
+      color: rgba(229,231,235,.9);
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      padding:2px 8px;
+      border-radius:999px;
+    }
+
+    .main{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+    .card{
+      background: rgba(17,24,39,.72);
+      border:1px solid var(--border);
+      border-radius:16px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 16px;
+      border-bottom:1px solid var(--border);
+      background: rgba(15,23,42,.65);
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .card .hd h2{
+      margin:0;
+      font-size:14px;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .card .hd .meta{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+      max-width:700px;
+    }
+    .card .bd{
+      padding:16px;
+      line-height:1.55;
+      color: rgba(229,231,235,.95);
+      font-size:13.5px;
+    }
+    .grid2{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+    }
+    @media (max-width: 980px){
+      .grid2{grid-template-columns:1fr}
+    }
+    .callout{
+      border:1px solid rgba(96,165,250,.35);
+      background: rgba(96,165,250,.10);
+      border-radius:14px;
+      padding:12px 12px;
+      color: rgba(229,231,235,.95);
+    }
+    .callout strong{color:#dbeafe}
+    .muted{color:var(--muted)}
+    .kbd{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:2px 6px;
+      border-radius:7px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: rgba(229,231,235,.92);
+    }
+    .row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+    .btn{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding:8px 10px;
+      border-radius:12px;
+      cursor:pointer;
+      transition: transform .08s ease, border-color .15s ease, background .15s ease;
+      font-size:13px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .btn:hover{transform: translateY(-1px); border-color: rgba(52,211,153,.45)}
+    .btn.primary{border-color: rgba(96,165,250,.55); background: rgba(96,165,250,.14)}
+    .btn.danger{border-color: rgba(251,113,133,.55); background: rgba(251,113,133,.10)}
+    .btn.warn{border-color: rgba(251,191,36,.55); background: rgba(251,191,36,.10)}
+    .btn:disabled{opacity:.5; cursor:not-allowed; transform:none}
+
+    .mini{
+      font-size:12px;
+      color: rgba(229,231,235,.9);
+      background: rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      padding:12px;
+    }
+    .mini h3{
+      margin:0 0 10px 0;
+      font-size:13px;
+      font-weight:700;
+    }
+    .mini pre{
+      margin:0;
+      white-space:pre-wrap;
+      font-family:var(--mono);
+      font-size:12px;
+      color: rgba(229,231,235,.92);
+    }
+    .status{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      font-size:13px;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:50%;
+      margin-top:4px;
+      background: var(--muted);
+      box-shadow: 0 0 0 4px rgba(255,255,255,.06);
+      flex:0 0 auto;
+    }
+    .dot.ok{background: var(--ok); box-shadow: 0 0 0 4px rgba(34,197,94,.18)}
+    .dot.bad{background: var(--danger); box-shadow: 0 0 0 4px rgba(251,113,133,.18)}
+    .dot.warn{background: var(--warn); box-shadow: 0 0 0 4px rgba(251,191,36,.18)}
+    .small{font-size:12px}
+    .hr{
+      height:1px; background: rgba(255,255,255,.10); margin:14px 0;
+    }
+
+    /* SVG "WBS" */
+    .svgWrap{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      background: rgba(2,6,23,.35);
+      overflow:hidden;
+    }
+    .legend{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top:10px;
+      color: var(--muted);
+      font-size:12px;
+    }
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+    }
+    .swatch{width:10px; height:10px; border-radius:50%}
+    .swatch.ok{background: var(--ok)}
+    .swatch.bad{background: var(--danger)}
+    .swatch.warn{background: var(--warn)}
+    .swatch.neu{background: #93c5fd}
+    a{color:#93c5fd; text-decoration:none}
+    a:hover{text-decoration:underline}
+    code{font-family:var(--mono)}
+    ul{margin:8px 0 8px 18px}
+    li{margin:6px 0}
+  </style>
+</head>
+<body>
+<header>
+  <a href="../../index.html">Back to app index</a>
+  <h1>Proposal: Patch a “Global WBS” from Local Project Data using Sheaves</h1>
+  <div class="sub">
+    Two complementary prototypes are proposed: <strong>(A)</strong> a strict “global section / obstruction” checker using a cellular-sheaf library (PySheaf),
+    and <strong>(B)</strong> a diffusion/spectral layer (Neural Sheaf Diffusion + persistent sheaf Laplacians) that makes inconsistencies show up as learnable, localisable signals.
+    The interactive canvas below is a concrete specification of what we would ship first.
+  </div>
+</header>
+
+<div class="wrap">
+  <aside class="sidebar">
+    <div class="title">
+      <div class="kicker">Navigate</div>
+      <strong>Proposal structure</strong>
+    </div>
+    <div class="nav" id="nav">
+      <button data-tab="t0" class="active">0. Alignment to Ends/Ways <span class="pill">why</span></button>
+      <button data-tab="t1">1. Prototype A (PySheaf) <span class="pill">exact</span></button>
+      <button data-tab="t2">2. Prototype B (Neural Sheaf Diffusion) <span class="pill">spectral</span></button>
+      <button data-tab="t3">3. Unifying Model <span class="pill">patching</span></button>
+      <button data-tab="t4">4. Interactive Mini-Demo <span class="pill">MVP</span></button>
+      <button data-tab="t5">5. Metrics & “Continuity” <span class="pill">fitness</span></button>
+      <button data-tab="t6">6. Roadmap & Risks <span class="pill">ship</span></button>
+      <button data-tab="t7">7. References <span class="pill">sources</span></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- TAB 0 -->
+    <section class="card tab" id="t0">
+      <div class="hd">
+        <div>
+          <h2>0) Alignment to the Project’s Ends → Ways → Means</h2>
+          <div class="meta">
+            The claim is: a “global WBS view” is a global section; incompatibility is a non-vanishing obstruction (or a flagged residual).
+            The two approaches differ mainly in whether you want <em>hard</em> certificates (A) or <em>soft</em> localisation and learned diagnostics (B).
+          </div>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="grid2">
+          <div class="callout">
+            <strong>Ends (global, continuous, metric-ready)</strong>
+            <ul>
+              <li><strong>Global view patched from local data</strong> = compute <span class="kbd">H⁰</span> (global sections) and show the section explicitly.</li>
+              <li><strong>Continuity</strong> = local agreement on overlaps (interfaces) implies a unique glued plan; discontinuities are “where restrictions disagree”.</li>
+              <li><strong>Metric-ready</strong> = evaluate a functional on the global section (expected risk, staff-hours, schedule slack), and/or a spectral invariant on the sheaf Laplacian.</li>
+            </ul>
+          </div>
+          <div class="callout">
+            <strong>Ways (sheaf/cohomology pipeline over WBS graph)</strong>
+            <ul>
+              <li>Model WBS as a category (objects = work packages; arrows = dependencies/interfaces).</li>
+              <li>Attach local data to stalks (risk sets, resource functions, interface specs).</li>
+              <li>Restriction maps encode interface conditions (handover, precedence, tolerances).</li>
+              <li>Then: <span class="kbd">glue</span> if possible; else compute <span class="kbd">obstruction</span> / residual and localise.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="callout">
+          <strong>Means (interactive HTML + LLM-friendly analytics)</strong>
+          <div class="muted">
+            The MVP is an explorable WBS graph, editable local data, and a “Glue” button that either returns a global section
+            or highlights the minimal conflicting overlap(s). Everything else is second-order polish.
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="mini">
+          <h3>What changes in practice</h3>
+          <pre>
+Old world: "Does the plan work?" → meetings, gut feel, spreadsheet juggling.
+
+Sheaf world: "Does a global section exist?" → a yes/no + explicit witness.
+If no: "Where is the obstruction supported?" → highlight overlaps/edges + remediation hints.</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1 -->
+    <section class="card tab" id="t1" style="display:none">
+      <div class="hd">
+        <div>
+          <h2>1) Prototype A — PySheaf notebooks: exact global-section consistency</h2>
+          <div class="meta">
+            Use a cellular sheaf backend for crisp certificates: compute global sections (and, if desired, cohomology) on a WBS dependency complex.
+          </div>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="grid2">
+          <div>
+            <div class="callout">
+              <strong>What it is</strong>
+              <ul>
+                <li>Model your WBS/dependency graph as a cell complex (or poset).</li>
+                <li>Attach stalks: sets (discrete risk scenarios) or vector spaces (parameterised interface/resource quantities).</li>
+                <li>Attach restriction maps: “handover projections”, inequality constraints, interface consistency maps.</li>
+                <li>Compute: <span class="kbd">Γ</span> / <span class="kbd">H⁰</span> (global sections), optionally <span class="kbd">H¹</span> for obstruction localisation.</li>
+              </ul>
+            </div>
+
+            <div class="callout" style="margin-top:12px">
+              <strong>Why it helps your ends</strong>
+              <ul>
+                <li><strong>Auditability</strong>: a global plan is an explicit section (data assignment per work package) with a proof of compatibility.</li>
+                <li><strong>Minimal blame</strong>: if no section exists, the obstruction lives on overlaps; you can name the failing interfaces, not just wave at “complexity”.</li>
+                <li><strong>Metric pipeline</strong>: once a section exists, compute project-level functionals (risk expectation, cost integrals, constraint slack).</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mini">
+            <h3>Concrete deliverable</h3>
+            <pre>
+Notebook pack:
+  01_build_wbs_complex.ipynb
+  02_define_sheaves_risk_resource.ipynb
+  03_global_sections_and_H0.ipynb
+  04_inject_conflict_show_obstruction.ipynb
+
+Export:
+  - JSON witness of global section
+  - List of conflicting edges (if none)
+  - Optional: eigenpairs of sheaf Laplacian for diagnostics</pre>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="callout">
+          <strong>Preferred role in the full stack</strong>
+          <div class="muted">
+            PySheaf is your “ground truth engine”: a crisp solver/checker used for small-to-mid models, CI tests, and generating labelled examples.
+            It also supplies training/evaluation data for the learned spectral layer in Prototype B.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2 -->
+    <section class="card tab" id="t2" style="display:none">
+      <div class="hd">
+        <div>
+          <h2>2) Prototype B — Neural Sheaf Diffusion: learned propagation & spectral diagnostics</h2>
+          <div class="meta">
+            Treat constraints as a diffusion operator on a sheaf; push signals around heterophilous interfaces; learn restriction maps; use persistent sheaf Laplacians for multi-scale alarms.
+          </div>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="grid2">
+          <div class="callout">
+            <strong>What it is</strong>
+            <ul>
+              <li>Neural Sheaf Diffusion implements sheaf-Laplacian-style propagation on graphs where “neighbours differ” (heterophily), common in multi-discipline projects.</li>
+              <li>Instead of only asking “global section exists?”, you get <em>where tensions accumulate</em> via residuals / diffusion dynamics / spectrum.</li>
+              <li>Recent persistent sheaf Laplacian work suggests a multi-scale spectral signature: small eigenvalues emerging at certain filtrations can flag structural inconsistency onset.</li>
+            </ul>
+          </div>
+
+          <div class="callout">
+            <strong>Why it helps your ends</strong>
+            <ul>
+              <li><strong>Localisation</strong>: diffusion highlights which interfaces “carry” inconsistency even before it blocks a global section.</li>
+              <li><strong>Learning</strong>: you can infer restriction maps/topology from observed project telemetry (rates, costs, defects) rather than hand-coding everything.</li>
+              <li><strong>Scalability</strong>: once learned, the operator can run fast over large WBS graphs for near-real-time “health fields”.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="mini">
+          <h3>How it complements Prototype A</h3>
+          <pre>
+A (PySheaf): "Is there a global section?" → certificate / counterexample.
+B (NSD + persistent spectra): "Where is the project stiff / inconsistent / heterophilous?" → heatmap & early warning.
+
+Together: A gives ground-truth labels; B gives scalable detection + localisation.</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3 -->
+    <section class="card tab" id="t3" style="display:none">
+      <div class="hd">
+        <div>
+          <h2>3) Unifying Model: one WBS, many sheaves, one patchable “global project”</h2>
+          <div class="meta">
+            The unification move is to treat scope, interfaces, schedule, resources, and risk as separate (possibly coupled) sheaves over the same base category,
+            then define a project-level fitness functional over their global sections (or over the obstruction landscape if no section exists).
+          </div>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="callout">
+          <strong>Base category</strong>
+          <ul>
+            <li>Objects: work packages (or interfaces / documents) in the WBS graph.</li>
+            <li>Morphisms: precedence, information dependency, interface relation, or overlap inclusion (depending on the view).</li>
+            <li>You can run <em>multiple topologies</em>: a cover by disciplines, by phases, by physical zones (useful for a tunnel example).</li>
+          </ul>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="grid2">
+          <div class="callout">
+            <strong>Example sheaves (stalks → restrictions)</strong>
+            <ul>
+              <li><strong>Risk sheaf</strong>: discrete scenarios per task; restriction maps enforce dependency constraints and propagate feasible scenarios.</li>
+              <li><strong>Resource sheaf</strong>: functions over time/space per phase; restrictions are interval restrictions on overlaps; gluing yields a global resourcing function.</li>
+              <li><strong>Interface/spec sheaf</strong>: parameter vectors per interface; restrictions are projection/aggregation maps; global section = consistent interface book.</li>
+            </ul>
+          </div>
+          <div class="callout">
+            <strong>Coupling</strong>
+            <ul>
+              <li>Form products: <span class="kbd">F = Risk × Resources × Interface × …</span>.</li>
+              <li>Or define natural transformations between sheaves to encode “risk depends on resources” etc.</li>
+              <li>Then compute sections jointly (or solve sequentially with constraints).</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="mini">
+          <h3>The key promise</h3>
+          <pre>
+Global WBS is no longer a monolithic artefact.
+It is: "the space of global sections" (possibly empty, possibly many).
+Project governance becomes: pick a section; track drift; detect obstruction early.</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4 -->
+    <section class="card tab" id="t4" style="display:none">
+      <div class="hd">
+        <div>
+          <h2>4) Interactive Mini-Demo: Glue / Obstruction on a toy “Solway Firth Tunnel” WBS</h2>
+          <div class="meta">
+            This demo is deliberately tiny, but it’s shaped like the artefact we’d ship: editable local stalks + restriction maps + solver + explanation.
+          </div>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="grid2">
+          <div>
+            <div class="svgWrap">
+              <svg id="wbsSvg" width="100%" viewBox="0 0 760 360" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(229,231,235,.75)"></path>
+                  </marker>
+                </defs>
+                <rect x="0" y="0" width="760" height="360" fill="transparent"></rect>
+                <g id="edges"></g>
+                <g id="nodes"></g>
+              </svg>
+            </div>
+
+            <div class="legend">
+              <span class="chip"><span class="swatch neu"></span> editable local data</span>
+              <span class="chip"><span class="swatch ok"></span> consistent</span>
+              <span class="chip"><span class="swatch bad"></span> obstruction</span>
+              <span class="chip"><span class="swatch warn"></span> warning / residual</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="status" id="statusBox">
+              <div class="dot" id="statusDot"></div>
+              <div>
+                <div><strong id="statusTitle">Ready.</strong></div>
+                <div class="muted small" id="statusMsg">Select a node to inspect/edit local data, then press “Glue”.</div>
+              </div>
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="row">
+              <button class="btn primary" id="btnGlue">🧷 Glue (compute global section)</button>
+              <button class="btn warn" id="btnInject">⚡ Inject conflict</button>
+              <button class="btn" id="btnReset">↺ Reset</button>
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="mini" id="inspector">
+              <h3>Inspector</h3>
+              <div class="muted">Click a node in the graph to view/edit its local stalks.</div>
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="mini">
+              <h3>Result</h3>
+              <pre id="resultOut">—</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="callout">
+          <strong>How to read this</strong>
+          <ul>
+            <li><strong>Risk stalks</strong> are discrete values per work package (toy).</li>
+            <li><strong>Restriction maps</strong> here are simple inequalities per dependency edge (toy).</li>
+            <li>“Glue” tries to find an assignment to all tasks that satisfies all edge constraints; if none exists it highlights the failing edge(s).</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5 -->
+    <section class="card tab" id="t5" style="display:none">
+      <div class="hd">
+        <div>
+          <h2>5) Metrics & “Continuity”: from global section to project fitness functional</h2>
+          <div class="meta">
+            Once you have a section (or an obstruction landscape), you can treat project “health” as a function on that space—either scalar or field-valued.
+          </div>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="grid2">
+          <div class="callout">
+            <strong>Scalar metrics (cheap and useful)</strong>
+            <ul>
+              <li><strong>Expected risk</strong> = Σ (risk(t) · weight(t)) computed from the global risk section.</li>
+              <li><strong>Total staff-hours</strong> = ∫ f_global(t) dt from the global resource function section.</li>
+              <li><strong>Schedule slack</strong> = derived from feasible start/finish windows in a schedule sheaf section.</li>
+            </ul>
+          </div>
+          <div class="callout">
+            <strong>Field metrics (continuous-ish)</strong>
+            <ul>
+              <li><strong>Residual field</strong> on edges: how badly restrictions disagree (when no exact section exists).</li>
+              <li><strong>Spectral diagnostics</strong>: eigenvectors of sheaf Laplacian as “stress modes” localising tension.</li>
+              <li><strong>Persistence</strong>: track spectral features across filtrations (“add constraints gradually”) to see when inconsistency appears.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="mini">
+          <h3>How this realises your “continuous project metric” idea</h3>
+          <pre>
+Pick a topology (cover) on your WBS category that corresponds to how the project is observed:
+  - by discipline
+  - by contract package
+  - by physical zone (e.g., launch shaft / bore / reception shaft)
+  - by time windows
+
+Then define a functional J on sections:
+  J(s) = ∫ cost_density(s, x) dx   (continuous)
+or
+  J(s) = Σ penalty_edge(s|overlap) (discrete)
+
+Continuity is then: small local changes cause small changes in J
+(especially when using vector-space stalks + Laplacians).</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6 -->
+    <section class="card tab" id="t6" style="display:none">
+      <div class="hd">
+        <div>
+          <h2>6) Roadmap & Risks: what we ship, how we validate</h2>
+          <div class="meta">
+            The audit recommendation is to go straight to a React/HTML canvas MVP: graph + glue + obstruction + exportable witness.
+          </div>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="callout">
+          <strong>Phase 1 — MVP (1–2 iterations)</strong>
+          <ul>
+            <li>Interactive HTML (like the demo) driven by a JSON schema: tasks, edges, stalks, restrictions.</li>
+            <li>Exact solver: find section or return a minimal inconsistent edge-set (certificate).</li>
+            <li>Export: global section JSON + “obstruction report” + simple metric.</li>
+          </ul>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="grid2">
+          <div class="callout">
+            <strong>Phase 2 — PySheaf back-end</strong>
+            <ul>
+              <li>Implement the same schema in a notebook; compute H⁰ (and optionally H¹).</li>
+              <li>Use it as “truth oracle” + regression tests.</li>
+              <li>Start building a library of toy but realistic WBS cases (including tunnel packages).</li>
+            </ul>
+          </div>
+          <div class="callout">
+            <strong>Phase 3 — Neural/spectral layer</strong>
+            <ul>
+              <li>Run Neural Sheaf Diffusion to generate tension heatmaps over large graphs.</li>
+              <li>Try persistent sheaf Laplacian spectra as multi-scale diagnostics.</li>
+              <li>Optionally learn restriction maps from telemetry to reduce hand-modelling burden.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="callout">
+          <strong>Risks & mitigations</strong>
+          <ul>
+            <li><strong>Overpromising “continuity”</strong>: mitigate by explicitly defining topology/cover and metric functional.</li>
+            <li><strong>Scaling exact solvers</strong>: mitigate by using exact for small graphs + learned/spectral for large graphs.</li>
+            <li><strong>Data elicitation</strong>: mitigate by defining a minimal schema that maps cleanly onto existing PM tools (IDs, dates, resources, risk registers).</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 7 -->
+    <section class="card tab" id="t7" style="display:none">
+      <div class="hd">
+        <div>
+          <h2>7) References</h2>
+          <div class="meta">
+            Links are included so the proposal is runnable as a standalone document. (You can later replace with your own permalinks / repo paths.)
+          </div>
+        </div>
+      </div>
+      <div class="bd">
+        <ul>
+          <li><strong>PySheaf</strong>: <code>https://github.com/kb1dds/pysheaf</code> and docs <code>https://kb1dds.github.io/pysheaf/</code></li>
+          <li><strong>Neural Sheaf Diffusion (official code)</strong>: <code>https://github.com/twitter-research/neural-sheaf-diffusion</code></li>
+          <li><strong>NeurIPS 2022 paper page</strong>: <code>https://proceedings.neurips.cc/paper_files/paper/2022/</code> (Neural Sheaf Diffusion)</li>
+          <li><strong>Persistent sheaf Laplacians</strong>: <code>https://www.aimsciences.org/article/doi/10.3934/fods.2024033</code></li>
+          <li><strong>Learning restriction maps (2025)</strong>: <code>https://arxiv.org/abs/2501.19207</code></li>
+        </ul>
+
+        <div class="hr"></div>
+        <div class="mini">
+          <h3>Note on “less popular but useful” lens</h3>
+          <pre>
+A good contrarian spine here is: treat <em>planning</em> as sheafification.
+
+Instead of:
+  "We have a plan, now validate it."
+
+Prefer:
+  "We have a presheaf of partial commitments; planning is the left adjoint that forces gluing."
+This aligns with the “creative preservation” literature on sheafification as a design technique,
+and it makes your global plan literally the associated sheaf (not a spreadsheet artifact).</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+/* ===========================
+   TAB NAVIGATION
+=========================== */
+(function(){
+  const nav = document.getElementById('nav');
+  const buttons = [...nav.querySelectorAll('button')];
+  const tabs = [...document.querySelectorAll('.tab')];
+
+  function show(id){
+    tabs.forEach(t => t.style.display = (t.id === id ? '' : 'none'));
+    buttons.forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+    // helpful: scroll to top on tab switch (desktop UX)
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  buttons.forEach(b => b.addEventListener('click', () => show(b.dataset.tab)));
+})();
+
+/* ===========================
+   MINI DEMO DATA MODEL
+   (Toy Solway Firth Tunnel WBS)
+=========================== */
+const Demo = (() => {
+  // Simple WBS graph (toy): objects = tasks, arrows = dependencies
+  const nodes = [
+    {id:'A', label:'A: Ground investigation', x:120, y:70},
+    {id:'B', label:'B: Launch shaft', x:320, y:70},
+    {id:'C', label:'C: TBM drive', x:520, y:70},
+    {id:'D', label:'D: Segment lining', x:520, y:190},
+    {id:'E', label:'E: MEP fit-out', x:320, y:240},
+    {id:'F', label:'F: Test & commission', x:120, y:240},
+  ];
+
+  const edges = [
+    {from:'A', to:'B', id:'eAB'},
+    {from:'B', to:'C', id:'eBC'},
+    {from:'C', to:'D', id:'eCD'},
+    {from:'D', to:'E', id:'eDE'},
+    {from:'E', to:'F', id:'eEF'},
+    // an extra “feedback-ish” interface: GI constrains lining method choices
+    {from:'A', to:'D', id:'eAD'}
+  ];
+
+  // Risk stalks: allowed discrete levels (1=low .. 5=high)
+  // Keep deliberately small: these are the local feasibility sets.
+  const riskStalk = {
+    A: [1,2,3],
+    B: [2,3,4],
+    C: [3,4,5],
+    D: [2,3,4],
+    E: [2,3,4,5],
+    F: [1,2,3]
+  };
+
+  // Restriction/compatibility constraints (toy inequalities):
+  // interpret as: a choice at predecessor constrains successor.
+  // We'll encode as a predicate on (srcVal, dstVal).
+  const constraints = {
+    eAB: (a,b)=> b >= a,          // uncertain ground → at least as risky launching
+    eBC: (b,c)=> c >= b,          // launch issues propagate into drive risk
+    eCD: (c,d)=> d <= c,          // lining risk bounded by drive (toy)
+    eDE: (d,e)=> e >= d,          // lining defects propagate into MEP fit-out
+    eEF: (e,f)=> f <= e,          // commissioning risk capped by fit-out (toy)
+    eAD: (a,d)=> d <= a+1         // GI constrains lining method options (toy)
+  };
+
+  // For the inspector UI: allow editing stalks quickly.
+  function setStalk(nodeId, newVals){
+    riskStalk[nodeId] = newVals.slice().sort((x,y)=>x-y);
+  }
+
+  // Backtracking search for a global section (assignment to all nodes).
+  function computeGlobalSection(){
+    const order = ['A','B','C','D','E','F']; // topological-ish order
+    const assign = {};
+    const domain = (n)=>riskStalk[n];
+
+    const incoming = {};
+    edges.forEach(e=>{
+      (incoming[e.to] ||= []).push(e);
+    });
+
+    function okLocal(nodeId){
+      // check all constraints on edges where both endpoints assigned
+      for(const e of (incoming[nodeId]||[])){
+        const u = e.from, v = e.to;
+        if(assign[u] !== undefined && assign[v] !== undefined){
+          const pred = constraints[e.id];
+          if(!pred(assign[u], assign[v])) return false;
+        }
+      }
+      // also check outgoing edges where successor assigned already (rare in this order)
+      for(const e of edges.filter(x=>x.from===nodeId)){
+        const u = e.from, v = e.to;
+        if(assign[u] !== undefined && assign[v] !== undefined){
+          const pred = constraints[e.id];
+          if(!pred(assign[u], assign[v])) return false;
+        }
+      }
+      return true;
+    }
+
+    function dfs(i){
+      if(i===order.length) return true;
+      const n = order[i];
+      for(const val of domain(n)){
+        assign[n] = val;
+        if(okLocal(n) && dfs(i+1)) return true;
+        delete assign[n];
+      }
+      return false;
+    }
+
+    const has = dfs(0);
+    if(has) return {ok:true, section: {...assign}, obstruction: null};
+
+    // If no global section, try to find “blame” edges by brute-testing edge removal (toy).
+    // Minimality is hard; we do a cheap diagnostic: edges whose constraints are most constraining.
+    const blame = [];
+    for(const e of edges){
+      if(!existsSectionWithoutEdge(e.id)){
+        // still no section even without e → not singularly to blame
+      } else {
+        blame.push(e.id);
+      }
+    }
+    return {ok:false, section:null, obstruction:{type:'no-global-section', candidateEdges: blame}};
+  }
+
+  function existsSectionWithoutEdge(edgeId){
+    const keptEdges = edges.filter(e=>e.id !== edgeId);
+    const order = ['A','B','C','D','E','F'];
+    const assign = {};
+    const domain = (n)=>riskStalk[n];
+    const incoming = {};
+    keptEdges.forEach(e=>{
+      (incoming[e.to] ||= []).push(e);
+    });
+
+    function okLocal(nodeId){
+      for(const e of (incoming[nodeId]||[])){
+        const u=e.from, v=e.to;
+        if(assign[u]!==undefined && assign[v]!==undefined){
+          const pred = constraints[e.id];
+          if(!pred(assign[u], assign[v])) return false;
+        }
+      }
+      for(const e of keptEdges.filter(x=>x.from===nodeId)){
+        const u=e.from, v=e.to;
+        if(assign[u]!==undefined && assign[v]!==undefined){
+          const pred = constraints[e.id];
+          if(!pred(assign[u], assign[v])) return false;
+        }
+      }
+      return true;
+    }
+    function dfs(i){
+      if(i===order.length) return true;
+      const n=order[i];
+      for(const val of domain(n)){
+        assign[n]=val;
+        if(okLocal(n) && dfs(i+1)) return true;
+        delete assign[n];
+      }
+      return false;
+    }
+    return dfs(0);
+  }
+
+  // Conflict injection: make the model inconsistent by narrowing a stalk
+  // so that constraints cannot be satisfied.
+  function injectConflict(){
+    // Tighten D so it must be high, but eAD forces D <= A+1 and A is low-ish, plus eCD: D<=C etc.
+    setStalk('A',[1]);        // pin A low
+    setStalk('D',[4]);        // pin D high
+    // This makes eAD impossible: 4 <= 1+1 is false
+  }
+
+  function reset(){
+    setStalk('A',[1,2,3]);
+    setStalk('B',[2,3,4]);
+    setStalk('C',[3,4,5]);
+    setStalk('D',[2,3,4]);
+    setStalk('E',[2,3,4,5]);
+    setStalk('F',[1,2,3]);
+  }
+
+  return {nodes, edges, riskStalk, setStalk, computeGlobalSection, injectConflict, reset};
+})();
+
+/* ===========================
+   RENDER SVG GRAPH
+=========================== */
+(function render(){
+  const edgesG = document.getElementById('edges');
+  const nodesG = document.getElementById('nodes');
+  const inspector = document.getElementById('inspector');
+  const statusDot = document.getElementById('statusDot');
+  const statusTitle = document.getElementById('statusTitle');
+  const statusMsg = document.getElementById('statusMsg');
+  const resultOut = document.getElementById('resultOut');
+  let selected = null;
+
+  function getNode(id){ return Demo.nodes.find(n=>n.id===id); }
+
+  function edgePath(a,b){
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const mx = a.x + dx*0.5, my = a.y + dy*0.5;
+    const c1x = a.x + dx*0.25, c1y = a.y + dy*0.05;
+    const c2x = a.x + dx*0.75, c2y = a.y + dy*0.95;
+    return `M ${a.x} ${a.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${b.x} ${b.y}`;
+  }
+
+  function resetEdges(){
+    [...edgesG.querySelectorAll('path')].forEach(p=>{
+      p.setAttribute('stroke','rgba(229,231,235,.45)');
+      p.setAttribute('stroke-width','2');
+    });
+  }
+
+  function drawEdges(){
+    edgesG.innerHTML='';
+    Demo.edges.forEach(e=>{
+      const a=getNode(e.from), b=getNode(e.to);
+      const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+      p.setAttribute('d', edgePath(a,b));
+      p.setAttribute('fill','none');
+      p.setAttribute('stroke','rgba(229,231,235,.45)');
+      p.setAttribute('stroke-width','2');
+      p.setAttribute('marker-end','url(#arrow)');
+      p.setAttribute('data-edge', e.id);
+      p.style.cursor='pointer';
+      p.addEventListener('mouseenter', ()=>{ p.setAttribute('stroke','rgba(96,165,250,.75)'); });
+      p.addEventListener('mouseleave', ()=>{ p.setAttribute('stroke','rgba(229,231,235,.45)'); });
+      edgesG.appendChild(p);
+
+      // edge label
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x', (a.x+b.x)/2);
+      t.setAttribute('y', (a.y+b.y)/2 - 8);
+      t.setAttribute('fill','rgba(156,163,175,.9)');
+      t.setAttribute('font-size','11');
+      t.setAttribute('text-anchor','middle');
+      t.textContent = e.id;
+      edgesG.appendChild(t);
+    });
+  }
+
+  function drawNodes(){
+    nodesG.innerHTML='';
+    Demo.nodes.forEach(n=>{
+      const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+      g.setAttribute('data-node', n.id);
+      g.style.cursor='pointer';
+
+      const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      circle.setAttribute('cx', n.x);
+      circle.setAttribute('cy', n.y);
+      circle.setAttribute('r', 22);
+      circle.setAttribute('fill','rgba(147,197,253,.18)');
+      circle.setAttribute('stroke','rgba(147,197,253,.55)');
+      circle.setAttribute('stroke-width','2');
+
+      const label=document.createElementNS('http://www.w3.org/2000/svg','text');
+      label.setAttribute('x', n.x);
+      label.setAttribute('y', n.y+44);
+      label.setAttribute('fill','rgba(229,231,235,.82)');
+      label.setAttribute('font-size','12');
+      label.setAttribute('text-anchor','middle');
+      label.textContent = n.label;
+
+      const idtxt=document.createElementNS('http://www.w3.org/2000/svg','text');
+      idtxt.setAttribute('x', n.x);
+      idtxt.setAttribute('y', n.y+5);
+      idtxt.setAttribute('fill','rgba(229,231,235,.92)');
+      idtxt.setAttribute('font-size','13');
+      idtxt.setAttribute('text-anchor','middle');
+      idtxt.setAttribute('font-family','var(--mono)');
+      idtxt.textContent = n.id;
+
+      g.appendChild(circle);
+      g.appendChild(idtxt);
+      g.appendChild(label);
+
+      g.addEventListener('click', ()=>{
+        selected = n.id;
+        showInspector(n.id);
+        // highlight
+        [...nodesG.querySelectorAll('circle')].forEach(c=>{
+          c.setAttribute('stroke','rgba(147,197,253,.55)');
+          c.setAttribute('fill','rgba(147,197,253,.18)');
+        });
+        circle.setAttribute('stroke','rgba(52,211,153,.75)');
+        circle.setAttribute('fill','rgba(52,211,153,.18)');
+      });
+
+      nodesG.appendChild(g);
+    });
+  }
+
+  function showInspector(nodeId){
+    const vals = Demo.riskStalk[nodeId];
+    inspector.innerHTML = `
+      <h3>Inspector — ${nodeId}</h3>
+      <div class="muted">Risk stalk values allowed at this node (comma-separated 1..5).</div>
+      <div style="height:10px"></div>
+      <div class="row">
+        <input id="valsInput" value="${vals.join(',')}"
+               style="flex:1; min-width:180px; padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.14);
+                      background: rgba(255,255,255,.05); color: var(--text);" />
+        <button class="btn" id="applyVals">Apply</button>
+      </div>
+      <div class="muted small" style="margin-top:8px;">Tip: keep at least one value or the stalk becomes empty.</div>
+    `;
+    inspector.querySelector('#applyVals').addEventListener('click', ()=>{
+      const raw = inspector.querySelector('#valsInput').value;
+      const nums = raw.split(',').map(v=>parseInt(v.trim(),10)).filter(n=>!Number.isNaN(n) && n>=1 && n<=5);
+      if(nums.length){
+        Demo.setStalk(nodeId, nums);
+        statusDot.className = 'dot warn';
+        statusTitle.textContent = 'Stalk updated.';
+        statusMsg.textContent = `Node ${nodeId} now allows: ${Demo.riskStalk[nodeId].join(', ')}.`;
+      }
+    });
+  }
+
+  function setStatus(kind, title, msg){
+    statusDot.className = `dot ${kind}`;
+    statusTitle.textContent = title;
+    statusMsg.textContent = msg;
+  }
+
+  function formatSection(section){
+    return Object.entries(section).map(([k,v])=>`${k}:${v}`).join(', ');
+  }
+
+  document.getElementById('btnGlue').addEventListener('click', ()=>{
+    resetEdges();
+    const res = Demo.computeGlobalSection();
+    if(res.ok){
+      setStatus('ok', 'Global section found.', 'All restrictions satisfied.');
+      resultOut.textContent = `Section: { ${formatSection(res.section)} }`;
+    } else {
+      setStatus('bad', 'No global section.', 'Obstruction detected on candidate edges.');
+      resultOut.textContent = `Obstruction on edges: ${res.obstruction.candidateEdges.join(', ') || 'unknown'}`;
+      res.obstruction.candidateEdges.forEach(edgeId=>{
+        const p = edgesG.querySelector(`path[data-edge="${edgeId}"]`);
+        if(p){
+          p.setAttribute('stroke','rgba(251,113,133,.95)');
+          p.setAttribute('stroke-width','3');
+        }
+      });
+    }
+  });
+
+  document.getElementById('btnInject').addEventListener('click', ()=>{
+    Demo.injectConflict();
+    if(selected){
+      showInspector(selected);
+    }
+    setStatus('warn', 'Conflict injected.', 'A and D stalks tightened to trigger a contradiction.');
+    resultOut.textContent = 'Run Glue to see the obstruction.';
+  });
+
+  document.getElementById('btnReset').addEventListener('click', ()=>{
+    Demo.reset();
+    resetEdges();
+    if(selected){
+      showInspector(selected);
+    }
+    setStatus('', 'Reset to defaults.', 'All stalks and highlights cleared.');
+    resultOut.textContent = '—';
+  });
+
+  drawEdges();
+  drawNodes();
+})();
+</script>
+</body>
+</html>
