@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Local data → Global WBS (Sheaf Canvas) — Concept + Prototype + Diagnostics</title>
+  <style>
+    :root{
+      --bg: #0b0d12;
+      --panel: #111522;
+      --panel2: #0f1320;
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.72);
+      --faint: rgba(255,255,255,0.55);
+      --line: rgba(255,255,255,0.12);
+      --line2: rgba(255,255,255,0.18);
+      --good: #3ddc97;
+      --warn: #ffcc66;
+      --bad: #ff6b6b;
+      --accent: #7aa7ff;
+      --accent2: #9d7aff;
+      --shadow: 0 1.2rem 3.2rem rgba(0,0,0,0.35);
+      --radius: 1rem;
+      --radius2: 1.4rem;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: var(--sans);
+      background: radial-gradient(1200px 900px at 20% 10%, rgba(122,167,255,0.14), transparent 55%),
+                  radial-gradient(1000px 900px at 80% 30%, rgba(157,122,255,0.12), transparent 55%),
+                  linear-gradient(180deg, #0a0b10, #07080c 60%, #05060a);
+      color: var(--text);
+    }
+    a{ color: var(--accent); text-decoration:none; }
+    a:hover{ text-decoration:underline; }
+    .min-h-64{ min-height: 16rem; }
+    .app{
+      width: 100%;
+      min-height: 100vh;
+      display:flex;
+      flex-direction:column;
+    }
+    .topbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 1rem;
+      align-items:flex-start;
+      justify-content:space-between;
+      padding: clamp(1rem, 2.2vw, 1.8rem);
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(17,21,34,0.9), rgba(17,21,34,0.55));
+      backdrop-filter: blur(6px);
+    }
+    .brand{
+      display:flex;
+      gap: 1rem;
+      align-items:flex-start;
+      max-width: 65ch;
+    }
+    .mark{
+      width: 2.6rem;
+      height: 2.6rem;
+      border-radius: 0.9rem;
+      background: linear-gradient(145deg, rgba(122,167,255,0.9), rgba(157,122,255,0.8));
+      box-shadow: 0 0.8rem 2.2rem rgba(122,167,255,0.18);
+      flex: 0 0 auto;
+      position:relative;
+      overflow:hidden;
+    }
+    .mark:before{
+      content:"";
+      position:absolute;
+      inset:-30%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), transparent 40%),
+                  radial-gradient(circle at 70% 70%, rgba(255,255,255,0.20), transparent 48%);
+      transform: rotate(12deg);
+    }
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap: 0.2rem;
+    }
+    .title h1{
+      margin:0;
+      font-size: clamp(1.15rem, 2.3vw, 1.65rem);
+      letter-spacing: 0.01em;
+      line-height:1.2;
+    }
+    .title p{
+      margin:0;
+      color: var(--muted);
+      font-size: clamp(0.92rem, 1.5vw, 1.02rem);
+      line-height:1.35;
+    }
+    .tabs{
+      display:flex;
+      gap: 0.5rem;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+      max-width: 50rem;
+    }
+    .tabbtn{
+      appearance:none;
+      border: 1px solid var(--line2);
+      color: var(--text);
+      background: rgba(255,255,255,0.04);
+      padding: 0.55rem 0.8rem;
+      border-radius: 999px;
+      cursor:pointer;
+      font-size: 0.92rem;
+      line-height:1;
+      transition: transform 0.08s ease, background 0.12s ease, border 0.12s ease;
+      user-select:none;
+      touch-action: manipulation;
+      white-space:nowrap;
+    }
+    .tabbtn:active{ transform: translateY(1px); }
+    .tabbtn[aria-selected="true"]{
+      background: rgba(122,167,255,0.18);
+      border-color: rgba(122,167,255,0.55);
+      box-shadow: 0 0.8rem 2.4rem rgba(122,167,255,0.12);
+    }
+    .content{
+      flex: 1 1 auto;
+      width: 100%;
+      padding: clamp(1rem, 2.2vw, 1.6rem);
+      display:block;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 1rem;
+      align-items:stretch;
+    }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(17,21,34,0.85), rgba(12,14,22,0.78));
+      border: 1px solid var(--line);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card h2, .card h3{
+      margin:0;
+      padding: 1rem 1rem 0.2rem 1rem;
+      font-size: 1.05rem;
+      letter-spacing:0.01em;
+    }
+    .card .sub{
+      margin:0;
+      padding: 0 1rem 0.9rem 1rem;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height:1.35;
+    }
+    .card .body{
+      padding: 0 1rem 1rem 1rem;
+    }
+    .pillrow{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 0.5rem;
+      margin: 0.6rem 0 0.8rem 0;
+    }
+    .pill{
+      display:inline-flex;
+      gap:0.45rem;
+      align-items:center;
+      padding: 0.36rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid var(--line2);
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      font-size: 0.85rem;
+      user-select:none;
+    }
+    .dot{
+      width:0.55rem;
+      height:0.55rem;
+      border-radius:999px;
+      background: rgba(255,255,255,0.35);
+      box-shadow: 0 0 0 0.25rem rgba(255,255,255,0.05) inset;
+    }
+    .dot.good{ background: var(--good); }
+    .dot.warn{ background: var(--warn); }
+    .dot.bad{ background: var(--bad); }
+    .dot.accent{ background: var(--accent); }
+
+    .split{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 980px){
+      .split{ grid-template-columns: 1fr; }
+    }
+    .kpi{
+      display:flex;
+      flex-direction:column;
+      gap: 0.3rem;
+      padding: 0.8rem;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: rgba(255,255,255,0.03);
+    }
+    .kpi .label{ color: var(--muted); font-size: 0.85rem; }
+    .kpi .value{ font-size: 1.2rem; letter-spacing:0.01em; }
+    .kpi .hint{ color: var(--faint); font-size: 0.8rem; }
+
+    .btnrow{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 0.6rem;
+      align-items:center;
+      margin: 0.75rem 0 0.2rem 0;
+    }
+    .btn{
+      appearance:none;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      padding: 0.55rem 0.8rem;
+      border-radius: 0.9rem;
+      cursor:pointer;
+      font-size: 0.92rem;
+      transition: transform 0.08s ease, background 0.12s ease, border 0.12s ease;
+      user-select:none;
+      touch-action: manipulation;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{
+      background: rgba(122,167,255,0.18);
+      border-color: rgba(122,167,255,0.55);
+    }
+    .btn.danger{
+      background: rgba(255,107,107,0.12);
+      border-color: rgba(255,107,107,0.45);
+    }
+    .btn.ghost{
+      background: transparent;
+      border-color: rgba(255,255,255,0.14);
+      color: var(--muted);
+    }
+    .btn:focus, .tabbtn:focus, input:focus, textarea:focus, select:focus{
+      outline: 2px solid rgba(122,167,255,0.65);
+      outline-offset: 2px;
+    }
+
+    .row{
+      display:flex;
+      gap: 0.75rem;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      margin: 0.6rem 0;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap: 0.25rem;
+      min-width: min(18rem, 100%);
+      flex: 1 1 auto;
+    }
+    .field label{
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    input[type="text"], input[type="number"], textarea, select{
+      width: 100%;
+      border-radius: 0.85rem;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.22);
+      color: var(--text);
+      padding: 0.55rem 0.65rem;
+      font-family: var(--sans);
+      font-size: 0.92rem;
+    }
+    textarea{
+      min-height: 7rem;
+      font-family: var(--mono);
+      font-size: 0.84rem;
+      line-height:1.35;
+      resize: vertical;
+    }
+    .hint{
+      color: var(--faint);
+      font-size: 0.82rem;
+      line-height:1.3;
+      margin-top: 0.1rem;
+    }
+    .hr{
+      height:1px;
+      background: var(--line);
+      margin: 0.9rem 0;
+    }
+    .mono{
+      font-family: var(--mono);
+      font-size: 0.86rem;
+      color: rgba(255,255,255,0.86);
+    }
+    .codebox{
+      border-radius: 1rem;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.22);
+      padding: 0.7rem;
+      overflow:auto;
+      max-height: 40vh;
+      font-family: var(--mono);
+      font-size: 0.84rem;
+      line-height:1.35;
+      color: rgba(255,255,255,0.88);
+    }
+    .small{
+      font-size: 0.86rem;
+      color: var(--muted);
+      line-height:1.4;
+    }
+    .callout{
+      border: 1px solid rgba(122,167,255,0.35);
+      background: rgba(122,167,255,0.08);
+      border-radius: 1rem;
+      padding: 0.7rem;
+      margin: 0.7rem 0;
+      color: rgba(255,255,255,0.88);
+    }
+    .callout .t{
+      font-weight:600;
+      margin-bottom: 0.35rem;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:0.4rem;
+      padding: 0.22rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.18);
+      color: var(--muted);
+      font-size: 0.82rem;
+      user-select:none;
+    }
+
+    /* SVG */
+    .svgwrap{
+      padding: 0.2rem 0.8rem 0.9rem 0.8rem;
+    }
+    svg{ width: 100%; height: auto; display:block; }
+    .node{
+      cursor:pointer;
+      touch-action: manipulation;
+    }
+    .node circle{
+      stroke: rgba(255,255,255,0.22);
+      stroke-width: 1;
+      fill: rgba(255,255,255,0.06);
+    }
+    .node[data-selected="true"] circle{
+      stroke: rgba(122,167,255,0.85);
+      fill: rgba(122,167,255,0.12);
+    }
+    .node text{
+      fill: rgba(255,255,255,0.9);
+      font-size: 4px;
+      dominant-baseline: middle;
+      text-anchor: middle;
+      user-select:none;
+      pointer-events:none;
+    }
+    .edge{
+      stroke: rgba(255,255,255,0.22);
+      stroke-width: 0.6;
+      fill:none;
+    }
+    .edge[data-conflict="true"]{
+      stroke: rgba(255,107,107,0.9);
+      stroke-width: 1.1;
+    }
+    .edgeLabel{
+      font-size: 3.3px;
+      fill: rgba(255,255,255,0.75);
+      user-select:none;
+    }
+
+    /* Charts */
+    .chart{
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 1rem;
+      background: rgba(0,0,0,0.18);
+      padding: 0.6rem;
+      overflow:hidden;
+    }
+    .legend{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    /* Skeleton */
+    .skeleton{
+      padding: clamp(1rem, 2.2vw, 1.6rem);
+    }
+    .skline{
+      height: 0.85rem;
+      border-radius: 0.5rem;
+      background: rgba(255,255,255,0.06);
+      overflow:hidden;
+      position:relative;
+      margin: 0.6rem 0;
+    }
+    .skline:before{
+      content:"";
+      position:absolute;
+      inset:-40% -60%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+      transform: translateX(-40%);
+      animation: shimmer 1.2s infinite;
+    }
+    @keyframes shimmer{
+      0%{ transform: translateX(-45%); }
+      100%{ transform: translateX(45%); }
+    }
+
+    /* Toast */
+    .toasts{
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(52rem, calc(100% - 2rem));
+      display:flex;
+      flex-direction:column;
+      gap: 0.5rem;
+      pointer-events:none;
+      z-index: 9999;
+    }
+    .toast{
+      pointer-events:auto;
+      display:flex;
+      gap: 0.65rem;
+      align-items:flex-start;
+      padding: 0.75rem 0.9rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(17,21,34,0.92);
+      box-shadow: var(--shadow);
+    }
+    .toast .msg{
+      flex: 1 1 auto;
+      color: rgba(255,255,255,0.88);
+      font-size: 0.92rem;
+      line-height:1.35;
+    }
+    .toast .x{
+      appearance:none;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      border-radius: 0.8rem;
+      padding: 0.25rem 0.5rem;
+      cursor:pointer;
+      user-select:none;
+    }
+    .toast.good{ border-color: rgba(61,220,151,0.35); }
+    .toast.warn{ border-color: rgba(255,204,102,0.35); }
+    .toast.bad{ border-color: rgba(255,107,107,0.35); }
+
+    /* Print-ish */
+    @media print{
+      body{ background:#fff; color:#000; }
+      .toasts{ display:none; }
+      .topbar{ position:static; }
+      .card{ box-shadow:none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="app min-h-64" data-timeout="3000">
+    <noscript>Interactive visualisation requires JavaScript enabled.</noscript>
+    <div class="skeleton" aria-hidden="true">
+      <div class="skline" style="width:60%"></div>
+      <div class="skline" style="width:92%"></div>
+      <div class="skline" style="width:86%"></div>
+      <div class="skline" style="width:70%"></div>
+      <div class="skline" style="width:88%"></div>
+    </div>
+  </div>
+  <div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+(function(){
+  const app = document.getElementById('app');
+  const toastRoot = document.getElementById('toasts');
+  const timeoutMs = Math.max(500, parseInt(app?.dataset?.timeout || '3000', 10));
+
+  function nowISO(){
+    try{ return new Date().toISOString(); } catch(e){ return "time-unknown"; }
+  }
+
+  function toast(message, kind){
+    const k = kind || 'info';
+    const t = document.createElement('div');
+    t.className = 'toast ' + (k==='good' ? 'good' : k==='warn' ? 'warn' : k==='bad' ? 'bad' : '');
+    const dot = document.createElement('div');
+    dot.className = 'dot ' + (k==='good' ? 'good' : k==='warn' ? 'warn' : k==='bad' ? 'bad' : 'accent');
+    dot.style.marginTop = '0.25rem';
+    const msg = document.createElement('div');
+    msg.className = 'msg';
+    msg.textContent = message;
+    const x = document.createElement('button');
+    x.className = 'x';
+    x.type = 'button';
+    x.textContent = '✕';
+    x.addEventListener('click', () => t.remove());
+    t.appendChild(dot); t.appendChild(msg); t.appendChild(x);
+    toastRoot.appendChild(t);
+    setTimeout(()=>{ try{ t.remove(); } catch(e){} }, 5200);
+  }
+
+  function fallback(reason){
+    console.error('[SheafCanvas fallback]', reason);
+    window.__canvasStatus = 'fallback';
+    try{
+      app.innerHTML = `
+        <div class="topbar">
+          <div class="brand">
+            <div class="mark" aria-hidden="true"></div>
+            <div class="title">
+              <h1>Local data → Global WBS (Sheaf Canvas)</h1>
+              <p>Fallback mode (static). Reason: <span class="mono">${String(reason).replace(/</g,'&lt;')}</span></p>
+            </div>
+          </div>
+        </div>
+        <div class="content">
+          <div class="card">
+            <h2>Static overview diagram</h2>
+            <p class="sub">This is a non-interactive fallback view. The intended behaviour is: local task/phase data are treated as sections on a cover; agreement on overlaps enables gluing into a global section; a first-cohomology-style diagnostic highlights cyclic inconsistencies.</p>
+            <div class="body">
+              <div class="svgwrap">
+                <svg viewBox="0 0 120 58" role="img" aria-label="Static sheaf diagram">
+                  <defs>
+                    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,255,255,0.55)"></path>
+                    </marker>
+                  </defs>
+                  <path d="M22 16 L 58 16" stroke="rgba(255,255,255,0.35)" stroke-width="1" marker-end="url(#arr)"/>
+                  <path d="M22 16 L 58 40" stroke="rgba(255,255,255,0.35)" stroke-width="1" marker-end="url(#arr)"/>
+                  <path d="M58 16 L 94 28" stroke="rgba(255,255,255,0.35)" stroke-width="1" marker-end="url(#arr)"/>
+                  <path d="M58 40 L 94 28" stroke="rgba(255,255,255,0.35)" stroke-width="1" marker-end="url(#arr)"/>
+                  <g>
+                    <circle cx="22" cy="16" r="7" fill="rgba(122,167,255,0.18)" stroke="rgba(122,167,255,0.7)"/>
+                    <text x="22" y="16" fill="white" font-size="6" text-anchor="middle" dominant-baseline="middle">A</text>
+                    <circle cx="58" cy="16" r="7" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.24)"/>
+                    <text x="58" y="16" fill="white" font-size="6" text-anchor="middle" dominant-baseline="middle">B</text>
+                    <circle cx="58" cy="40" r="7" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.24)"/>
+                    <text x="58" y="40" fill="white" font-size="6" text-anchor="middle" dominant-baseline="middle">C</text>
+                    <circle cx="94" cy="28" r="7" fill="rgba(157,122,255,0.16)" stroke="rgba(157,122,255,0.7)"/>
+                    <text x="94" y="28" fill="white" font-size="6" text-anchor="middle" dominant-baseline="middle">D</text>
+                  </g>
+                  <text x="60" y="54" fill="rgba(255,255,255,0.7)" font-size="4.1" text-anchor="middle">Local sections + overlap agreement ⇒ global section</text>
+                </svg>
+              </div>
+              <div class="callout">
+                <div class="t">If you’re seeing this</div>
+                <div class="small">The interactive boot sequence failed. In the live mode, the page provides (1) a corrected integrated concept, (2) a working “Glue” solver for risk + resources, (3) a cohomology-style obstruction demo, and (4) exports for toolchain integration.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      toast('Interactive mode failed; showing static fallback.', 'warn');
+    } catch(e){
+      console.error('Fallback render failed', e);
+    }
+  }
+
+  // Visibility watchdog (per instructions)
+  let elapsed = 0;
+  const iv = setInterval(() => {
+    elapsed += 500;
+    try{
+      if(app && app.querySelector('[data-smoke="ok"]')){
+        clearInterval(iv);
+        return;
+      }
+      if(elapsed >= timeoutMs){
+        clearInterval(iv);
+        fallback('timeout');
+      }
+    } catch(e){
+      clearInterval(iv);
+      fallback(e);
+    }
+  }, 500);
+
+  function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+  function deepClone(obj){ return JSON.parse(JSON.stringify(obj)); }
+
+  function safeParseJSON(txt){
+    try{ return {ok:true, value: JSON.parse(txt)}; } catch(e){ return {ok:false, error:String(e)}; }
+  }
+
+  function uniqSorted(nums){
+    const s = new Set(nums.map(x=>+x));
+    return Array.from(s).sort((a,b)=>a-b);
+  }
+
+  function fmt(n, digits=3){
+    if(!isFinite(n)) return String(n);
+    const d = clamp(digits, 0, 8);
+    return (Math.round(n * Math.pow(10,d)) / Math.pow(10,d)).toString();
+  }
+
+  function init(){
+    // Data: includes the concrete scenario from the two draft papers plus an obstruction lab.
+    const examples = {
+      "risk_paper_chain": {
+        meta: {
+          name: "Risk (from 2024-12 draft) — A→B→C and A→D→E",
+          notes: "Discrete feasible sets + inequality constraints; should glue to a unique global section under the given constraints."
+        },
+        tasks: [
+          {id:"A", label:"A", start:0, end:2, riskSet:[1,2,3], riskProb:{1:0.2,2:0.5,3:0.3}},
+          {id:"B", label:"B", start:1, end:3, riskSet:[3,4,5], riskProb:{3:0.2,4:0.2,5:0.6}},
+          {id:"C", label:"C", start:2, end:4, riskSet:[6,7,8], riskProb:{6:0.0,7:1.0,8:0.0}},
+          {id:"D", label:"D", start:1, end:3, riskSet:[2,3,4], riskProb:{2:0.0,3:0.0,4:1.0}},
+          {id:"E", label:"E", start:3, end:5, riskSet:[5,6],   riskProb:{5:0.0,6:1.0}}
+        ],
+        edges: [
+          {from:"A", to:"B", type:">=", k:2, label:"B ≥ A + 2"},
+          {from:"B", to:"C", type:">=", k:2, label:"C ≥ B + 2"},
+          {from:"A", to:"D", type:"<=", k:1, label:"D ≤ A + 1"},
+          {from:"D", to:"E", type:">=", k:2, label:"E ≥ D + 2"}
+        ],
+        resourceMode: "none"
+      },
+
+      "resource_paper_phases": {
+        meta: {
+          name: "Resources (from 2024-12 draft) — 4 overlapping phases",
+          notes: "Each phase provides a local view of the SAME global staffing profile; overlaps must agree to glue."
+        },
+        tasks: [
+          {id:"A", label:"Requirements", start:0, end:2, riskSet:[1,2,3], riskProb:{1:0.34,2:0.33,3:0.33},
+            resourceFn:[{from:0,to:2,value:2}]},
+          {id:"B", label:"Design", start:1, end:3, riskSet:[1,2,3], riskProb:{1:0.34,2:0.33,3:0.33},
+            resourceFn:[{from:1,to:2,value:2},{from:2,to:3,value:3}]},
+          {id:"C", label:"Coding", start:2, end:4, riskSet:[1,2,3], riskProb:{1:0.34,2:0.33,3:0.33},
+            resourceFn:[{from:2,to:4,value:3}]},
+          {id:"D", label:"Testing", start:3, end:5, riskSet:[1,2,3], riskProb:{1:0.34,2:0.33,3:0.33},
+            resourceFn:[{from:3,to:5,value:3}]}
+        ],
+        edges: [
+          {from:"A", to:"B", type:"dep", k:0, label:"A → B"},
+          {from:"B", to:"C", type:"dep", k:0, label:"B → C"},
+          {from:"C", to:"D", type:"dep", k:0, label:"C → D"}
+        ],
+        resourceMode: "globalStaffingProfile"
+      },
+
+      "combined_demo": {
+        meta: {
+          name: "Combined demo — risk + staffing + overlap checks",
+          notes: "Shows both discrete constraints and interval-gluing on a small WBS."
+        },
+        tasks: [
+          {id:"A", label:"A", start:0, end:2, riskSet:[1,2,3], riskProb:{1:0.2,2:0.5,3:0.3}, resourceFn:[{from:0,to:2,value:2}]},
+          {id:"B", label:"B", start:1, end:3, riskSet:[3,4,5], riskProb:{3:0.2,4:0.2,5:0.6}, resourceFn:[{from:1,to:2,value:2},{from:2,to:3,value:3}]},
+          {id:"C", label:"C", start:2, end:4, riskSet:[6,7,8], riskProb:{6:0.0,7:1.0,8:0.0}, resourceFn:[{from:2,to:4,value:3}]},
+          {id:"D", label:"D", start:1, end:3, riskSet:[2,3,4], riskProb:{2:0.0,3:0.0,4:1.0}, resourceFn:[{from:1,to:3,value:2}]},
+          {id:"E", label:"E", start:3, end:5, riskSet:[5,6], riskProb:{5:0.0,6:1.0}, resourceFn:[{from:3,to:5,value:3}]}
+        ],
+        edges: [
+          {from:"A", to:"B", type:">=", k:2, label:"B ≥ A + 2"},
+          {from:"B", to:"C", type:">=", k:2, label:"C ≥ B + 2"},
+          {from:"A", to:"D", type:"<=", k:1, label:"D ≤ A + 1"},
+          {from:"D", to:"E", type:">=", k:2, label:"E ≥ D + 2"}
+        ],
+        resourceMode: "globalStaffingProfile"
+      }
+    };
+
+    // Diagnostic lab: a 4-cycle (diamond skeleton) with an edge 1-cochain y; H¹ class is nonzero if cycle-sum ≠ 0.
+    const obstructionLab = {
+      meta:{ name:"H¹ obstruction lab (linearised mismatch on a cycle)" },
+      nodes: ["A","B","D","C"],
+      edges: [
+        {id:"eAB", u:"A", v:"B", y:  2},
+        {id:"eBD", u:"B", v:"D", y:  1},
+        {id:"eDC", u:"D", v:"C", y: -1},
+        {id:"eCA", u:"C", v:"A", y:  0}
+      ],
+      cycle: ["eAB","eBD","eDC","eCA"] // oriented A->B->D->C->A
+    };
+
+    // State
+    let state = {
+      tab: "overview",
+      projectKey: "combined_demo",
+      project: deepClone(examples["combined_demo"]),
+      selectedId: null,
+      riskResult: null,
+      resourceResult: null,
+      combinedResult: null,
+      obstruction: deepClone(obstructionLab)
+    };
+
+    function setTab(key){
+      state.tab = key;
+      render();
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    function findTask(id){
+      return state.project.tasks.find(t => t.id === id) || null;
+    }
+
+    function normalizeProbMap(probMap, domain){
+      // domain: array of numeric values
+      const pm = {};
+      let s = 0;
+      for(const v of domain){
+        const k = String(v);
+        const p = probMap && probMap.hasOwnProperty(k) ? +probMap[k] : 0;
+        const pp = isFinite(p) && p>=0 ? p : 0;
+        pm[k] = pp;
+        s += pp;
+      }
+      if(s <= 0){
+        const uni = 1 / Math.max(1, domain.length);
+        for(const v of domain){ pm[String(v)] = uni; }
+        return pm;
+      }
+      for(const v of domain){ pm[String(v)] = pm[String(v)] / s; }
+      return pm;
+    }
+
+    function parseNumberList(s){
+      const parts = String(s||'').split(/[, ]+/).map(x=>x.trim()).filter(Boolean);
+      const out = [];
+      for(const p of parts){
+        const n = +p;
+        if(isFinite(n)) out.push(n);
+      }
+      // de-dup, sort
+      return uniqSorted(out);
+    }
+
+    function computeTopoLevels(tasks, edges){
+      const ids = tasks.map(t=>t.id);
+      const indeg = Object.fromEntries(ids.map(id=>[id,0]));
+      const preds = Object.fromEntries(ids.map(id=>[id,[]]));
+      const succs = Object.fromEntries(ids.map(id=>[id,[]]));
+      for(const e of edges){
+        if(!indeg.hasOwnProperty(e.to) || !indeg.hasOwnProperty(e.from)) continue;
+        indeg[e.to] += 1;
+        preds[e.to].push(e.from);
+        succs[e.from].push(e.to);
+      }
+      const q = [];
+      for(const id of ids){ if(indeg[id]===0) q.push(id); }
+      const order = [];
+      while(q.length){
+        const id = q.shift();
+        order.push(id);
+        for(const v of succs[id]){
+          indeg[v] -= 1;
+          if(indeg[v]===0) q.push(v);
+        }
+      }
+      // If cycle, fall back to ids order.
+      const topo = order.length===ids.length ? order : ids.slice();
+      const level = Object.fromEntries(ids.map(id=>[id,0]));
+      for(const id of topo){
+        let best = 0;
+        for(const p of preds[id]){
+          best = Math.max(best, (level[p]||0)+1);
+        }
+        level[id] = best;
+      }
+      return {level, topo};
+    }
+
+    function layoutGraph(){
+      const {level} = computeTopoLevels(state.project.tasks, state.project.edges.filter(e=>e.type!=="dep" ? true : true));
+      const maxL = Math.max(...Object.values(level));
+      const groups = {};
+      for(const t of state.project.tasks){
+        const L = level[t.id] || 0;
+        if(!groups[L]) groups[L]=[];
+        groups[L].push(t.id);
+      }
+      const pos = {};
+      const W = 100, H = 60;
+      for(const Lstr of Object.keys(groups)){
+        const L = +Lstr;
+        const ids = groups[L];
+        const y = ( (L+0.5) / (maxL+1 || 1) ) * (H-16) + 10; // padding top/bottom
+        for(let i=0;i<ids.length;i++){
+          const x = ((i+1)/(ids.length+1)) * (W-14) + 7;
+          pos[ids[i]] = {x,y};
+        }
+      }
+      return {pos, W, H};
+    }
+
+    function edgeConstraintOk(fromVal, toVal, edge){
+      const a = +fromVal, b = +toVal;
+      if(!isFinite(a) || !isFinite(b)) return false;
+      const k = isFinite(+edge.k) ? +edge.k : 0;
+      if(edge.type === ">=") return b >= a + k;
+      if(edge.type === "<=") return b <= a + k;
+      if(edge.type === "==") return b === a + k;
+      if(edge.type === "dep") return true;
+      return true;
+    }
+
+    function solveRiskGlobalSections(limit){
+      const lim = Math.max(1, limit || 50);
+      const tasks = state.project.tasks.map(t=>t.id);
+      const edges = state.project.edges.filter(e=>e.type!== "dep");
+      const {topo} = computeTopoLevels(state.project.tasks, edges);
+      const dom = {};
+      for(const t of state.project.tasks){
+        dom[t.id] = (t.riskSet && t.riskSet.length) ? t.riskSet.slice() : [];
+      }
+      const incoming = Object.fromEntries(tasks.map(id=>[id,[]]));
+      const outgoing = Object.fromEntries(tasks.map(id=>[id,[]]));
+      for(const e of edges){
+        if(incoming[e.to]) incoming[e.to].push(e);
+        if(outgoing[e.from]) outgoing[e.from].push(e);
+      }
+
+      const sols = [];
+      const assign = {};
+
+      function consistentSoFar(nodeId, val){
+        // check all incoming edges whose from is already assigned
+        for(const e of incoming[nodeId] || []){
+          if(assign.hasOwnProperty(e.from)){
+            if(!edgeConstraintOk(assign[e.from], val, e)) return false;
+          }
+        }
+        // check outgoing edges to already assigned nodes
+        for(const e of outgoing[nodeId] || []){
+          if(assign.hasOwnProperty(e.to)){
+            if(!edgeConstraintOk(val, assign[e.to], e)) return false;
+          }
+        }
+        return true;
+      }
+
+      function backtrack(i){
+        if(sols.length >= lim) return;
+        if(i >= topo.length){
+          sols.push(Object.assign({}, assign));
+          return;
+        }
+        const id = topo[i];
+        for(const v of dom[id]){
+          if(!consistentSoFar(id, v)) continue;
+          assign[id] = v;
+          backtrack(i+1);
+          delete assign[id];
+        }
+      }
+      backtrack(0);
+
+      // Determine if there are MORE solutions beyond limit (approx)
+      const maybeMore = (sols.length >= lim);
+
+      return {solutions: sols, maybeMore};
+    }
+
+    function expectedRiskForAssignment(assignment){
+      // Matches the “sum(value * probability_of_that_value)” style used in the risk draft example.
+      // Note: This is not a universal probabilistic model; it’s a simple display metric.
+      let total = 0;
+      let ok = true;
+      for(const t of state.project.tasks){
+        const v = assignment[t.id];
+        if(!isFinite(+v)){ ok=false; continue; }
+        const pm = normalizeProbMap(t.riskProb || {}, t.riskSet || []);
+        const p = pm[String(v)] ?? 0;
+        total += (+v) * (+p);
+      }
+      return {ok, value: total};
+    }
+
+    function resourceValueAt(task, tMid){
+      const fn = task.resourceFn || [];
+      for(const seg of fn){
+        const a = +seg.from, b = +seg.to;
+        if(tMid >= a && tMid < b){
+          return isFinite(+seg.value) ? +seg.value : 0;
+        }
+      }
+      // If midpoint falls exactly on end, check last segment with inclusive end
+      for(let i=fn.length-1;i>=0;i--){
+        const seg = fn[i];
+        const a = +seg.from, b = +seg.to;
+        if(Math.abs(tMid - b) < 1e-9 && tMid >= a){
+          return isFinite(+seg.value) ? +seg.value : 0;
+        }
+      }
+      return 0;
+    }
+
+    function glueResources(){
+      const tasks = state.project.tasks.filter(t => Array.isArray(t.resourceFn) && t.resourceFn.length);
+      if(state.project.resourceMode === "none"){
+        return {ok:true, mode:"none", globalFn:[], conflicts:[], naiveFn:[], stats:null};
+      }
+      // Breakpoints from tasks and segments
+      const points = [];
+      for(const t of tasks){
+        points.push(+t.start, +t.end);
+        for(const seg of (t.resourceFn||[])){
+          points.push(+seg.from, +seg.to);
+        }
+      }
+      const bp = uniqSorted(points.filter(x=>isFinite(x)));
+      if(bp.length < 2){
+        return {ok:true, mode:state.project.resourceMode, globalFn:[], conflicts:[], naiveFn:[], stats:null};
+      }
+
+      const atoms = [];
+      for(let i=0;i<bp.length-1;i++){
+        const a = bp[i], b = bp[i+1];
+        if(!(b > a)) continue;
+        atoms.push({from:a, to:b, mid:(a+b)/2});
+      }
+
+      const conflicts = [];
+      const globalAtoms = [];
+      const naiveAtoms = [];
+      for(const at of atoms){
+        const active = [];
+        for(const t of tasks){
+          if(at.mid >= t.start && at.mid < t.end){
+            const val = resourceValueAt(t, at.mid);
+            active.push({id:t.id, value:val});
+          }
+        }
+        const values = active.map(x=>x.value);
+        const uniq = Array.from(new Set(values.map(v=>fmt(v,9))));
+        const naiveSum = values.reduce((s,v)=>s+(+v||0), 0);
+
+        naiveAtoms.push({from:at.from, to:at.to, value: naiveSum});
+
+        if(active.length === 0){
+          globalAtoms.push({from:at.from, to:at.to, value:0});
+        } else if(uniq.length === 1){
+          globalAtoms.push({from:at.from, to:at.to, value: active[0].value});
+        } else {
+          conflicts.push({interval:[at.from, at.to], active});
+          // still store something for charting; choose max
+          const m = Math.max(...values);
+          globalAtoms.push({from:at.from, to:at.to, value:m, conflict:true});
+        }
+      }
+
+      function mergeAtoms(atoms){
+        const out = [];
+        for(const a of atoms){
+          const last = out[out.length-1];
+          if(last && fmt(last.value,9) === fmt(a.value,9) && !last.conflict && !a.conflict){
+            last.to = a.to;
+          } else if(last && fmt(last.value,9) === fmt(a.value,9) && (last.conflict===a.conflict)){
+            last.to = a.to;
+          } else {
+            out.push({from:a.from, to:a.to, value:a.value, conflict: !!a.conflict});
+          }
+        }
+        return out;
+      }
+
+      const globalFn = mergeAtoms(globalAtoms);
+      const naiveFn = mergeAtoms(naiveAtoms);
+
+      function statsFromFn(fn){
+        let peak = 0;
+        let staffHours = 0;
+        for(const seg of fn){
+          const dt = (+seg.to) - (+seg.from);
+          const v = +seg.value || 0;
+          peak = Math.max(peak, v);
+          staffHours += v * dt;
+        }
+        return {peak, staffHours};
+      }
+
+      const stats = {
+        global: statsFromFn(globalFn),
+        naive: statsFromFn(naiveFn)
+      };
+
+      const ok = conflicts.length === 0;
+      return {ok, mode:state.project.resourceMode, globalFn, naiveFn, conflicts, stats};
+    }
+
+    function overlapsBetweenTasks(){
+      const tasks = state.project.tasks;
+      const pairs = [];
+      for(let i=0;i<tasks.length;i++){
+        for(let j=i+1;j<tasks.length;j++){
+          const a=tasks[i], b=tasks[j];
+          const lo = Math.max(a.start, b.start);
+          const hi = Math.min(a.end, b.end);
+          if(hi > lo) pairs.push({a:a.id,b:b.id, interval:[lo,hi]});
+        }
+      }
+      return pairs;
+    }
+
+    // H¹ lab: simple cycle-sum criterion for a 1-cochain on a single cycle
+    function computeH1CycleSum(){
+      const ed = Object.fromEntries(state.obstruction.edges.map(e=>[e.id,e]));
+      let sum = 0;
+      for(const eid of state.obstruction.cycle){
+        sum += (+ed[eid]?.y || 0);
+      }
+      // In this simple 1D case, class is zero iff sum around cycle is 0.
+      const isZero = Math.abs(sum) < 1e-9;
+      return {sum, isZero};
+    }
+
+    function autoFixH1(){
+      const {sum, isZero} = computeH1CycleSum();
+      if(isZero){ toast('Cycle sum already 0; no fix needed.', 'good'); return; }
+      // Adjust the last edge to cancel the sum.
+      const lastId = state.obstruction.cycle[state.obstruction.cycle.length-1];
+      const e = state.obstruction.edges.find(x=>x.id===lastId);
+      if(!e){ toast('Could not find last edge.', 'bad'); return; }
+      e.y = (+e.y || 0) - sum;
+      toast('Adjusted one overlap constraint to cancel the cycle sum (a “repair” / sheafification-style move).', 'good');
+      render();
+    }
+
+    // Rendering helpers
+    function el(tag, attrs, children){
+      const node = document.createElement(tag);
+      if(attrs){
+        for(const [k,v] of Object.entries(attrs)){
+          if(k==='class') node.className = v;
+          else if(k==='html') node.innerHTML = v;
+          else if(k.startsWith('on') && typeof v === 'function') node.addEventListener(k.slice(2), v);
+          else if(v === null || v === undefined) continue;
+          else node.setAttribute(k, String(v));
+        }
+      }
+      if(children){
+        for(const c of children){
+          if(c === null || c === undefined) continue;
+          if(typeof c === 'string') node.appendChild(document.createTextNode(c));
+          else node.appendChild(c);
+        }
+      }
+      return node;
+    }
+
+    function renderTabs(){
+      const tabs = [
+        {k:'overview', t:'Checked & Restated Plan'},
+        {k:'model', t:'Concept Model'},
+        {k:'prototype', t:'Prototype Canvas'},
+        {k:'diagnostics', t:'Obstruction Lab'},
+        {k:'export', t:'Export & Governance'}
+      ];
+      return el('div', {class:'tabs'}, tabs.map(tb=>{
+        const b = el('button', {
+          class:'tabbtn',
+          type:'button',
+          'aria-selected': state.tab===tb.k ? 'true' : 'false',
+          onclick: ()=>setTab(tb.k)
+        }, [tb.t]);
+        return b;
+      }));
+    }
+
+    function renderTopbar(){
+      return el('div', {class:'topbar'}, [
+        el('div', {class:'brand'}, [
+          el('div', {class:'mark', 'aria-hidden':'true'}),
+          el('div', {class:'title'}, [
+            el('h1', null, ['Local data → Global WBS: sheaf gluing canvas']),
+            el('p', null, [
+              'A single-page concept + prototype + diagnostics artefact. Designed for “local task data → global section (plan) → metric”, with an explicit obstruction (H¹-style) path.'
+            ])
+          ])
+        ]),
+        renderTabs()
+      ]);
+    }
+
+    function renderOverview(){
+      // Key: restate + correct the earlier roadmap into a “concept-first then deliver everything together” bundle.
+      const c1 = el('div', {class:'card'}, [
+        el('h2', null, ['Restated deliverable: one integrated artefact (concept fixed first, then everything delivered together)']),
+        el('p', {class:'sub'}, [
+          'This is the corrected project plan, rewritten to satisfy the programme Ends → Ways → Means and the audit’s “immediate next steps”, but structured so that once the concept is agreed, we build the whole thing concurrently as one deliverable.'
+        ]),
+        el('div', {class:'body'}, [
+          el('div', {class:'pillrow'}, [
+            el('span', {class:'pill'}, [el('span',{class:'dot accent'}), 'Ends: global view + metric-ready']),
+            el('span', {class:'pill'}, [el('span',{class:'dot good'}), 'Ways: sheaves + cohomology + category']),
+            el('span', {class:'pill'}, [el('span',{class:'dot warn'}), 'Means: single-file interactive HTML']),
+            el('span', {class:'pill'}, [el('span',{class:'dot good'}), 'Includes obstruction demo (H¹ ≠ 0)'])
+          ]),
+          el('div', {class:'callout'}, [
+            el('div', {class:'t'}, ['Correction vs the earlier roadmap']),
+            el('div', {class:'small'}, [
+              '1) No staged “week-by-week” timeline; instead: concept spec → then one integrated build. ',
+              '2) No dependency on external JS libraries or a React build chain (single-file HTML requirement). ',
+              '3) Not “risk paper” and “resource paper” as separate islands: the plan is a unified sheaf-of-records whose projections recover both. ',
+              '4) The metric link is explicit (global sections → project score functional). ',
+              '5) Obstruction is made visible and manager-facing, with an example where H¹ is non-trivial and a repair action is shown.'
+            ])
+          ]),
+          el('div', {class:'hr'}),
+          el('h3', null, ['What we build all at once (once concept is fixed)']),
+          el('div', {class:'split'}, [
+            el('div', {class:'kpi'}, [
+              el('div', {class:'label'}, ['(A) Formal layer']),
+              el('div', {class:'value'}, ['Sheaf spec + proofs']),
+              el('div', {class:'hint'}, ['Appendix-style proofs for gluing/uniqueness in the discrete-risk and interval-function cases; plus a linearised H¹ diagnostic.'])
+            ]),
+            el('div', {class:'kpi'}, [
+              el('div', {class:'label'}, ['(B) Operational layer']),
+              el('div', {class:'value'}, ['Interactive canvas + solver']),
+              el('div', {class:'hint'}, ['WBS graph, local data editor, “Glue” button, global section display, obstruction highlight, and export.'])
+            ]),
+            el('div', {class:'kpi'}, [
+              el('div', {class:'label'}, ['(C) Metric layer']),
+              el('div', {class:'value'}, ['Project fitness functional']),
+              el('div', {class:'hint'}, ['A metric computed from global sections (e.g., staff-hours integral; risk score; combined cost density).'])
+            ]),
+            el('div', {class:'kpi'}, [
+              el('div', {class:'label'}, ['(D) Validation + governance']),
+              el('div', {class:'value'}, ['Tests + traceability']),
+              el('div', {class:'hint'}, ['Restriction-map sanity checks; property tests over random WBSs; traceability links WBS IDs ↔ local data sources ↔ global metrics.'])
+            ])
+          ]),
+          el('div', {class:'hr'}),
+          el('h3', null, ['Manager-facing interpretation']),
+          el('div', {class:'small'}, [
+            '• A “global section exists” means the local plans (risk/resource/state slices) are mutually consistent and can be patched into a single project-wide view.\n',
+            '• “No global section” means there is a real inconsistency. We expose where it is, and provide a minimal “repair move” (schedule shift, boundary alignment, or constraint relaxation) that restores consistency.\n',
+            '• The “H¹-style” view is the cycle/incompatibility lens: it localises contradictions that only become visible when you traverse overlaps around a loop.'
+          ])
+        ])
+      ]);
+
+      const c2 = el('div', {class:'card'}, [
+        el('h2', null, ['Audit alignment checklist (baked into the integrated build)']),
+        el('p', {class:'sub'}, [
+          'This directly implements the audit’s “immediate next steps” as features of the single deliverable.'
+        ]),
+        el('div', {class:'body'}, [
+          el('div', {class:'small'}, [
+            '✓ Formalise gluing proofs (risk + resources) as symbolic appendices.\n',
+            '✓ Prototype sheaf-gluer on a tiny WBS (5–10 tasks).\n',
+            '✓ Add a worked obstruction demo where H¹ ≠ 0 and show remediation.\n',
+            '✓ Connect global sections to a top-level metric function.\n',
+            '✓ Include data acquisition and traceability concerns in the artefact’s export/governance panel.'
+          ]),
+          el('div', {class:'hint'}, ['(See tabs: “Prototype Canvas”, “Obstruction Lab”, and “Export & Governance”.)'])
+        ])
+      ]);
+
+      return el('div', {class:'grid'}, [c1, c2]);
+    }
+
+    function renderModel(){
+      // This tab pins the concept: one sheaf-of-records over a site derived from WBS + overlaps.
+      const left = el('div', {class:'card'}, [
+        el('h2', null, ['Concept freeze: one site, one sheaf-of-records, many projections']),
+        el('p', {class:'sub'}, [
+          'This is the “worked concept” you asked to fix first. Once these definitions are accepted, implementation can proceed all-at-once.'
+        ]),
+        el('div', {class:'body'}, [
+          el('div', {class:'callout'}, [
+            el('div', {class:'t'}, ['Base structure (the site)']),
+            el('div', {class:'small'}, [
+              'We treat the project as a site (C, J) built from:\n',
+              '• A dependency category C_WBS (objects = tasks, morphisms = precedence/dependency).\n',
+              '• A cover/overlap structure J induced by overlaps (time overlaps, interface overlaps, shared-resource overlaps).\n',
+              'Practically: we implement the Čech/nerve view: tasks are “opens”, overlaps are intersections, and higher overlaps exist if needed.'
+            ])
+          ]),
+          el('div', {class:'callout'}, [
+            el('div', {class:'t'}, ['The sheaf (single object, multi-field sections)']),
+            el('div', {class:'small'}, [
+              'Define a sheaf F whose sections are *records* per task/region:\n',
+              'F(U) = { (state_U, schedule_U, resources_U(t), risk_U, …) satisfying local constraints }\n\n',
+              'Restriction maps are “forget/limit” maps:\n',
+              '• Along time: restrict a function to a sub-interval.\n',
+              '• Along dependencies: map downstream feasible assignments back to upstream constraints (contravariant functor intuition).\n',
+              '• Along overlaps: project a record to the shared boundary/interface data.'
+            ])
+          ]),
+          el('div', {class:'callout'}, [
+            el('div', {class:'t'}, ['Global section and metrics']),
+            el('div', {class:'small'}, [
+              'A global section s ∈ Γ(F) is a complete project plan consistent everywhere.\n',
+              'A project metric is then a functional Φ on global sections:\n',
+              'Φ: Γ(F) → ℝ, e.g.\n',
+              '• Φ_resources = ∫ staffing(t) dt (staff-hours)\n',
+              '• Φ_risk = Σ E[risk(task)] × weight(task)\n',
+              '• Φ_total = ∫ cost_density(t) dt + penalty(obstruction)\n\n',
+              'This exactly matches the “metric-ready continuous function across the project” end-goal.'
+            ])
+          ]),
+          el('div', {class:'callout'}, [
+            el('div', {class:'t'}, ['Obstruction and “repair” (design / sheafification)']),
+            el('div', {class:'small'}, [
+              'If local data do not glue, we surface an obstruction:\n',
+              '• Discrete case: a constraint-satisfaction failure; show the conflicting overlaps.\n',
+              '• Linearised case: a non-zero class in H¹ (cycle mismatch).\n\n',
+              'Repair is treated as a sheafification-style move: minimally modify boundary/overlap data (or add a bridging task) so that the presheaf becomes a sheaf (i.e., gluing succeeds).'
+            ])
+          ]),
+          el('div', {class:'hr'}),
+          el('div', {class:'small'}, [
+            'Why this unifies the two draft papers:\n',
+            '• The risk draft is the projection of F onto the “risk” field, with set-valued stalks and restriction constraints.\n',
+            '• The resource draft is the projection onto the “resource(t)” field, as a sheaf of (piecewise) functions over time intervals.\n',
+            'Both become special cases of one sheaf-of-records, so the concept is coherent and scalable.'
+          ])
+        ])
+      ]);
+
+      const right = el('div', {class:'card'}, [
+        el('h2', null, ['Pinned implementation spec']),
+        el('p', {class:'sub'}, ['A precise “build spec” that matches the concept above (and the audit’s tooling/testing notes).']),
+        el('div', {class:'body'}, [
+          el('div', {class:'small'}, [
+            'Data schema (minimum viable):\n',
+            '• tasks: id, label, time interval [start,end], local sections (riskSet/riskProb, resourceFn segments, state/progress)\n',
+            '• edges: from,to, restriction constraint (inequality / dependency)\n',
+            '• overlaps: derived from time intervals and/or declared interfaces\n\n',
+            'Solver modules (ship together):\n',
+            '1) Set-valued CSP gluer for discrete risk constraints.\n',
+            '2) Interval-gluer for piecewise resource functions (agreement on overlaps).\n',
+            '3) Linearised mismatch cohomology on overlap cycles (H¹-style).\n\n',
+            'UI modules (ship together):\n',
+            '• Graph view + inspector\n',
+            '• “Glue” + result panels\n',
+            '• Obstruction highlight + suggested remediation\n',
+            '• Export (JSON) + traceability hooks'
+          ]),
+          el('div', {class:'btnrow'}, [
+            el('button', {class:'btn primary', type:'button', onclick: ()=>setTab('prototype')}, ['Go to Prototype Canvas →'])
+          ])
+        ])
+      ]);
+
+      return el('div', {class:'grid'}, [left, right]);
+    }
+
+    function renderGraphCard(){
+      const {pos, W, H} = layoutGraph();
+      const edges = state.project.edges;
+
+      // Mark conflicts on edges based on latest riskResult (if exists) by checking if there are solutions; if none, mark all; if some, none.
+      let conflictEdges = new Set();
+      if(state.riskResult && state.riskResult.solutions && state.riskResult.solutions.length===0){
+        edges.filter(e=>e.type!=="dep").forEach(e=> conflictEdges.add(e.from+'->'+e.to));
+      }
+
+      const svg = el('svg', {viewBox:`0 0 ${W} ${H}`, role:'img', 'aria-label':'WBS graph'}, []);
+      const defs = el('defs', null, [
+        el('marker', {id:'arr', viewBox:'0 0 10 10', refX:'9', refY:'5', markerWidth:'5', markerHeight:'5', orient:'auto-start-reverse'}, [
+          el('path', {d:'M 0 0 L 10 5 L 0 10 z', fill:'rgba(255,255,255,0.55)'})
+        ])
+      ]);
+      svg.appendChild(defs);
+
+      // edges
+      for(const e of edges){
+        const a = pos[e.from], b = pos[e.to];
+        if(!a || !b) continue;
+        const key = e.from+'->'+e.to;
+        const path = el('path', {
+          class:'edge',
+          d: `M ${a.x} ${a.y} L ${b.x} ${b.y}`,
+          'marker-end': 'url(#arr)',
+          'data-conflict': conflictEdges.has(key) ? 'true' : 'false'
+        });
+        if(conflictEdges.has(key)) path.setAttribute('data-conflict','true');
+        svg.appendChild(path);
+
+        const lx = (a.x + b.x)/2;
+        const ly = (a.y + b.y)/2 - 2.2;
+        const label = el('text', {class:'edgeLabel', x:lx, y:ly, 'text-anchor':'middle'}, [e.label || '']);
+        svg.appendChild(label);
+      }
+
+      // nodes
+      for(const t of state.project.tasks){
+        const p = pos[t.id];
+        if(!p) continue;
+        const g = el('g', {
+          class:'node',
+          'data-id': t.id,
+          'data-selected': (state.selectedId===t.id) ? 'true' : 'false',
+          role:'button',
+          tabindex:'0',
+          'aria-label': `Select node ${t.id}`,
+          onclick: ()=>{ state.selectedId = t.id; render(); },
+          onkeydown: (ev)=>{
+            if(ev.key==='Enter' || ev.key===' '){
+              ev.preventDefault();
+              state.selectedId = t.id; render();
+            }
+          }
+        }, []);
+        const c = el('circle', {cx:p.x, cy:p.y, r:'6.8'});
+        const txt = el('text', {x:p.x, y:p.y}, [t.label || t.id]);
+        g.appendChild(c); g.appendChild(txt);
+        svg.appendChild(g);
+      }
+
+      const wrap = el('div', {class:'svgwrap'}, [svg]);
+
+      return el('div', {class:'card'}, [
+        el('h2', null, ['WBS graph']),
+        el('p', {class:'sub'}, ['Tap a node to edit local data. Use “Glue” to test local-to-global consistency and compute a global section / diagnostics.']),
+        wrap
+      ]);
+    }
+
+    function renderInspector(){
+      const t = state.selectedId ? findTask(state.selectedId) : null;
+
+      const projectSelect = el('div', {class:'row'}, [
+        el('div', {class:'field'}, [
+          el('label', null, ['Scenario']),
+          (function(){
+            const sel = el('select', { }, []);
+            for(const k of Object.keys(examples)){
+              const opt = el('option', {value:k}, [examples[k].meta.name]);
+              if(k===state.projectKey) opt.selected = true;
+              sel.appendChild(opt);
+            }
+            sel.addEventListener('change', ()=>{
+              const key = sel.value;
+              state.projectKey = key;
+              state.project = deepClone(examples[key]);
+              state.selectedId = state.project.tasks[0]?.id || null;
+              state.riskResult = null; state.resourceResult = null; state.combinedResult = null;
+              render();
+              toast('Loaded scenario: ' + examples[key].meta.name, 'good');
+            });
+            return sel;
+          })(),
+          el('div', {class:'hint'}, [examples[state.projectKey].meta.notes || ''])
+        ])
+      ]);
+
+      const modeRow = el('div', {class:'row'}, [
+        el('div', {class:'field'}, [
+          el('label', null, ['Resource interpretation mode']),
+          (function(){
+            const sel = el('select', {}, [
+              el('option', {value:'none'}, ['none']),
+              el('option', {value:'globalStaffingProfile'}, ['globalStaffingProfile (sheaf over time)'])
+            ]);
+            sel.value = state.project.resourceMode || 'none';
+            sel.addEventListener('change', ()=>{
+              state.project.resourceMode = sel.value;
+              render();
+              toast('Resource mode set to: ' + sel.value, 'good');
+            });
+            return sel;
+          })(),
+          el('div', {class:'hint'}, [
+            '“globalStaffingProfile” matches the resource draft’s modelling idea: each phase is a local view of one underlying global staffing function, so overlaps must agree to glue.'
+          ])
+        ])
+      ]);
+
+      if(!t){
+        return el('div', {class:'card'}, [
+          el('h2', null, ['Inspector']),
+          el('p', {class:'sub'}, ['Select a node to edit its local sections.']),
+          el('div', {class:'body'}, [projectSelect, modeRow])
+        ]);
+      }
+
+      const riskSetField = el('div', {class:'field'}, [
+        el('label', null, [`Risk feasible set for ${t.id}`]),
+        (function(){
+          const inp = el('input', {type:'text', value: (t.riskSet||[]).join(', ')});
+          inp.addEventListener('change', ()=>{
+            const arr = parseNumberList(inp.value);
+            t.riskSet = arr;
+            t.riskProb = normalizeProbMap(t.riskProb || {}, t.riskSet);
+            render();
+          });
+          return inp;
+        })(),
+        el('div', {class:'hint'}, ['Comma-separated numbers (e.g. 1,2,3).'])
+      ]);
+
+      const probField = el('div', {class:'field'}, [
+        el('label', null, ['Risk probabilities (JSON map value→probability)']),
+        (function(){
+          const tx = el('textarea', {}, [JSON.stringify(t.riskProb || {}, null, 2)]);
+          tx.addEventListener('change', ()=>{
+            const parsed = safeParseJSON(tx.value);
+            if(!parsed.ok){
+              toast('Invalid JSON: ' + parsed.error, 'bad');
+              return;
+            }
+            t.riskProb = parsed.value;
+            t.riskProb = normalizeProbMap(t.riskProb || {}, t.riskSet || []);
+            render();
+            toast('Updated probabilities and normalised.', 'good');
+          });
+          return tx;
+        })(),
+        el('div', {class:'hint'}, ['Probabilities are normalised over the current feasible set.'])
+      ]);
+
+      const timeField = el('div', {class:'row'}, [
+        el('div', {class:'field'}, [
+          el('label', null, ['Start']),
+          (function(){
+            const inp = el('input', {type:'number', step:'0.1', value:String(t.start)});
+            inp.addEventListener('change', ()=>{
+              t.start = +inp.value;
+              render();
+            });
+            return inp;
+          })()
+        ]),
+        el('div', {class:'field'}, [
+          el('label', null, ['End']),
+          (function(){
+            const inp = el('input', {type:'number', step:'0.1', value:String(t.end)});
+            inp.addEventListener('change', ()=>{
+              t.end = +inp.value;
+              render();
+            });
+            return inp;
+          })()
+        ])
+      ]);
+
+      const resourceField = el('div', {class:'field'}, [
+        el('label', null, ['Resource function segments (JSON array of {from,to,value})']),
+        (function(){
+          const tx = el('textarea', {}, [JSON.stringify(t.resourceFn || [], null, 2)]);
+          tx.addEventListener('change', ()=>{
+            const parsed = safeParseJSON(tx.value);
+            if(!parsed.ok){
+              toast('Invalid JSON: ' + parsed.error, 'bad');
+              return;
+            }
+            if(!Array.isArray(parsed.value)){
+              toast('Resource function must be a JSON array.', 'bad');
+              return;
+            }
+            t.resourceFn = parsed.value.map(seg=>({
+              from:+seg.from, to:+seg.to, value:+seg.value
+            })).filter(seg=>isFinite(seg.from)&&isFinite(seg.to)&&seg.to>seg.from&&isFinite(seg.value));
+            render();
+            toast('Updated resource segments.', 'good');
+          });
+          return tx;
+        })(),
+        el('div', {class:'hint'}, ['Piecewise-constant segments. For overlap gluing, segments should align to boundaries; the gluer will split into atomic intervals anyway.'])
+      ]);
+
+      // Edge editor for constraints involving this node
+      const relatedEdges = state.project.edges.filter(e=> e.from===t.id || e.to===t.id);
+
+      const edgeEditor = el('div', {class:'field'}, [
+        el('label', null, ['Edges involving this node (edit constraints)']),
+        el('div', {class:'codebox'}, [
+          (function(){
+            const wrap = document.createElement('div');
+            for(const e of relatedEdges){
+              const row = el('div', {class:'row'}, [
+                el('span', {class:'badge'}, [ `${e.from}→${e.to}` ]),
+                el('span', {class:'small'}, [ e.label || '' ])
+              ]);
+              wrap.appendChild(row);
+
+              if(e.type==="dep"){
+                wrap.appendChild(el('div', {class:'small'}, ['(dependency edge; no numeric constraint)']));
+                wrap.appendChild(el('div', {class:'hr'}));
+                continue;
+              }
+              const r2 = el('div', {class:'row'}, [
+                el('div', {class:'field'}, [
+                  el('label', null, ['Type']),
+                  (function(){
+                    const sel = el('select', {}, [
+                      el('option', {value:'>='}, ['>=']),
+                      el('option', {value:'<='}, ['<=']),
+                      el('option', {value:'=='}, ['=='])
+                    ]);
+                    sel.value = e.type;
+                    sel.addEventListener('change', ()=>{
+                      e.type = sel.value;
+                      e.label = `${e.to} ${e.type} ${e.from} + ${e.k}`;
+                      render();
+                    });
+                    return sel;
+                  })()
+                ]),
+                el('div', {class:'field'}, [
+                  el('label', null, ['k']),
+                  (function(){
+                    const inp = el('input', {type:'number', step:'1', value:String(e.k)});
+                    inp.addEventListener('change', ()=>{
+                      e.k = +inp.value;
+                      e.label = `${e.to} ${e.type} ${e.from} + ${e.k}`;
+                      render();
+                    });
+                    return inp;
+                  })()
+                ])
+              ]);
+              wrap.appendChild(r2);
+              wrap.appendChild(el('div', {class:'hr'}));
+            }
+            return wrap;
+          })()
+        ]),
+        el('div', {class:'hint'}, ['Constraints are checked only when both endpoints have chosen values.'])
+      ]);
+
+      return el('div', {class:'card'}, [
+        el('h2', null, ['Inspector']),
+        el('p', {class:'sub'}, ['Edit local data (stalk sections) for the selected task; then glue to test and patch into a global view.']),
+        el('div', {class:'body'}, [
+          projectSelect,
+          modeRow,
+          el('div', {class:'hr'}),
+          el('h3', null, [`Task ${t.id} — local sections`]),
+          timeField,
+          riskSetField,
+          probField,
+          resourceField,
+          edgeEditor
+        ])
+      ]);
+    }
+
+    function renderResultsCard(){
+      const risk = state.riskResult;
+      const res = state.resourceResult;
+      const comb = state.combinedResult;
+
+      const kpis = el('div', {class:'split'}, [
+        el('div', {class:'kpi'}, [
+          el('div',{class:'label'},['Risk gluing']),
+          el('div',{class:'value'},[risk ? (risk.solutions.length>0 ? 'OK' : 'FAIL') : '—']),
+          el('div',{class:'hint'},[risk ? `${risk.solutions.length} solution(s)` + (risk.maybeMore ? ' (showing first N)' : '') : 'Run “Glue Risk”'])
+        ]),
+        el('div', {class:'kpi'}, [
+          el('div',{class:'label'},['Resource gluing']),
+          el('div',{class:'value'},[res ? (res.ok ? 'OK' : 'CONFLICT') : '—']),
+          el('div',{class:'hint'},[res ? (res.mode==='none' ? 'resource mode: none' : (res.ok ? 'global function computed' : `${res.conflicts.length} overlap conflict(s)`)) : 'Run “Glue Resources”'])
+        ]),
+        el('div', {class:'kpi'}, [
+          el('div',{class:'label'},['Combined']),
+          el('div',{class:'value'},[comb ? (comb.ok ? 'OK' : 'FAIL') : '—']),
+          el('div',{class:'hint'},[comb ? (comb.ok ? 'Both constraints satisfied' : comb.reason) : 'Run “Glue Combined”'])
+        ]),
+        el('div', {class:'kpi'}, [
+          el('div',{class:'label'},['Metric hook (example)']),
+          el('div',{class:'value'},[
+            (function(){
+              let v = '—';
+              if(risk && risk.solutions.length>0){
+                const er = expectedRiskForAssignment(risk.solutions[0]);
+                if(er.ok) v = 'risk=' + fmt(er.value,3);
+              }
+              if(res && res.stats && res.mode!=='none'){
+                v = v==='—' ? '' : (v + ' · ');
+                v += 'staffHours=' + fmt(res.stats.global.staffHours,3);
+              }
+              return v || '—';
+            })()
+          ]),
+          el('div',{class:'hint'},['Illustrative only: final metric is a configurable Φ(Γ(F)) → ℝ.'])
+        ])
+      ]);
+
+      const btns = el('div', {class:'btnrow'}, [
+        el('button',{class:'btn primary', type:'button', onclick: ()=>{
+          state.riskResult = solveRiskGlobalSections(80);
+          toast(state.riskResult.solutions.length>0 ? 'Risk gluing succeeded.' : 'Risk gluing failed (no global section).', state.riskResult.solutions.length>0 ? 'good' : 'bad');
+          render();
+        }}, ['Glue Risk']),
+        el('button',{class:'btn primary', type:'button', onclick: ()=>{
+          state.resourceResult = glueResources();
+          toast(state.resourceResult.ok ? 'Resource gluing succeeded.' : 'Resource gluing found overlap conflicts.', state.resourceResult.ok ? 'good' : 'warn');
+          render();
+        }}, ['Glue Resources']),
+        el('button',{class:'btn', type:'button', onclick: ()=>{
+          state.riskResult = solveRiskGlobalSections(80);
+          state.resourceResult = glueResources();
+          const ok = (state.riskResult.solutions.length>0) && (state.resourceResult.ok);
+          state.combinedResult = ok ? {ok:true} : {ok:false, reason: (!state.riskResult.solutions.length>0 ? 'No risk global section.' : '') + (!state.resourceResult.ok ? ' Resource overlaps conflict.' : '')};
+          toast(ok ? 'Combined gluing succeeded.' : 'Combined gluing failed.', ok ? 'good' : 'bad');
+          render();
+        }}, ['Glue Combined']),
+        el('button',{class:'btn ghost', type:'button', onclick: ()=>{
+          state.riskResult = null; state.resourceResult=null; state.combinedResult=null;
+          toast('Cleared results.', 'good');
+          render();
+        }}, ['Clear'])
+      ]);
+
+      const detail = el('div', {class:'hr'});
+
+      const out = el('div', {class:'small'}, []);
+      // Risk detail
+      if(risk){
+        if(risk.solutions.length===0){
+          out.appendChild(el('div',{class:'callout'},[
+            el('div',{class:'t'},['Risk: no global section']),
+            el('div',{class:'small'},[
+              'Interpretation: the local feasible sets + dependency constraints cannot be glued. ',
+              'Manager-facing: adjust local sets or relax one restriction; or interpret as a real inconsistency.'
+            ])
+          ]));
+        } else {
+          const head = el('div',{class:'callout'},[
+            el('div',{class:'t'},['Risk: global section(s) found']),
+            el('div',{class:'small'},[
+              risk.solutions.length===1 ? 'Unique global section (good for a single coherent global risk profile).' :
+                'Multiple global sections (multiple feasible project-wide risk scenarios).'
+            ])
+          ]);
+          out.appendChild(head);
+
+          const list = document.createElement('div');
+          list.className = 'codebox';
+          const showN = Math.min(10, risk.solutions.length);
+          for(let i=0;i<showN;i++){
+            const sol = risk.solutions[i];
+            const er = expectedRiskForAssignment(sol);
+            const line = `#${i+1}: ` + Object.keys(sol).sort().map(k=>`${k}=${sol[k]}`).join(', ') + (er.ok ? `  | expectedRisk≈${fmt(er.value,3)}` : '');
+            list.appendChild(document.createTextNode(line + "\n"));
+          }
+          if(risk.maybeMore) list.appendChild(document.createTextNode('… (more may exist; increase limit to enumerate)\n'));
+          out.appendChild(list);
+        }
+      }
+
+      // Resource detail
+      if(res){
+        if(res.mode==='none'){
+          out.appendChild(el('div',{class:'callout'},[
+            el('div',{class:'t'},['Resources: mode = none']),
+            el('div',{class:'small'},['Enable resource interpretation to glue local phase staffing profiles into one global staffing function.'])
+          ]));
+        } else {
+          if(res.ok){
+            out.appendChild(el('div',{class:'callout'},[
+              el('div',{class:'t'},['Resources: global staffing profile glued successfully']),
+              el('div',{class:'small'},[
+                `Peak staffing = ${fmt(res.stats.global.peak,3)}; Staff-hours = ${fmt(res.stats.global.staffHours,3)}. `,
+                `Traditional (naïve sum) peak = ${fmt(res.stats.naive.peak,3)}; Staff-hours = ${fmt(res.stats.naive.staffHours,3)}.`
+              ])
+            ]));
+          } else {
+            out.appendChild(el('div',{class:'callout'},[
+              el('div',{class:'t'},['Resources: overlap conflicts detected']),
+              el('div',{class:'small'},[
+                'Interpretation: local phase-level staffing profiles disagree on overlaps, so they cannot be a consistent “single global staffing story”. ',
+                'Manager-facing remediation: shift phases / resource-level to remove the conflict, or apply a boundary alignment rule.'
+              ])
+            ]));
+          }
+
+          // Chart
+          out.appendChild(renderResourceChart(res));
+          // Conflict list
+          if(res.conflicts && res.conflicts.length){
+            const box = document.createElement('div');
+            box.className='codebox';
+            for(const c of res.conflicts){
+              box.appendChild(document.createTextNode(`Overlap conflict on [${c.interval[0]}, ${c.interval[1]}]: ` + c.active.map(a=>`${a.id}:${a.value}`).join('  ') + "\n"));
+            }
+            out.appendChild(box);
+          }
+        }
+      }
+
+      return el('div',{class:'card'},[
+        el('h2', null, ['Glue results']),
+        el('p', {class:'sub'}, ['Run gluing to compute global sections and metrics. Conflicts are treated as “no global section”, and the obstruction lab gives a cycle-based diagnostic.']),
+        el('div', {class:'body'}, [
+          kpis,
+          btns,
+          detail,
+          out
+        ])
+      ]);
+    }
+
+    function renderResourceChart(res){
+      // Render two step functions: globalFn and naiveFn
+      const globalFn = res.globalFn || [];
+      const naiveFn = res.naiveFn || [];
+      const allSegs = globalFn.concat(naiveFn).filter(s=>isFinite(s.from)&&isFinite(s.to));
+      if(allSegs.length===0){
+        return el('div',{class:'chart'},[el('div',{class:'small'},['No resource function available.'])]);
+      }
+      const tMin = Math.min(...allSegs.map(s=>+s.from));
+      const tMax = Math.max(...allSegs.map(s=>+s.to));
+      const vMax = Math.max(1, ...allSegs.map(s=>+s.value||0));
+
+      const W=120, H=56;
+      function x(t){ return 6 + ( (t - tMin) / (tMax - tMin || 1) ) * (W-12); }
+      function y(v){ return 46 - ( (v) / (vMax || 1) ) * 32; }
+
+      function stepPath(fn){
+        if(!fn.length) return '';
+        const pts = [];
+        // start
+        pts.push([x(fn[0].from), y(fn[0].value)]);
+        for(const seg of fn){
+          pts.push([x(seg.to), y(seg.value)]);
+        }
+        // Build step: for each seg, horizontal then vertical
+        let d = `M ${x(fn[0].from)} ${y(fn[0].value)}`;
+        for(let i=0;i<fn.length;i++){
+          const seg = fn[i];
+          d += ` L ${x(seg.to)} ${y(seg.value)}`;
+          if(i<fn.length-1){
+            const next = fn[i+1];
+            d += ` L ${x(next.from)} ${y(next.value)}`; // this is a vertical jump if same x
+          }
+        }
+        return d;
+      }
+
+      const svg = el('svg',{viewBox:`0 0 ${W} ${H}`, role:'img', 'aria-label':'Staffing profile chart'},[]);
+      svg.appendChild(el('path',{d:`M 6 46 L ${W-6} 46`, stroke:'rgba(255,255,255,0.18)', 'stroke-width':'0.8'}));
+      svg.appendChild(el('path',{d:`M 6 14 L ${W-6} 14`, stroke:'rgba(255,255,255,0.08)', 'stroke-width':'0.6'}));
+      svg.appendChild(el('path',{d:`M 6 30 L ${W-6} 30`, stroke:'rgba(255,255,255,0.08)', 'stroke-width':'0.6'}));
+
+      // global
+      svg.appendChild(el('path',{
+        d: stepPath(globalFn),
+        stroke: 'rgba(122,167,255,0.9)',
+        'stroke-width':'1.2',
+        fill:'none'
+      }));
+      // naive
+      svg.appendChild(el('path',{
+        d: stepPath(naiveFn),
+        stroke: 'rgba(255,204,102,0.85)',
+        'stroke-width':'1.0',
+        fill:'none'
+      }));
+
+      // Labels
+      svg.appendChild(el('text',{x:6, y:52, fill:'rgba(255,255,255,0.6)', 'font-size':'4'},[`t∈[${fmt(tMin,2)}, ${fmt(tMax,2)}]`]));
+      svg.appendChild(el('text',{x:6, y:10, fill:'rgba(255,255,255,0.6)', 'font-size':'4'},[`max=${fmt(vMax,2)}`]));
+
+      return el('div',{class:'chart'},[
+        el('div',{class:'small'},['Global staffing (blue) vs naïve sum of overlapping demands (amber).']),
+        svg,
+        el('div',{class:'legend'},[
+          el('span',{class:'pill'},[el('span',{class:'dot accent'}),' sheaf-glued global']),
+          el('span',{class:'pill'},[el('span',{class:'dot warn'}),' traditional sum'])
+        ])
+      ]);
+    }
+
+    function renderPrototype(){
+      return el('div', {class:'grid'}, [
+        renderGraphCard(),
+        el('div', {style:'display:flex; flex-direction:column; gap:1rem;'}, [
+          renderInspector(),
+          renderResultsCard()
+        ])
+      ]);
+    }
+
+    function renderDiagnostics(){
+      const {sum, isZero} = computeH1CycleSum();
+
+      // render diamond
+      const nodes = {A:{x:20,y:14}, B:{x:60,y:10}, C:{x:60,y:38}, D:{x:100,y:24}};
+      const svg = el('svg', {viewBox:'0 0 120 52', role:'img', 'aria-label':'Obstruction lab graph'}, []);
+      svg.appendChild(el('defs', null, [
+        el('marker', {id:'arr2', viewBox:'0 0 10 10', refX:'9', refY:'5', markerWidth:'5', markerHeight:'5', orient:'auto-start-reverse'}, [
+          el('path', {d:'M 0 0 L 10 5 L 0 10 z', fill:'rgba(255,255,255,0.55)'})
+        ])
+      ]));
+      function drawEdge(u,v, label){
+        const a=nodes[u], b=nodes[v];
+        svg.appendChild(el('path', {
+          d:`M ${a.x} ${a.y} L ${b.x} ${b.y}`,
+          stroke:'rgba(255,255,255,0.28)',
+          'stroke-width':'1',
+          'marker-end':'url(#arr2)'
+        }));
+        svg.appendChild(el('text', {x:(a.x+b.x)/2, y:(a.y+b.y)/2 - 2, fill:'rgba(255,255,255,0.75)', 'font-size':'4', 'text-anchor':'middle'}, [label]));
+      }
+      const ed = Object.fromEntries(state.obstruction.edges.map(e=>[e.id,e]));
+      drawEdge('A','B', `y=${fmt(ed.eAB.y,2)}`);
+      drawEdge('B','D', `y=${fmt(ed.eBD.y,2)}`);
+      drawEdge('D','C', `y=${fmt(ed.eDC.y,2)}`);
+      drawEdge('C','A', `y=${fmt(ed.eCA.y,2)}`);
+
+      function nodeCircle(id){
+        const p = nodes[id];
+        const g = el('g', null, []);
+        g.appendChild(el('circle', {cx:p.x, cy:p.y, r:'6.8', fill:'rgba(157,122,255,0.14)', stroke:'rgba(157,122,255,0.65)', 'stroke-width':'1'}));
+        g.appendChild(el('text', {x:p.x, y:p.y, fill:'white', 'font-size':'5.2', 'text-anchor':'middle', 'dominant-baseline':'middle'}, [id]));
+        return g;
+      }
+      svg.appendChild(nodeCircle('A'));
+      svg.appendChild(nodeCircle('B'));
+      svg.appendChild(nodeCircle('C'));
+      svg.appendChild(nodeCircle('D'));
+
+      const editor = el('div', {class:'card'}, [
+        el('h2', null, ['H¹ obstruction lab (cycle mismatch)']),
+        el('p', {class:'sub'}, [
+          'A minimal, manager-legible cohomology-style diagnostic: we treat overlap mismatches as a 1-cochain y on edges. On a single cycle, the class in H¹ is zero iff the oriented cycle-sum is zero.'
+        ]),
+        el('div', {class:'body'}, [
+          el('div', {class:'chart'}, [
+            el('div', {class:'small'}, ['Diamond cycle A→B→D→C→A with edge mismatches y.']),
+            svg
+          ]),
+          el('div', {class:'hr'}),
+          el('div', {class:'split'}, [
+            el('div', {class:'kpi'}, [
+              el('div',{class:'label'},['Cycle sum Σ y']),
+              el('div',{class:'value'},[fmt(sum,3)]),
+              el('div',{class:'hint'},[isZero ? 'H¹ class is zero (repairable / consistent around the cycle).' : 'Non-zero: obstruction detected (H¹ ≠ 0 in this linearised sense).'])
+            ]),
+            el('div', {class:'kpi'}, [
+              el('div',{class:'label'},['Suggested remediation']),
+              el('div',{class:'value'},[isZero ? 'none' : 'adjust one overlap']),
+              el('div',{class:'hint'},['Equivalent to “make boundary conditions consistent”; you can interpret as schedule shift, interface alignment, or relaxing one constraint.'])
+            ])
+          ]),
+          el('div', {class:'btnrow'}, [
+            el('button',{class:'btn primary', type:'button', onclick: autoFixH1}, ['Auto-fix by adjusting last edge']),
+            el('button',{class:'btn ghost', type:'button', onclick: ()=>{
+              // reset
+              state.obstruction = deepClone(obstructionLab);
+              render();
+              toast('Reset obstruction lab.', 'good');
+            }}, ['Reset'])
+          ]),
+          el('div', {class:'callout'}, [
+            el('div', {class:'t'}, ['How this connects back to the project scenario']),
+            el('div', {class:'small'}, [
+              'In the full project canvas, “y” can be computed as a mismatch on overlaps: e.g. difference in staffing levels on a time-overlap, or mismatch in boundary risk function values at an interface.\n',
+              'When you traverse overlaps around a loop, a non-zero sum signals a contradiction that cannot be removed by purely local tweaks (unless you change one overlap condition).'
+            ])
+          ])
+        ])
+      ]);
+
+      const note = el('div', {class:'card'}, [
+        el('h2', null, ['Why we keep both diagnostics']),
+        el('p', {class:'sub'}, ['Discrete constraint failure and linearised H¹ are complementary.']),
+        el('div', {class:'body'}, [
+          el('div', {class:'small'}, [
+            '• The CSP (set-valued) solver answers: “does a global section exist, and is it unique / multiple?”\n',
+            '• The H¹-style view answers: “is there a cyclic mismatch that local pairwise checks might not explain cleanly?”\n\n',
+            'Together they meet the audit requirement: show an obstruction and translate it into a remediation action.'
+          ])
+        ])
+      ]);
+
+      return el('div', {class:'grid'}, [editor, note]);
+    }
+
+    function renderExport(){
+      const exportObj = {
+        generatedAt: nowISO(),
+        concept: {
+          site: "WBS tasks + overlaps (Čech-style) + dependency category",
+          sheaf: "sheaf-of-records; projections recover risk/resources/state",
+          globalSection: "consistent global plan; metric-ready",
+          diagnostics: ["CSP existence/uniqueness", "linearised H¹ cycle mismatch"]
+        },
+        project: state.project,
+        results: {
+          risk: state.riskResult,
+          resources: state.resourceResult,
+          combined: state.combinedResult,
+          obstructionLab: state.obstruction
+        }
+      };
+
+      const json = JSON.stringify(exportObj, null, 2);
+
+      function downloadJSON(){
+        try{
+          const blob = new Blob([json], {type:'application/json'});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'local-data-global-wbs-sheaf-canvas.json';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(()=>URL.revokeObjectURL(url), 1200);
+          toast('Downloaded JSON export.', 'good');
+        } catch(e){
+          toast('Download failed: ' + String(e), 'bad');
+        }
+      }
+
+      function copyJSON(){
+        try{
+          navigator.clipboard.writeText(json);
+          toast('Copied JSON to clipboard.', 'good');
+        } catch(e){
+          toast('Clipboard unavailable in this context; select and copy manually.', 'warn');
+        }
+      }
+
+      const gov = el('div', {class:'card'}, [
+        el('h2', null, ['Governance + traceability (embedded checklist)']),
+        el('p', {class:'sub'}, ['These are explicit in the audit: data acquisition, tests, and change management.']),
+        el('div', {class:'body'}, [
+          el('div', {class:'small'}, [
+            'Minimum governance hooks (ship in the same artefact):\n',
+            '1) Traceability matrix: WBS ID ↔ local data source ↔ restriction rules ↔ global metric impact.\n',
+            '2) Change-management: local update triggers re-glue; if metric shifts beyond threshold, raise alert.\n',
+            '3) Testing: unit tests for restriction-map validity (monotone/continuous where required); property tests over random WBS graphs.\n',
+            '4) Export adapters: JSON now; later XML/CSV bridges into existing PM toolchains.'
+          ]),
+          el('div', {class:'callout'}, [
+            el('div', {class:'t'}, ['Note on probability / uncertainty']),
+            el('div', {class:'small'}, [
+              'The risk draft’s probability aggregation needs an explicit modelling assumption (e.g., independence vs conditional dependence). In the integrated concept, probabilistic enrichment is treated as optional: you can attach distributions to stalks and update via Bayesian/Markov kernels without forcing a simplistic multiplication rule.'
+            ])
+          ])
+        ])
+      ]);
+
+      const ex = el('div', {class:'card'}, [
+        el('h2', null, ['Export']),
+        el('p', {class:'sub'}, ['A single JSON blob that contains the concept spec, project instance, and computed results.']),
+        el('div', {class:'body'}, [
+          el('div', {class:'btnrow'}, [
+            el('button',{class:'btn primary', type:'button', onclick: downloadJSON}, ['Download JSON']),
+            el('button',{class:'btn', type:'button', onclick: copyJSON}, ['Copy JSON']),
+            el('button',{class:'btn ghost', type:'button', onclick: ()=>setTab('prototype')}, ['Back to Prototype'])
+          ]),
+          el('div', {class:'hr'}),
+          el('div', {class:'codebox'}, [json])
+        ])
+      ]);
+
+      return el('div', {class:'grid'}, [ex, gov]);
+    }
+
+    function render(){
+      app.innerHTML = '';
+      app.appendChild(renderTopbar());
+
+      const content = el('div', {class:'content'}, []);
+      if(state.tab==='overview') content.appendChild(renderOverview());
+      else if(state.tab==='model') content.appendChild(renderModel());
+      else if(state.tab==='prototype') content.appendChild(renderPrototype());
+      else if(state.tab==='diagnostics') content.appendChild(renderDiagnostics());
+      else if(state.tab==='export') content.appendChild(renderExport());
+      else content.appendChild(renderOverview());
+
+      app.appendChild(content);
+
+      // smoke signal
+      app.setAttribute('data-smoke', 'ok');
+      window.__canvasStatus = 'ready';
+    }
+
+    render();
+    toast('Canvas ready. Tip: go to “Prototype Canvas” and press “Glue Combined”.', 'good');
+  }
+
+  try{
+    init();
+  } catch(e){
+    fallback(e);
+  }
+})();
+</script>
+</body>
+</html>
