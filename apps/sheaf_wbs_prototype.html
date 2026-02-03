@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Local data → Global WBS via Sheaves (Prototype)</title>
+  <link rel="stylesheet" href="../common.css" />
   <style>
     :root{
       --bg: #0b1020;
@@ -56,6 +57,11 @@
       background: rgba(255,255,255,.04);
       color: var(--muted);
       font-size: 12px;
+      text-decoration: none;
+    }
+    .pill:hover{
+      color: var(--ink);
+      border-color: rgba(123,223,242,.55);
     }
     main{
       display:grid;
@@ -353,6 +359,7 @@
 
   <div class="controls" style="justify-content:flex-end; flex: 1;">
     <span class="pill">Drag nodes • click edges to inspect • edit local domains</span>
+    <a class="pill" href="../app-index.html">Back to app index</a>
   </div>
 </header>
 

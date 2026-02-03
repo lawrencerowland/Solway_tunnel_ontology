@@ -94,7 +94,7 @@ function createCards(data){
         card.appendChild(img);
         const title=document.createElement('h3');
         const link=document.createElement('a');
-        link.href='apps/'+item.name+'/index.html';
+        link.href=item.path ? item.path : 'apps/'+item.name+'/index.html';
         link.textContent=item.name;
         title.appendChild(link);
         card.appendChild(title);
