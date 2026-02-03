@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { existsSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -17,6 +18,28 @@ export default defineConfig({
       : '/',
   build: {
     outDir: resolve(__dirname, `docs/apps/${appName}`),
+    rollupOptions: {
+      input: (() => {
+        const inputs = {
+          main: resolve(__dirname, `apps/${appName}/index.html`)
+        };
+
+        const projectsIndex = resolve(__dirname, `apps/${appName}/projects/index.html`);
+        if (existsSync(projectsIndex)) {
+          inputs.projects = projectsIndex;
+        }
+
+        const solwayTunnelIndex = resolve(
+          __dirname,
+          `apps/${appName}/projects/solway-tunnel/index.html`
+        );
+        if (existsSync(solwayTunnelIndex)) {
+          inputs.solwayTunnel = solwayTunnelIndex;
+        }
+
+        return inputs;
+      })()
+    }
   },
   plugins: [react()],
   test: {
