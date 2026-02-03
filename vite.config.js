@@ -38,6 +38,11 @@ export default defineConfig({
           inputs.solwayTunnel = solwayTunnelIndex;
         }
 
+        const glossaryIndex = resolve(__dirname, `apps/${appName}/glossary/index.html`);
+        if (existsSync(glossaryIndex)) {
+          inputs.glossary = glossaryIndex;
+        }
+
         return inputs;
       })()
     }
