@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Local data → Global WBS (Sheaf Canvas) — Concept + Prototype + Diagnostics</title>
+  <link rel="stylesheet" href="../../common.css">
   <style>
     :root{
       --bg: #0b0d12;
@@ -37,6 +38,10 @@
     }
     a{ color: var(--accent); text-decoration:none; }
     a:hover{ text-decoration:underline; }
+    .back-link{
+      margin: 0;
+      padding: 0.8rem clamp(1rem, 2.2vw, 1.8rem) 0;
+    }
     .min-h-64{ min-height: 16rem; }
     .app{
       width: 100%;
@@ -484,6 +489,7 @@
   </style>
 </head>
 <body>
+  <p class="back-link"><a href="../../index.html">Back to app index</a></p>
   <div id="app" class="app min-h-64" data-timeout="3000">
     <noscript>Interactive visualisation requires JavaScript enabled.</noscript>
     <div class="skeleton" aria-hidden="true">
