@@ -1,0 +1,1169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Solway Firth Tunnel — Milestone Fibration + Interface Pullbacks (Demo)</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#121a33;
+      --panel2:#0f1630;
+      --text:#e8ecff;
+      --muted:#aab3d6;
+      --accent:#7dd3fc;
+      --accent2:#a78bfa;
+      --good:#34d399;
+      --warn:#fbbf24;
+      --bad:#fb7185;
+      --line:rgba(255,255,255,.09);
+      --shadow: 0 12px 40px rgba(0,0,0,.35);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: var(--sans);
+      background: radial-gradient(1200px 800px at 20% 0%, #162356 0%, var(--bg) 55%);
+      color: var(--text);
+      line-height: 1.35;
+    }
+    header{
+      position: sticky;
+      top:0;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+      background: rgba(11,16,32,.65);
+      border-bottom: 1px solid var(--line);
+    }
+    .wrap{max-width: 1200px; margin:0 auto; padding: 18px 18px 60px;}
+    .title{
+      display:flex; align-items:flex-start; justify-content: space-between; gap: 14px;
+    }
+    h1{font-size: 18px; margin: 0 0 6px 0; letter-spacing:.2px;}
+    .subtitle{color: var(--muted); font-size: 13px; margin:0;}
+    .pillbar{display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:flex-end}
+    .pill{
+      font-size: 12px;
+      padding: 6px 10px;
+      border:1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255,255,255,.03);
+      display:flex; gap:8px; align-items:center;
+    }
+    .pill b{color: var(--text); font-weight:600}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+    }
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panel .hd{
+      padding: 12px 12px;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom:1px solid var(--line);
+      background: rgba(255,255,255,.02);
+    }
+    .panel .hd .left{display:flex; align-items:center; gap: 10px}
+    .panel .hd h2{font-size: 14px; margin:0;}
+    .panel .hd .hint{color: var(--muted); font-size: 12px;}
+    .panel .bd{padding: 12px;}
+    .btnrow{display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:flex-end}
+    button{
+      cursor:pointer;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+    button:hover{border-color: rgba(255,255,255,.22)}
+    button.primary{border-color: rgba(125,211,252,.35); background: rgba(125,211,252,.12)}
+    button.danger{border-color: rgba(251,113,133,.35); background: rgba(251,113,133,.10)}
+    button.ghost{background: transparent}
+    button.small{padding:6px 8px; border-radius: 9px}
+    button.help{font-family: var(--mono); padding: 5px 8px; font-size: 12px; border-radius: 999px;}
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .kv .box{
+      border:1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(0,0,0,.18);
+    }
+    .kv .box .k{color: var(--muted); font-size: 12px;}
+    .kv .box .v{font-size: 15px; font-weight:600; margin-top: 4px;}
+    .tbl{
+      width:100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      border:1px solid var(--line);
+      border-radius: 12px;
+      overflow:hidden;
+    }
+    .tbl th, .tbl td{
+      padding: 8px 8px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    .tbl th{
+      text-align:left;
+      color: var(--muted);
+      font-weight:600;
+      background: rgba(0,0,0,.18);
+    }
+    .tbl tr:last-child td{border-bottom:none}
+    .mono{font-family: var(--mono)}
+    .muted{color: var(--muted)}
+    input[type="number"], input[type="date"], input[type="text"], select{
+      width: 100%;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.20);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 6px 8px;
+      font-size: 12px;
+      outline:none;
+    }
+    input[type="checkbox"]{transform: translateY(1px);}
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .status{
+      display:inline-flex; align-items:center; gap: 7px;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      white-space: nowrap;
+    }
+    .dot{width:8px; height:8px; border-radius: 99px; background: var(--muted)}
+    .good .dot{background: var(--good)}
+    .warn .dot{background: var(--warn)}
+    .bad .dot{background: var(--bad)}
+    .workstream{
+      border:1px solid var(--line);
+      border-radius: 14px;
+      overflow:hidden;
+      margin-bottom: 10px;
+      background: rgba(0,0,0,.16);
+    }
+    .workstream .whd{
+      padding:10px 10px;
+      display:flex; align-items:center; justify-content: space-between; gap: 8px;
+      border-bottom:1px solid var(--line);
+      background: rgba(255,255,255,.02);
+    }
+    .workstream .wname{
+      display:flex; align-items:center; gap: 10px;
+      font-weight:700; font-size: 13px;
+    }
+    .swatch{
+      width:10px; height:10px; border-radius: 3px;
+      background: var(--accent);
+      box-shadow: 0 0 0 3px rgba(125,211,252,.15);
+    }
+    .workstream .wbd{padding: 10px}
+    .itemrow{
+      display:grid;
+      grid-template-columns: 1.1fr .65fr .55fr .55fr .35fr;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom:1px dashed rgba(255,255,255,.10);
+      align-items:start;
+    }
+    .itemrow:last-child{border-bottom:none}
+    .itemtitle{font-weight:600}
+    .itemmeta{color: var(--muted); font-size: 11px; margin-top: 2px}
+    .itemright{display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap}
+    .tiny{font-size: 11px}
+    .log{
+      max-height: 260px;
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(0,0,0,.18);
+      padding: 10px;
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .log .entry{margin-bottom: 10px}
+    .log .ts{color: var(--muted)}
+    .callout{
+      border:1px solid rgba(167,139,250,.35);
+      background: rgba(167,139,250,.10);
+      border-radius: 14px;
+      padding: 10px;
+      color: rgba(232,236,255,.95);
+      margin-top: 10px;
+    }
+
+    /* modal */
+    .modal{
+      position: fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      background: rgba(0,0,0,.65);
+      z-index: 100;
+    }
+    .modal.show{display:flex}
+    .modal .card{
+      width: min(760px, 100%);
+      background: #0e1530;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .modal .card .mhd{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding: 12px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .modal .card .mhd .mtitle{font-weight:800}
+    .modal .card .mbd{
+      padding: 12px 12px 14px 12px;
+      color: rgba(232,236,255,.95);
+    }
+    .modal .card .mbd p{margin: 0 0 10px 0}
+    .kbd{
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 6px;
+      border:1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.03);
+      color: var(--muted);
+      display:inline-block;
+    }
+    .mathbox{
+      font-family: var(--mono);
+      font-size: 11px;
+      border:1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(0,0,0,.18);
+      margin-top: 8px;
+      white-space: pre-wrap;
+    }
+    .footer{
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="title">
+      <div>
+        <h1>Solway Firth Tunnel — Milestone Fibration + Interface Pullbacks</h1>
+        <p class="subtitle">An interactive prototype showing how a single programme “base” drives consistent workstream lanes (“fibers”) and cross-team interfaces (“pullbacks”).</p>
+      </div>
+      <div class="pillbar">
+        <div class="pill"><b id="pillConsistency">–</b> consistency</div>
+        <div class="pill"><b id="pillBlocked">–</b> blocked interfaces</div>
+        <div class="pill"><b id="pillShifted">–</b> items shifted today</div>
+        <button class="help" data-explain="what-is-this" title="Explainer">?</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+    <!-- left -->
+    <div>
+      <div class="panel" id="panelBase">
+        <div class="hd">
+          <div class="left">
+            <h2>1) Base milestones (the programme “spine”)</h2>
+            <button class="help" data-explain="base" title="Explainer">?</button>
+          </div>
+          <div class="btnrow">
+            <label class="tag"><input id="togglePropagate" type="checkbox" /> propagate slip forward</label>
+            <button class="small ghost" id="btnReset">Reset</button>
+          </div>
+        </div>
+        <div class="bd">
+          <table class="tbl" id="milestoneTable">
+            <!-- populated by JS -->
+          </table>
+
+          <div class="callout">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+              <div>
+                <div style="font-weight:800; margin-bottom:4px;">Try a scenario</div>
+                <div class="muted">These buttons apply a base change and show the lifted changes + interface impacts.</div>
+              </div>
+              <div class="btnrow">
+                <button class="primary small" id="btnScenarioConsent">Consent delay (+60d on M2)</button>
+                <button class="primary small" id="btnScenarioGround">Ground model v2 late</button>
+                <button class="primary small" id="btnScenarioSafety">Extra safety evidence</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer">
+            <span class="kbd">Tip</span> Set a slip on a milestone, then watch every workstream item “anchored” to that milestone re-date automatically unless exempted.
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:14px;" id="panelFibers">
+        <div class="hd">
+          <div class="left">
+            <h2>2) Workstream fibers (local deliverables over the base)</h2>
+            <button class="help" data-explain="fiber" title="Explainer">?</button>
+          </div>
+          <div class="btnrow">
+            <label class="tag"><input id="toggleMath" type="checkbox" /> show category-theory view</label>
+            <button class="small" id="btnGlue">Run “glue” check</button>
+          </div>
+        </div>
+        <div class="bd" id="workstreams">
+          <!-- populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- right -->
+    <div>
+      <div class="panel" id="panelPullbacks">
+        <div class="hd">
+          <div class="left">
+            <h2>3) Interface pullbacks (shared contracts on overlaps)</h2>
+            <button class="help" data-explain="pullback" title="Explainer">?</button>
+          </div>
+          <div class="btnrow">
+            <button class="small" id="btnMarkAllDone">Mark all items done</button>
+            <button class="small danger" id="btnBreakOne">Introduce a mismatch</button>
+          </div>
+        </div>
+        <div class="bd">
+          <table class="tbl" id="pullbackTable"></table>
+
+          <div class="mathbox" id="mathView" style="display:none;"></div>
+
+          <div class="footer">
+            <span class="kbd">Rule</span> Every cross-team dependency must have a named contract + at least one executable acceptance check (“receipt”).
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:14px;" id="panelReceipts">
+        <div class="hd">
+          <div class="left">
+            <h2>4) Receipts log (why things moved / broke)</h2>
+            <button class="help" data-explain="receipts" title="Explainer">?</button>
+          </div>
+          <div class="btnrow">
+            <button class="small ghost" id="btnClearLog">Clear</button>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="log" id="log"></div>
+          <div class="footer">
+            <span class="kbd">Idea</span> Every “lift” and every “glue check” produces a receipt so audits are trivial.
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:14px;">
+        <div class="hd">
+          <div class="left">
+            <h2>Extend this demo</h2>
+            <button class="help" data-explain="extend" title="Explainer">?</button>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="muted" style="font-size:12px; margin-bottom:8px;">
+            This prototype is intentionally small. The same pattern scales if you treat your WBS as the base category instead of milestones.
+          </div>
+          <div class="kv">
+            <div class="box">
+              <div class="k">Add a metric</div>
+              <div class="v">Global “project health” function</div>
+              <div class="muted tiny">E.g., integrate risk density, resource load, or earned value as a global section.</div>
+            </div>
+            <div class="box">
+              <div class="k">Detect contradictions</div>
+              <div class="v">Obstruction / inconsistency map</div>
+              <div class="muted tiny">When no global section exists, localise the conflict to specific overlaps.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="card">
+    <div class="mhd">
+      <div class="mtitle" id="modalTitle">Explainer</div>
+      <button class="small" id="modalClose">Close</button>
+    </div>
+    <div class="mbd" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/** ----------------------------------------------
+ *  Data model (small but structured)
+ *  ---------------------------------------------- */
+
+const state = {
+  propagateSlipForward: false,
+  showMath: false,
+  milestones: [
+    { id:"M0", order:0, name:"Mobilise programme", date:"2026-04-01", slip:0 },
+    { id:"M1", order:1, name:"Funding & option gate", date:"2026-09-01", slip:0 },
+    { id:"M2", order:2, name:"Consents & environmental approval", date:"2027-06-01", slip:0 },
+    { id:"M3", order:3, name:"Reference design freeze", date:"2027-10-01", slip:0 },
+    { id:"M4", order:4, name:"Award main works contract", date:"2028-03-01", slip:0 },
+    { id:"M5", order:5, name:"TBM launch", date:"2029-02-01", slip:0 },
+    { id:"M6", order:6, name:"Breakthrough", date:"2031-07-01", slip:0 },
+    { id:"M7", order:7, name:"Systems integration complete", date:"2032-03-01", slip:0 },
+    { id:"M8", order:8, name:"Safety case accepted", date:"2032-09-01", slip:0 },
+    { id:"M9", order:9, name:"Open to traffic", date:"2032-12-01", slip:0 },
+  ],
+  workstreams: [
+    { id:"WS-GOV", name:"Governance & Finance", color:"#7dd3fc" },
+    { id:"WS-ENV", name:"Consents & Environment", color:"#22c55e" },
+    { id:"WS-GEO", name:"Geotechnical & Ground Model", color:"#fbbf24" },
+    { id:"WS-CIV", name:"Civil / Tunnelling Works", color:"#a78bfa" },
+    { id:"WS-MEP", name:"M&E / Systems", color:"#60a5fa" },
+    { id:"WS-SAF", name:"Safety & Assurance", color:"#fb7185" },
+    { id:"WS-PROC", name:"Procurement & Supply Chain", color:"#eab308" },
+    { id:"WS-COMM", name:"Stakeholder & Community", color:"#34d399" },
+  ],
+  items: [
+    // Governance & Finance
+    { id:"I-GOV-1", ws:"WS-GOV", m:"M1", title:"Business case v1 approved", owner:"PMO", artifact:"BC-001", version:"v1", offset:0, exempt:false, status:"todo" },
+    { id:"I-GOV-2", ws:"WS-GOV", m:"M4", title:"Funding drawdown & treasury approvals", owner:"Finance", artifact:"FIN-044", version:"v1", offset:-14, exempt:false, status:"todo" },
+
+    // Consents & Environment
+    { id:"I-ENV-1", ws:"WS-ENV", m:"M2", title:"EIA + marine licences secured", owner:"Env Lead", artifact:"EIA-PLN", version:"v1", offset:0, exempt:false, status:"todo" },
+    { id:"I-ENV-2", ws:"WS-ENV", m:"M3", title:"Environmental management plan embedded", owner:"Env Lead", artifact:"EMP-003", version:"v1", offset:-21, exempt:false, status:"todo" },
+    { id:"I-ENV-3", ws:"WS-ENV", m:"M5", title:"Marine monitoring plan live for works", owner:"Env Lead", artifact:"MMP-010", version:"v1", offset:-30, exempt:false, status:"todo" },
+
+    // Geotech
+    { id:"I-GEO-1", ws:"WS-GEO", m:"M2", title:"Marine geophysics + boreholes complete", owner:"Geotech", artifact:"GEO-SURV", version:"v1", offset:-35, exempt:false, status:"todo" },
+    { id:"I-GEO-2", ws:"WS-GEO", m:"M3", title:"Ground model frozen", owner:"Geotech", artifact:"GM-001", version:"v1", offset:-10, exempt:false, status:"todo" },
+    { id:"I-GEO-3", ws:"WS-GEO", m:"M5", title:"Probe drilling ahead of TBM", owner:"Geotech", artifact:"PROBE-09", version:"v1", offset:30, exempt:false, status:"todo" },
+
+    // Civil
+    { id:"I-CIV-1", ws:"WS-CIV", m:"M3", title:"Alignment + tunnel geometry frozen", owner:"Civil", artifact:"CIV-ALIGN", version:"v1", offset:0, exempt:false, status:"todo" },
+    { id:"I-CIV-2", ws:"WS-CIV", m:"M4", title:"TBM spec + procurement pack issued", owner:"Civil", artifact:"TBM-PACK", version:"v1", offset:-28, exempt:false, status:"todo" },
+    { id:"I-CIV-3", ws:"WS-CIV", m:"M5", title:"Launch shaft ready (civil handover)", owner:"Civil", artifact:"LS-READY", version:"v1", offset:-14, exempt:false, status:"todo" },
+    { id:"I-CIV-4", ws:"WS-CIV", m:"M6", title:"Lining installed & breakthrough achieved", owner:"Civil", artifact:"BRK-001", version:"v1", offset:0, exempt:false, status:"todo" },
+
+    // M&E / Systems
+    { id:"I-MEP-1", ws:"WS-MEP", m:"M3", title:"Ventilation + power concept selected", owner:"M&E", artifact:"MEP-CON", version:"v1", offset:-7, exempt:false, status:"todo" },
+    { id:"I-MEP-2", ws:"WS-MEP", m:"M4", title:"MEP procurement pack issued", owner:"M&E", artifact:"MEP-PACK", version:"v1", offset:-21, exempt:false, status:"todo" },
+    { id:"I-MEP-3", ws:"WS-MEP", m:"M7", title:"Commissioning complete (FLS, power, SCADA)", owner:"M&E", artifact:"COMM-ALL", version:"v1", offset:0, exempt:false, status:"todo" },
+
+    // Safety
+    { id:"I-SAF-1", ws:"WS-SAF", m:"M3", title:"Hazard log baseline + ALARP strategy", owner:"Safety", artifact:"HZDLOG", version:"v1", offset:-14, exempt:false, status:"todo" },
+    { id:"I-SAF-2", ws:"WS-SAF", m:"M8", title:"Safety case accepted", owner:"Safety", artifact:"SAFECASE", version:"v1", offset:0, exempt:false, status:"todo" },
+
+    // Procurement
+    { id:"I-PROC-1", ws:"WS-PROC", m:"M4", title:"Main works contract executed", owner:"Procurement", artifact:"MWC-EXEC", version:"v1", offset:0, exempt:false, status:"todo" },
+    { id:"I-PROC-2", ws:"WS-PROC", m:"M5", title:"TBM delivered + FAT witnessed", owner:"Procurement", artifact:"TBM-FAT", version:"v1", offset:-45, exempt:false, status:"todo" },
+
+    // Stakeholder
+    { id:"I-COMM-1", ws:"WS-COMM", m:"M1", title:"Public consultation round 1 complete", owner:"Comms", artifact:"CONS-01", version:"v1", offset:-30, exempt:false, status:"todo" },
+    { id:"I-COMM-2", ws:"WS-COMM", m:"M2", title:"Land/access agreements secured", owner:"Comms", artifact:"LAND-AG", version:"v1", offset:-10, exempt:false, status:"todo" },
+  ],
+  pullbacks: [
+    {
+      id:"PB-1",
+      m:"M3",
+      title:"Ground Model ↔ Alignment freeze",
+      left:"I-GEO-2",
+      right:"I-CIV-1",
+      contract:"IFC-GM-ALIGN",
+      rule:"Civil geometry must be valid for GM version (cover, settlement, face pressure envelope).",
+      acceptance:"Run GM→ALIGN checks; attach report + sign-off by Civil+Geotech.",
+    },
+    {
+      id:"PB-2",
+      m:"M3",
+      title:"Geometry ↔ Ventilation envelope",
+      left:"I-CIV-1",
+      right:"I-MEP-1",
+      contract:"IFC-VENT-ENV",
+      rule:"Ventilation concept must fit spatial envelope; no clashes with escape routes.",
+      acceptance:"Clash-free 3D check + evacuation simulation input set.",
+    },
+    {
+      id:"PB-3",
+      m:"M3",
+      title:"Hazard log ↔ Concept design",
+      left:"I-SAF-1",
+      right:"I-MEP-1",
+      contract:"IFC-SAF-CON",
+      rule:"Concept design implements baseline mitigations (fire, smoke, power redundancy).",
+      acceptance:"Hazard log entries linked to design features; review meeting minutes.",
+    },
+    {
+      id:"PB-4",
+      m:"M4",
+      title:"TBM pack ↔ Main works contract",
+      left:"I-CIV-2",
+      right:"I-PROC-1",
+      contract:"IFC-TBM-PROC",
+      rule:"Contract scope references TBM pack version and obligations for delivery/FAT.",
+      acceptance:"Scope cross-check + signed contract annex.",
+    },
+    {
+      id:"PB-5",
+      m:"M8",
+      title:"Commissioning evidence ↔ Safety case acceptance",
+      left:"I-MEP-3",
+      right:"I-SAF-2",
+      contract:"IFC-COMM-SAFE",
+      rule:"Safety case evidence includes commissioning receipts for all FLS systems.",
+      acceptance:"Evidence bundle index + test certificates + regulator Q&A log.",
+    },
+  ],
+  log: []
+};
+
+/** ----------------------------------------------
+ *  Helpers
+ *  ---------------------------------------------- */
+const byId = (arr, id) => arr.find(x => x.id === id);
+
+function parseDate(iso){ return new Date(iso + "T00:00:00"); }
+function fmtDate(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+function addDays(iso, days){
+  const d = parseDate(iso);
+  d.setDate(d.getDate()+Number(days||0));
+  return fmtDate(d);
+}
+function nowStamp(){
+  const d = new Date();
+  return d.toISOString().replace("T"," ").slice(0,19);
+}
+function log(msg){
+  state.log.unshift({ ts: nowStamp(), msg });
+  renderLog();
+}
+
+function milestoneEffectiveDate(mid){
+  const m = byId(state.milestones, mid);
+  return addDays(m.date, m.slip);
+}
+function itemDueDate(item){
+  const base = milestoneEffectiveDate(item.m);
+  // offset is relative to milestone date (can be negative)
+  return addDays(base, item.offset);
+}
+
+function propagateSlipFrom(orderIndex){
+  // When enabled: if milestone at index i slips by Δ (relative to baseline),
+  // all later milestones also slip by at least Δ, preserving previous manual slips.
+  // For demo we simply add Δ to later milestones (not a full critical path model).
+  const ms = [...state.milestones].sort((a,b)=>a.order-b.order);
+  const m = ms[orderIndex];
+  const delta = m.slip;
+  for(let j=orderIndex+1; j<ms.length; j++){
+    ms[j].slip = Math.max(ms[j].slip, delta);
+  }
+}
+
+function computePullbackStatus(pb){
+  const L = byId(state.items, pb.left);
+  const R = byId(state.items, pb.right);
+
+  const sameVersion = (L.version === R.version);
+  const doneBoth = (L.status === "done" && R.status === "done");
+  const anchorOk = (L.m === pb.m || R.m === pb.m || true); // demo: allow but show if odd
+  const ok = sameVersion && doneBoth && anchorOk;
+
+  let level = ok ? "good" : "bad";
+  let reason = [];
+  if(!sameVersion) reason.push(`Version mismatch (${L.version} vs ${R.version})`);
+  if(!doneBoth) reason.push("Not done on both sides");
+  if(!anchorOk) reason.push("Not anchored to same gate");
+
+  return { ok, level, reason: reason.join(" • ") || "OK" };
+}
+
+/** ----------------------------------------------
+ *  Rendering
+ *  ---------------------------------------------- */
+function renderMilestones(){
+  const t = document.getElementById("milestoneTable");
+  const ms = [...state.milestones].sort((a,b)=>a.order-b.order);
+
+  let html = `
+    <tr>
+      <th style="width:34%;">Milestone</th>
+      <th style="width:18%;">Base date</th>
+      <th style="width:14%;">Slip (days)</th>
+      <th style="width:18%;">Effective date</th>
+      <th style="width:16%;">Quick actions</th>
+    </tr>
+  `;
+
+  for(const m of ms){
+    const eff = milestoneEffectiveDate(m.id);
+    html += `
+      <tr>
+        <td>
+          <div style="font-weight:700;">${m.id} — ${m.name}</div>
+          <div class="muted tiny mono">B(${m.id})</div>
+        </td>
+        <td>
+          <input type="date" value="${m.date}" data-action="set-date" data-mid="${m.id}" />
+        </td>
+        <td>
+          <input type="number" value="${m.slip}" data-action="set-slip" data-mid="${m.id}" />
+        </td>
+        <td class="mono">${eff}</td>
+        <td>
+          <div class="btnrow" style="justify-content:flex-start;">
+            <button class="small" data-action="slip+7" data-mid="${m.id}">+7</button>
+            <button class="small" data-action="slip-7" data-mid="${m.id}">-7</button>
+            <button class="small ghost" data-action="explain-mid" data-mid="${m.id}">?</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  t.innerHTML = html;
+
+  t.querySelectorAll("[data-action]").forEach(el=>{
+    el.addEventListener("click", (ev)=>{
+      const act = el.getAttribute("data-action");
+      const mid = el.getAttribute("data-mid");
+      const m = byId(state.milestones, mid);
+
+      if(act === "slip+7"){ m.slip += 7; onBaseChange(`Slip ${mid} +7d`); }
+      if(act === "slip-7"){ m.slip -= 7; onBaseChange(`Slip ${mid} -7d`); }
+      if(act === "explain-mid"){ openExplain("base-change"); }
+    });
+  });
+
+  t.querySelectorAll("input[data-action='set-date']").forEach(inp=>{
+    inp.addEventListener("change", ()=>{
+      const mid = inp.getAttribute("data-mid");
+      const m = byId(state.milestones, mid);
+      m.date = inp.value;
+      onBaseChange(`Set ${mid} base date → ${inp.value}`);
+    });
+  });
+
+  t.querySelectorAll("input[data-action='set-slip']").forEach(inp=>{
+    inp.addEventListener("change", ()=>{
+      const mid = inp.getAttribute("data-mid");
+      const m = byId(state.milestones, mid);
+      m.slip = Number(inp.value||0);
+      onBaseChange(`Set ${mid} slip → ${m.slip}d`);
+    });
+  });
+}
+
+function renderWorkstreams(){
+  const host = document.getElementById("workstreams");
+  const ws = state.workstreams;
+
+  let html = "";
+  for(const w of ws){
+    const items = state.items.filter(i => i.ws === w.id);
+
+    html += `
+      <div class="workstream">
+        <div class="whd">
+          <div class="wname">
+            <span class="swatch" style="background:${w.color}; box-shadow: 0 0 0 3px ${w.color}22;"></span>
+            ${w.name}
+          </div>
+          <div class="itemright">
+            <span class="tag">${items.length} items</span>
+            <button class="help" data-explain="lift" title="Explainer">?</button>
+          </div>
+        </div>
+        <div class="wbd">
+          ${items.map(i => renderItemRow(i)).join("")}
+        </div>
+      </div>
+    `;
+  }
+  host.innerHTML = html;
+
+  // wire item controls
+  host.querySelectorAll("[data-item]").forEach(el=>{
+    const id = el.getAttribute("data-item");
+    const item = byId(state.items, id);
+    const act = el.getAttribute("data-act");
+
+    if(act === "status"){
+      el.addEventListener("change", ()=>{
+        item.status = el.value;
+        log(`Local update: ${item.title} status → ${item.status}`);
+        renderAll();
+      });
+    }
+    if(act === "version"){
+      el.addEventListener("change", ()=>{
+        item.version = el.value.trim() || "v1";
+        log(`Local update: ${item.title} version → ${item.version}`);
+        renderAll();
+      });
+    }
+    if(act === "exempt"){
+      el.addEventListener("change", ()=>{
+        item.exempt = el.checked;
+        log(`Local policy: ${item.title} exempt from slip → ${item.exempt ? "yes":"no"}`);
+        renderAll();
+      });
+    }
+    if(act === "why"){
+      el.addEventListener("click", ()=>{
+        openExplain("item");
+      });
+    }
+  });
+}
+
+function renderItemRow(item){
+  const due = itemDueDate(item);
+  const m = byId(state.milestones, item.m);
+  const statusClass = item.status === "done" ? "good" : (item.status === "wip" ? "warn" : "");
+  const statusLabel = item.status === "done" ? "done" : (item.status === "wip" ? "in progress" : "todo");
+
+  return `
+    <div class="itemrow">
+      <div>
+        <div class="itemtitle">${item.title}</div>
+        <div class="itemmeta">
+          anchor <span class="mono">${item.m}</span> • due <span class="mono">${due}</span>
+          • artifact <span class="mono">${item.artifact}</span> • owner <span class="mono">${item.owner}</span>
+        </div>
+      </div>
+      <div>
+        <div class="muted tiny">status</div>
+        <select data-item="${item.id}" data-act="status">
+          <option value="todo" ${item.status==="todo"?"selected":""}>todo</option>
+          <option value="wip" ${item.status==="wip"?"selected":""}>in progress</option>
+          <option value="done" ${item.status==="done"?"selected":""}>done</option>
+        </select>
+        <div style="margin-top:6px;">
+          <span class="status ${statusClass}">
+            <span class="dot"></span> ${statusLabel}
+          </span>
+        </div>
+      </div>
+      <div>
+        <div class="muted tiny">version</div>
+        <input type="text" value="${item.version}" class="mono" data-item="${item.id}" data-act="version" />
+      </div>
+      <div>
+        <div class="muted tiny">slip policy</div>
+        <label class="tag" title="If checked, this item will not move when its anchor milestone slips.">
+          <input type="checkbox" ${item.exempt ? "checked":""} data-item="${item.id}" data-act="exempt" />
+          exempt
+        </label>
+      </div>
+      <div style="display:flex; justify-content:flex-end;">
+        <button class="help" data-item="${item.id}" data-act="why" title="Explainer">?</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderPullbacks(){
+  const t = document.getElementById("pullbackTable");
+
+  let html = `
+    <tr>
+      <th style="width:22%;">Interface contract</th>
+      <th style="width:18%;">On gate</th>
+      <th style="width:35%;">Compatibility (pullback)</th>
+      <th style="width:25%;">Status</th>
+    </tr>
+  `;
+
+  for(const pb of state.pullbacks){
+    const s = computePullbackStatus(pb);
+    const L = byId(state.items, pb.left);
+    const R = byId(state.items, pb.right);
+
+    html += `
+      <tr>
+        <td>
+          <div style="font-weight:800;">${pb.contract}</div>
+          <div class="muted tiny">${pb.title}</div>
+          <div style="margin-top:6px;">
+            <button class="small ghost" data-explain="pullback">?</button>
+          </div>
+        </td>
+        <td class="mono">
+          ${pb.m}<br/>
+          <span class="muted tiny">(${milestoneEffectiveDate(pb.m)})</span>
+        </td>
+        <td>
+          <div class="tiny">
+            <div><span class="tag">left</span> <b>${L.title}</b> <span class="mono muted">(${L.version}, ${L.status})</span></div>
+            <div style="margin-top:4px;"><span class="tag">right</span> <b>${R.title}</b> <span class="mono muted">(${R.version}, ${R.status})</span></div>
+          </div>
+          <div class="muted tiny" style="margin-top:6px;">Rule: ${pb.rule}</div>
+          <div class="muted tiny" style="margin-top:4px;">Acceptance: ${pb.acceptance}</div>
+        </td>
+        <td>
+          <span class="status ${s.level}">
+            <span class="dot"></span> ${s.ok ? "OK" : "blocked"}
+          </span>
+          <div class="muted tiny" style="margin-top:6px;">${s.reason}</div>
+        </td>
+      </tr>
+    `;
+  }
+
+  t.innerHTML = html;
+  t.querySelectorAll("button[data-explain]").forEach(b=>{
+    b.addEventListener("click", ()=> openExplain(b.getAttribute("data-explain")));
+  });
+}
+
+function renderLog(){
+  const host = document.getElementById("log");
+  if(state.log.length === 0){
+    host.innerHTML = `<div class="muted">No receipts yet. Try a scenario or change a slip.</div>`;
+    return;
+  }
+  host.innerHTML = state.log.map(e => `
+    <div class="entry">
+      <div class="ts">${e.ts}</div>
+      <div>${e.msg}</div>
+    </div>
+  `).join("");
+}
+
+function renderPills(){
+  // consistency = fraction of pullbacks ok
+  const okCount = state.pullbacks.filter(pb => computePullbackStatus(pb).ok).length;
+  const total = state.pullbacks.length;
+  const pct = Math.round(100 * okCount / Math.max(1,total));
+  const blocked = total - okCount;
+
+  document.getElementById("pillConsistency").textContent = pct + "%";
+  document.getElementById("pillBlocked").textContent = blocked;
+
+  // shifted items today = how many items moved due to slips (and not exempt)
+  // We'll count items where effective due date != baseline due date
+  let shifted = 0;
+  for(const it of state.items){
+    if(it.exempt) continue;
+    const m = byId(state.milestones, it.m);
+    if(m.slip !== 0) shifted++;
+  }
+  document.getElementById("pillShifted").textContent = shifted;
+}
+
+function renderMath(){
+  const box = document.getElementById("mathView");
+  if(!state.showMath){
+    box.style.display = "none";
+    return;
+  }
+  box.style.display = "block";
+
+  const lines = [];
+  lines.push("Category-theory view (minimal):");
+  lines.push("");
+  lines.push("• Base category B: milestones ordered by programme precedence.");
+  lines.push("  Objects: {M0,…,M9}. Morphisms: Mi → Mj when i ≤ j (poset).");
+  lines.push("");
+  lines.push("• For each workstream w, define a presheaf F_w : Bᵒᵖ → Set.");
+  lines.push("  F_w(M) = set of local deliverable-states at milestone M (versions, receipts, etc).");
+  lines.push("  Restriction maps res: F_w(Mj) → F_w(Mi) forget later details, keep what must already hold.");
+  lines.push("");
+  lines.push("• Grothendieck construction ∫F_w → B is a fibration:");
+  lines.push("  Objects are (M, x∈F_w(M)). The fiber over M is exactly the workstream lane at M.");
+  lines.push("");
+  lines.push("• Interface contract I(M): a set/object of interface states at milestone M.");
+  lines.push("  With maps ϕ: F_A(M)→I(M), ψ: F_B(M)→I(M).");
+  lines.push("  Pullback F_A(M) ×_{I(M)} F_B(M) = compatible pairs (a,b) that agree on the interface.");
+  lines.push("");
+  lines.push("In plain English: treat every cross-team dependency as a named contract with tests;");
+  lines.push("then check that the two sides land on the same contract state.");
+  box.textContent = lines.join("\n");
+}
+
+/** ----------------------------------------------
+ *  Base change → fibration lift (demo rules)
+ *  ---------------------------------------------- */
+function onBaseChange(msg){
+  // optional propagation
+  if(state.propagateSlipForward){
+    const ms = [...state.milestones].sort((a,b)=>a.order-b.order);
+    // Find earliest milestone with non-zero slip and propagate from there for demo.
+    // Better: detect which was edited, but ok for prototype.
+    let first = ms.findIndex(x => x.slip !== 0);
+    if(first >= 0) propagateSlipFrom(first);
+  }
+
+  // "lift" = derived date changes on all non-exempt items anchored to affected milestones
+  const shiftedItems = state.items.filter(i => {
+    if(i.exempt) return false;
+    const m = byId(state.milestones, i.m);
+    return m.slip !== 0;
+  }).length;
+
+  log(`Base change: ${msg}. Lifted to ${shiftedItems} anchored items (exempt items stayed put).`);
+  renderAll();
+}
+
+/** ----------------------------------------------
+ *  Glue check
+ *  ---------------------------------------------- */
+function glueCheck(){
+  const issues = [];
+  for(const pb of state.pullbacks){
+    const s = computePullbackStatus(pb);
+    if(!s.ok) issues.push(`${pb.contract}: ${s.reason}`);
+  }
+  if(issues.length === 0){
+    log("Glue check: ✅ all interface pullbacks are consistent (a global plan section exists for these interfaces).");
+  }else{
+    log("Glue check: ❌ inconsistencies found → " + issues.join(" | "));
+  }
+  renderAll();
+}
+
+/** ----------------------------------------------
+ *  Scenarios
+ *  ---------------------------------------------- */
+function resetAll(){
+  // Hard reset to initial values
+  state.milestones.forEach(m => m.slip = 0);
+  state.items.forEach(i => { i.status="todo"; i.version="v1"; i.exempt=false; });
+  state.log = [];
+  log("Reset: back to baseline.");
+  renderAll();
+}
+function scenarioConsentDelay(){
+  // M2 slips by +60, propagate forward optionally
+  byId(state.milestones, "M2").slip += 60;
+  onBaseChange("Scenario: consent delay (M2 +60d)");
+}
+function scenarioGroundModelLate(){
+  // Ground model updates to v2, but civil remains v1 -> mismatch at PB-1
+  byId(state.items, "I-GEO-2").version = "v2";
+  byId(state.items, "I-GEO-2").status = "wip";
+  byId(state.items, "I-CIV-1").version = "v1";
+  byId(state.items, "I-CIV-1").status = "wip";
+  log("Scenario: ground model revised to v2 while civil alignment stays v1 → expect PB-1 blocked.");
+  renderAll();
+}
+function scenarioSafetyEvidence(){
+  // Safety case wants extra evidence: commissioning must be done, but MEP commissioning is still todo
+  byId(state.items, "I-SAF-2").version = "v2";
+  byId(state.items, "I-SAF-2").status = "wip";
+  log("Scenario: regulator requests extra evidence (SafetyCase v2). Until commissioning receipts are done, PB-5 blocks.");
+  renderAll();
+}
+
+/** ----------------------------------------------
+ *  Explain modal
+ *  ---------------------------------------------- */
+const EXPLAIN = {
+  "what-is-this": {
+    title: "What is this demo?",
+    body: `
+      <p>This is a small interactive model of a large-programme coordination pattern:</p>
+      <p><b>Base milestones</b> define the programme “spine”. Each workstream contributes <b>local deliverables</b> that are anchored to those gates.</p>
+      <p>When a base gate moves (a slip, resequencing, or rebaseline), we <b>lift</b> that change to the workstreams automatically. Cross-workstream dependencies are represented as explicit <b>interface contracts</b> with acceptance checks.</p>
+      <p>Goal: keep local autonomy, but guarantee global coherence.</p>
+    `
+  },
+  "base": {
+    title: "Explainer: Base milestones (B)",
+    body: `
+      <p>Think of the base as the programme’s minimal shared truth: <b>a small set of decision gates</b> (funding, consents, design freeze, contract award, TBM launch, safety acceptance…).</p>
+      <p>Workstreams can plan however they like internally, but anything that must align across teams gets <b>anchored</b> to a base gate.</p>
+      <p><span class="kbd">Why it matters</span> If the base changes, you can propagate the change mechanically instead of renegotiating hundreds of dates and interfaces by hand.</p>
+    `
+  },
+  "base-change": {
+    title: "Explainer: Base change → lift",
+    body: `
+      <p>A base change is any move on the milestone spine: date slip, resequencing, re-baseline, gate split/merge.</p>
+      <p>The <b>lift rule</b>: for every base move, the system proposes corresponding updates to every anchored deliverable.</p>
+      <p>In this demo, a lift just re-computes due dates. In a real tool, a lift also revalidates acceptance tests and flags exemptions.</p>
+    `
+  },
+  "fiber": {
+    title: "Explainer: Fibers (workstream lanes)",
+    body: `
+      <p>A “fiber” is simply “everything that lives over a given milestone for a given workstream”.</p>
+      <p>Example: over <b>M3 (Design Freeze)</b>, geotechnical delivers <i>Ground Model frozen</i>, civil delivers <i>Alignment frozen</i>, safety delivers <i>Hazard log baseline</i>, etc.</p>
+      <p><span class="kbd">Key property</span> If M3 moves, the fiber over M3 moves as a unit — unless you explicitly exempt an item.</p>
+    `
+  },
+  "lift": {
+    title: "Explainer: The fibration lift",
+    body: `
+      <p>In category theory, a fibration is a structure that lets you “lift” movement on a base to movement in the total space in a consistent way.</p>
+      <p>In project terms: when a gate moves, there is a standard, auditable way to update each anchored item so the whole programme stays coherent.</p>
+      <p><span class="kbd">Receipt</span> Every lift produces a log entry: what moved, what stayed, and why.</p>
+    `
+  },
+  "pullback": {
+    title: "Explainer: Pullbacks (interface contracts)",
+    body: `
+      <p>A pullback is the clean mathematical way to represent “the intersection of two teams’ constraints through a shared contract”.</p>
+      <p>Instead of Team A depending on Team B informally, you create a third thing: an <b>interface contract</b> (spec version, data model, geometry envelope, evidence bundle…).</p>
+      <p>Each side maps to that contract. The pullback is “pairs of outputs that land on the same contract state”.</p>
+      <p><span class="kbd">In practice</span> A pullback row is a single source of truth: owners, versions, and tests.</p>
+    `
+  },
+  "item": {
+    title: "Explainer: What is a ‘deliverable-state’ here?",
+    body: `
+      <p>Each item is intentionally small: it has an anchor gate, an artifact id, a version, and a status.</p>
+      <p>That’s enough to demonstrate the mechanics:</p>
+      <p>• base slip → due date moves<br/>
+         • version mismatch across an interface → pullback blocks<br/>
+         • both sides “done” with same version → interface is consistent</p>
+      <p>Real projects add richer fields: acceptance tests, environments, risk distributions, cost curves, evidence links, and sign-offs.</p>
+    `
+  },
+  "receipts": {
+    title: "Explainer: Receipts",
+    body: `
+      <p>A receipt is an immutable log of:</p>
+      <p>• what changed (base or local)<br/>
+         • what was automatically lifted / rechecked<br/>
+         • what is now blocked or unblocked<br/>
+         • who owns the resolution</p>
+      <p>This makes audits and retrospectives dramatically easier.</p>
+    `
+  },
+  "extend": {
+    title: "Explainer: Extending to risk, resources, and metrics",
+    body: `
+      <p>This demo uses simple fields (status + version). The same structure can carry richer local data.</p>
+      <p><b>Risk sheaf:</b> assign each task/gate a set (or distribution) of risk states with restriction maps along dependencies; glue compatible locals into a global risk profile.</p>
+      <p><b>Resource sheaf:</b> assign each phase an allocation function over time; restriction = function restriction to overlaps; glue to a global resourcing curve.</p>
+      <p><span class="kbd">Goal</span> Once you have a global section, you can compute project-wide metrics as genuine functions of time (or gates) instead of spreadsheets stitched by hand.</p>
+    `
+  }
+};
+
+function openExplain(key){
+  const e = EXPLAIN[key] || { title:"Explainer", body:"<p>No explainer found.</p>" };
+  document.getElementById("modalTitle").textContent = e.title;
+  document.getElementById("modalBody").innerHTML = e.body;
+  document.getElementById("modal").classList.add("show");
+}
+
+/** ----------------------------------------------
+ *  Event wiring
+ *  ---------------------------------------------- */
+document.getElementById("modalClose").addEventListener("click", ()=> document.getElementById("modal").classList.remove("show"));
+document.getElementById("modal").addEventListener("click", (e)=>{ if(e.target.id === "modal") document.getElementById("modal").classList.remove("show"); });
+
+document.querySelectorAll("button[data-explain]").forEach(b=>{
+  b.addEventListener("click", ()=> openExplain(b.getAttribute("data-explain")));
+});
+
+document.getElementById("togglePropagate").addEventListener("change", (e)=>{
+  state.propagateSlipForward = e.target.checked;
+  log(`Policy: propagate slip forward → ${state.propagateSlipForward ? "on":"off"}`);
+  renderAll();
+});
+
+document.getElementById("toggleMath").addEventListener("change", (e)=>{
+  state.showMath = e.target.checked;
+  log(`View: category-theory overlay → ${state.showMath ? "on":"off"}`);
+  renderAll();
+});
+
+document.getElementById("btnGlue").addEventListener("click", glueCheck);
+document.getElementById("btnReset").addEventListener("click", resetAll);
+
+document.getElementById("btnScenarioConsent").addEventListener("click", scenarioConsentDelay);
+document.getElementById("btnScenarioGround").addEventListener("click", scenarioGroundModelLate);
+document.getElementById("btnScenarioSafety").addEventListener("click", scenarioSafetyEvidence);
+
+document.getElementById("btnClearLog").addEventListener("click", ()=>{
+  state.log = [];
+  renderLog();
+});
+document.getElementById("btnMarkAllDone").addEventListener("click", ()=>{
+  state.items.forEach(i => i.status="done");
+  log("Bulk update: marked all items done.");
+  renderAll();
+});
+document.getElementById("btnBreakOne").addEventListener("click", ()=>{
+  // Introduce a deliberate mismatch: set a pair to different versions and not done
+  byId(state.items, "I-MEP-3").version = "v1";
+  byId(state.items, "I-SAF-2").version = "v2";
+  byId(state.items, "I-MEP-3").status = "done";
+  byId(state.items, "I-SAF-2").status = "wip";
+  log("Injected mismatch: commissioning evidence v1 vs safety case v2; PB-5 should block.");
+  renderAll();
+});
+
+/** ----------------------------------------------
+ *  Master render
+ *  ---------------------------------------------- */
+function renderAll(){
+  renderMilestones();
+  renderWorkstreams();
+  renderPullbacks();
+  renderPills();
+  renderMath();
+}
+resetAll(); // calls log + renderAll
+</script>
+</body>
+</html>
