@@ -1,0 +1,1259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Local data → Global WBS via Sheaves (Prototype)</title>
+  <style>
+    :root{
+      --bg: #0b1020;
+      --panel: #111a33;
+      --panel2: #0f1730;
+      --ink: #e7ecff;
+      --muted: #aab4e6;
+      --accent: #7bdff2;
+      --good: #3ddc97;
+      --warn: #ffcc66;
+      --bad: #ff6b6b;
+      --line: rgba(231,236,255,0.15);
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    *{ box-sizing: border-box; }
+    body{
+      margin:0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background: radial-gradient(1200px 800px at 20% 0%, rgba(123,223,242,.15), transparent 60%),
+                  radial-gradient(1200px 800px at 80% 20%, rgba(61,220,151,.12), transparent 60%),
+                  linear-gradient(180deg, #070a16, var(--bg));
+    }
+    header{
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    header h1{
+      font-size: 16px;
+      margin:0;
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+    header .sub{
+      color: var(--muted);
+      font-size: 13px;
+      margin-left: 8px;
+      font-weight: 500;
+    }
+    .pill{
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    main{
+      display:grid;
+      grid-template-columns: 360px 1fr 360px;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+      padding: 12px;
+      min-height: calc(100vh - 60px);
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card h2{
+      margin:0;
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      border-bottom: 1px solid var(--line);
+      background: rgba(0,0,0,.12);
+      letter-spacing:.2px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .card .content{
+      padding: 12px 14px;
+    }
+    .controls{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+    label{
+      font-size: 12px;
+      color: var(--muted);
+    }
+    select, input[type="text"], input[type="number"], textarea, button{
+      font-family: var(--sans);
+      color: var(--ink);
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+      outline: none;
+    }
+    textarea{
+      width: 100%;
+      min-height: 120px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.35;
+      border-radius: 12px;
+    }
+    input[type="text"]{
+      width: 100%;
+    }
+    input[type="number"]{
+      width: 90px;
+    }
+    button{
+      cursor:pointer;
+      font-weight: 700;
+      border-radius: 12px;
+    }
+    button.primary{
+      border-color: rgba(123,223,242,.55);
+      background: rgba(123,223,242,.10);
+    }
+    button.danger{
+      border-color: rgba(255,107,107,.55);
+      background: rgba(255,107,107,.10);
+    }
+    button:active{
+      transform: translateY(1px);
+    }
+    .small{
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .mono{
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:baseline;
+    }
+    .row > *{ flex:1; }
+    .divider{
+      height:1px;
+      background: var(--line);
+      margin: 10px 0;
+    }
+    .nodeList{
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .nodeItem{
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(0,0,0,.10);
+    }
+    .nodeHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom: 8px;
+    }
+    .badge{
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255,255,255,.03);
+    }
+    .status{
+      font-weight: 800;
+      letter-spacing:.3px;
+      font-size: 12px;
+    }
+    .status.good{ color: var(--good); }
+    .status.bad{ color: var(--bad); }
+    .status.warn{ color: var(--warn); }
+    .nodeControls{
+      display:grid;
+      grid-template-columns: 1fr 120px;
+      gap: 8px;
+      align-items:center;
+    }
+    .hint{
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    /* Graph */
+    #graphWrap{
+      position: relative;
+      height: 100%;
+      min-height: 520px;
+    }
+    svg{
+      width: 100%;
+      height: 100%;
+      display:block;
+      background: rgba(0,0,0,.10);
+    }
+    .edge{
+      stroke: rgba(231,236,255,.35);
+      stroke-width: 1.4;
+      fill: none;
+    }
+    .edge.bad{
+      stroke: rgba(255,107,107,.9);
+      stroke-width: 2.2;
+    }
+    .edge.selected{
+      stroke: rgba(123,223,242,.95);
+      stroke-width: 2.4;
+    }
+    .arrow{
+      fill: rgba(231,236,255,.55);
+    }
+    .arrow.bad{ fill: rgba(255,107,107,.9); }
+    .arrow.selected{ fill: rgba(123,223,242,.95); }
+
+    .node{
+      cursor: grab;
+    }
+    .node circle{
+      stroke: rgba(231,236,255,.35);
+      stroke-width: 1.6;
+      fill: rgba(255,255,255,.04);
+    }
+    .node.good circle{
+      stroke: rgba(61,220,151,.9);
+      fill: rgba(61,220,151,.12);
+    }
+    .node.bad circle{
+      stroke: rgba(255,107,107,.95);
+      fill: rgba(255,107,107,.10);
+    }
+    .node.warn circle{
+      stroke: rgba(255,204,102,.95);
+      fill: rgba(255,204,102,.10);
+    }
+    .node text{
+      fill: var(--ink);
+      font-weight: 800;
+      font-size: 13px;
+      dominant-baseline: middle;
+      text-anchor: middle;
+      pointer-events:none;
+    }
+    .node .val{
+      font-family: var(--mono);
+      font-size: 11px;
+      fill: var(--muted);
+      font-weight: 700;
+    }
+
+    .toast{
+      position:absolute;
+      left: 12px;
+      bottom: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(17,26,51,.9);
+      box-shadow: var(--shadow);
+      max-width: 520px;
+      display:none;
+    }
+    .toast.show{ display:block; }
+    .toast .title{
+      font-weight: 900;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    .toast .body{
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .kv{
+      display:grid;
+      grid-template-columns: 140px 1fr;
+      gap: 6px 10px;
+      font-size: 12px;
+    }
+    .kv .k{
+      color: var(--muted);
+    }
+    .kv .v{
+      font-family: var(--mono);
+      color: var(--ink);
+      overflow-wrap: anywhere;
+    }
+    .table{
+      width:100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+    .table th, .table td{
+      border-bottom: 1px solid var(--line);
+      padding: 6px 6px;
+      vertical-align: top;
+    }
+    .table th{
+      color: var(--muted);
+      font-weight: 800;
+      text-align: left;
+    }
+    .table td{
+      color: var(--ink);
+    }
+
+    .footerNote{
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px){
+      main{ grid-template-columns: 1fr; grid-template-rows: auto auto auto; }
+      #graphWrap{ min-height: 420px; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div style="display:flex; align-items:center; gap:10px; flex: 1;">
+    <h1>Sheaf Visualiser: local data ↔ restriction maps ↔ global section</h1>
+    <div class="sub">Interactive prototype (single HTML file)</div>
+  </div>
+
+  <div class="controls" style="justify-content:flex-end; flex: 1;">
+    <span class="pill">Drag nodes • click edges to inspect • edit local domains</span>
+  </div>
+</header>
+
+<main>
+  <!-- Left: Node data -->
+  <section class="card" style="grid-row: 1 / span 2;">
+    <h2>
+      Local data (stalks) & assignments
+      <span class="badge" id="statusBadge">ready</span>
+    </h2>
+    <div class="content">
+      <div class="controls">
+        <label for="exampleSelect">Example</label>
+        <select id="exampleSelect">
+          <option value="risk">Risk sheaf (A,B,C,D,E) — unique global section</option>
+          <option value="diamond">Obstruction demo (diamond) — no global section</option>
+        </select>
+        <button class="primary" id="glueBtn">Glue / Solve</button>
+        <button id="resetBtn">Reset</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="small">
+        Each task <span class="mono">v</span> has a <em>domain</em> <span class="mono">F(v)</span> (local feasible values) and an optional chosen value.
+        Restriction maps / constraints live on edges and decide which pairs of values are compatible. A <em>global section</em> is a value choice for <strong>every</strong> node satisfying <strong>all</strong> edge constraints.
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="nodeList" id="nodeList"></div>
+
+      <div class="divider"></div>
+
+      <div class="small">
+        <strong>Tip:</strong> leaving some nodes as <span class="mono">?</span> asks the solver to find any completion (a global section extending your partial assignment).
+      </div>
+    </div>
+  </section>
+
+  <!-- Center: Graph -->
+  <section class="card">
+    <h2>
+      WBS graph (base category)
+      <span class="badge" id="graphBadge">drag to rearrange</span>
+    </h2>
+    <div class="content" style="padding:0;">
+      <div id="graphWrap">
+        <svg id="svg" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet" aria-label="WBS graph"></svg>
+        <div class="toast" id="toast">
+          <div class="title" id="toastTitle"></div>
+          <div class="body" id="toastBody"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Right: Edge inspector + results -->
+  <section class="card" style="grid-row: 1 / span 2;">
+    <h2>
+      Restriction maps & gluing report
+      <span class="badge" id="edgeBadge">click an edge</span>
+    </h2>
+    <div class="content">
+
+      <div class="kv" id="edgeInfo">
+        <div class="k">Selected edge</div><div class="v">none</div>
+        <div class="k">Constraint</div><div class="v">—</div>
+        <div class="k">Interpretation</div><div class="v">—</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="small" style="margin-bottom:8px;">
+        Compatibility table for the selected edge (given current domains). A blank row means “no supported value” (a local obstruction).
+      </div>
+
+      <div style="max-height: 220px; overflow:auto; border-radius: 12px; border:1px solid var(--line);">
+        <table class="table" id="compatTable">
+          <thead>
+            <tr><th>source value</th><th>allowed target values</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="small" style="margin-bottom:8px;">
+        <strong>Gluing status</strong>
+      </div>
+      <div id="glueReport" class="small" style="line-height:1.5;"></div>
+
+      <div class="divider"></div>
+
+      <div class="small" style="margin-bottom:8px;">
+        Advanced: edit / import graph JSON
+      </div>
+      <textarea id="jsonEditor" spellcheck="false"></textarea>
+      <div class="controls" style="margin-top:10px;">
+        <button id="loadJsonBtn">Load JSON</button>
+        <button id="exportJsonBtn">Export JSON</button>
+      </div>
+
+      <div class="footerNote">
+        This prototype follows the “local-to-global” story used in the project’s risk/resource sheaf drafts: tasks are objects, dependencies are morphisms, and constraints are enforced by restriction maps so that compatible locals can be glued into a global section. (See the accompanying project documents.)
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* =========================================================
+   Sheaf visualiser — vanilla JS prototype
+   ---------------------------------------------------------
+   - Base: directed WBS graph
+   - Stalks: finite domains per node
+   - Edges: constraints R(u,v) compiled from an expression
+   - Gluing: CSP solve; show global section or obstruction
+   ========================================================= */
+
+const Examples = {
+  // Example based on "Applying Sheaves to Model Risk" (5 tasks).
+  risk: {
+    meta: {
+      title: "Risk sheaf (A,B,C,D,E)",
+      note: "Domains are discrete 'risk exposure' values; edges encode inequality restrictions like B ≥ A + 2."
+    },
+    nodes: [
+      {id:"A", label:"A", domain:[1,2,3], value:null, x:160, y:140},
+      {id:"B", label:"B", domain:[3,4,5], value:null, x:360, y:120},
+      {id:"C", label:"C", domain:[6,7,8], value:null, x:560, y:120},
+      {id:"D", label:"D", domain:[2,3,4], value:null, x:360, y:300},
+      {id:"E", label:"E", domain:[5,6], value:null, x:560, y:320},
+    ],
+    edges: [
+      {id:"A->B", source:"A", target:"B", expr:"v >= u + 2", interpretation:"B ≥ A + 2"},
+      {id:"B->C", source:"B", target:"C", expr:"v >= u + 2", interpretation:"C ≥ B + 2"},
+      {id:"A->D", source:"A", target:"D", expr:"v <= u + 1", interpretation:"D ≤ A + 1"},
+      {id:"D->E", source:"D", target:"E", expr:"v >= u + 2", interpretation:"E ≥ D + 2"},
+    ]
+  },
+
+  // Deliberate obstruction: diamond with incompatible requirements at D.
+  // A -> B, A -> C, B -> D, C -> D
+  // Constraints: B == A, C == A, D == B + 1, D == C + 2  (can't both hold).
+  diamond: {
+    meta: {
+      title: "Obstruction demo (diamond)",
+      note: "A 'diamond' dependency where downstream gluing fails: two paths to D force incompatible values."
+    },
+    nodes: [
+      {id:"A", label:"A", domain:[0,1,2], value:null, x:220, y:120},
+      {id:"B", label:"B", domain:[0,1,2], value:null, x:420, y:80},
+      {id:"C", label:"C", domain:[0,1,2], value:null, x:420, y:200},
+      {id:"D", label:"D", domain:[0,1,2,3,4], value:null, x:620, y:140},
+    ],
+    edges: [
+      {id:"A->B", source:"A", target:"B", expr:"v === u", interpretation:"B = A"},
+      {id:"A->C", source:"A", target:"C", expr:"v === u", interpretation:"C = A"},
+      {id:"B->D", source:"B", target:"D", expr:"v === u + 1", interpretation:"D = B + 1"},
+      {id:"C->D", source:"C", target:"D", expr:"v === u + 2", interpretation:"D = C + 2"},
+    ]
+  }
+};
+
+// ---------- State ----------
+let state = {
+  exampleKey: "risk",
+  nodes: [],
+  edges: [],
+  selectedEdgeId: null,
+  lastSolve: null
+};
+
+// ---------- DOM ----------
+const svg = document.getElementById("svg");
+const nodeListEl = document.getElementById("nodeList");
+const glueReportEl = document.getElementById("glueReport");
+const exampleSelectEl = document.getElementById("exampleSelect");
+const statusBadge = document.getElementById("statusBadge");
+const compatTableBody = document.querySelector("#compatTable tbody");
+const edgeInfoEl = document.getElementById("edgeInfo");
+const toast = document.getElementById("toast");
+const toastTitle = document.getElementById("toastTitle");
+const toastBody = document.getElementById("toastBody");
+const jsonEditor = document.getElementById("jsonEditor");
+
+// ---------- Helpers ----------
+function deepClone(obj){
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function pretty(v){
+  if(v === null || v === undefined) return "∅";
+  if(Array.isArray(v)) return "[" + v.join(", ") + "]";
+  if(typeof v === "object") return JSON.stringify(v, null, 2);
+  return String(v);
+}
+
+function toSet(arr){ return new Set(arr); }
+function setToSortedArray(s){ return Array.from(s).sort((a,b)=>a-b); }
+
+function showToast(title, body){
+  toastTitle.textContent = title;
+  toastBody.textContent = body;
+  toast.classList.add("show");
+  window.clearTimeout(showToast._t);
+  showToast._t = window.setTimeout(()=>toast.classList.remove("show"), 3400);
+}
+
+function getNode(id){ return state.nodes.find(n=>n.id===id); }
+function getEdge(id){ return state.edges.find(e=>e.id===id); }
+
+function compileEdges(){
+  for(const e of state.edges){
+    try{
+      // u = source value, v = target value
+      e.fn = new Function("u","v", `return (${e.expr});`);
+      e._compileError = null;
+    }catch(err){
+      e.fn = () => false;
+      e._compileError = String(err);
+    }
+  }
+}
+
+function currentDomains(){
+  // Start with each node's domain; if value fixed, domain is singleton.
+  const D = new Map();
+  for(const n of state.nodes){
+    const base = (n.domain ?? []).slice();
+    if(n.value !== null && n.value !== undefined){
+      D.set(n.id, new Set([n.value]));
+    }else{
+      D.set(n.id, new Set(base));
+    }
+  }
+  return D;
+}
+
+function constraintSatisfied(edge, uVal, vVal){
+  try{
+    return !!edge.fn(uVal, vVal);
+  }catch(_){
+    return false;
+  }
+}
+
+// AC-3 arc consistency to explain/prune domains
+function arcConsistency(domains){
+  // Build arcs: for each edge u->v, include both (u,v) and (v,u)
+  const arcs = [];
+  const neighbors = new Map(); // nodeId -> array of arc objects that point INTO nodeId as second component
+  for(const e of state.edges){
+    arcs.push({x:e.source, y:e.target, edge:e});
+    arcs.push({x:e.target, y:e.source, edge:e});
+  }
+  for(const a of arcs){
+    if(!neighbors.has(a.x)) neighbors.set(a.x, []);
+    // store arcs where x appears so we can add its other neighbors when revised
+    neighbors.get(a.x).push(a);
+  }
+
+  // queue initial arcs
+  const queue = arcs.slice();
+
+  const reasons = []; // keep a log of removals: {node, value, becauseEdge, becauseWithNode}
+  const emptyNodes = new Set();
+
+  function supports(x, y, edge, xVal, yVal){
+    // edge is oriented source->target with fn(u,v)
+    if(x === edge.source && y === edge.target){
+      return constraintSatisfied(edge, xVal, yVal);
+    }
+    if(x === edge.target && y === edge.source){
+      // we are checking possible pair (xVal at target, yVal at source)
+      // need constraintSatisfied(edge, yVal, xVal)
+      return constraintSatisfied(edge, yVal, xVal);
+    }
+    // shouldn't happen
+    return false;
+  }
+
+  function revise(x, y, edge){
+    const Dx = domains.get(x);
+    const Dy = domains.get(y);
+    let removedAny = false;
+    const toRemove = [];
+    for(const xv of Dx){
+      let ok = false;
+      for(const yv of Dy){
+        if(supports(x,y,edge,xv,yv)){ ok = true; break; }
+      }
+      if(!ok){
+        toRemove.push(xv);
+      }
+    }
+    if(toRemove.length){
+      removedAny = true;
+      for(const xv of toRemove){
+        Dx.delete(xv);
+        reasons.push({node:x, value:xv, becauseEdge:edge.id, becauseWithNode:y});
+      }
+      if(Dx.size === 0) emptyNodes.add(x);
+    }
+    return removedAny;
+  }
+
+  while(queue.length){
+    const {x,y,edge} = queue.pop();
+    if(revise(x,y,edge)){
+      if(domains.get(x).size === 0){
+        // early exit: contradiction
+        break;
+      }
+      // Add arcs (z, x) for all z neighbors of x, except y
+      for(const a of arcs){
+        if(a.y === x && a.x !== y){ // we want arcs that revise a.y==x? Actually a is (a.x, a.y)
+          // In AC-3, after revising D_x, add (z, x) for all constraints between z and x.
+          // Our arcs list already contains both directions; the arc that revises D_z using D_x is (z, x).
+          queue.push(a);
+        }
+      }
+    }
+  }
+
+  return {domains, reasons, emptyNodes};
+}
+
+// Backtracking CSP solve for a global section.
+function solveGlobal(domains, limit=200){
+  const nodes = state.nodes.map(n=>n.id);
+
+  // adjacency for constraint checks
+  const outgoing = new Map(); // u -> edges from u
+  const incoming = new Map(); // v -> edges into v
+  for(const e of state.edges){
+    if(!outgoing.has(e.source)) outgoing.set(e.source, []);
+    if(!incoming.has(e.target)) incoming.set(e.target, []);
+    outgoing.get(e.source).push(e);
+    incoming.get(e.target).push(e);
+  }
+
+  const assignment = new Map(); // nodeId -> value
+  // Pre-fill fixed (singleton) domains
+  for(const [id, dom] of domains.entries()){
+    if(dom.size === 1){
+      assignment.set(id, Array.from(dom)[0]);
+    }
+  }
+
+  function isConsistentVar(id, val){
+    // Check constraints against already-assigned neighbors
+    // outgoing edges id->t
+    for(const e of (outgoing.get(id) || [])){
+      const t = e.target;
+      if(assignment.has(t)){
+        if(!constraintSatisfied(e, val, assignment.get(t))) return false;
+      }else{
+        // forward-check: ensure target domain has at least one supporting value
+        let supported = false;
+        for(const tv of domains.get(t)){
+          if(constraintSatisfied(e, val, tv)){ supported = true; break; }
+        }
+        if(!supported) return false;
+      }
+    }
+    // incoming edges s->id
+    for(const e of (incoming.get(id) || [])){
+      const s = e.source;
+      if(assignment.has(s)){
+        if(!constraintSatisfied(e, assignment.get(s), val)) return false;
+      }else{
+        // backward-check: ensure source domain has at least one supporting value
+        let supported = false;
+        for(const sv of domains.get(s)){
+          if(constraintSatisfied(e, sv, val)){ supported = true; break; }
+        }
+        if(!supported) return false;
+      }
+    }
+    return true;
+  }
+
+  function pickUnassigned(){
+    // MRV heuristic: smallest domain among unassigned variables
+    let best = null;
+    let bestSize = Infinity;
+    for(const id of nodes){
+      if(assignment.has(id)) continue;
+      const size = domains.get(id).size;
+      if(size < bestSize){
+        best = id; bestSize = size;
+      }
+    }
+    return best;
+  }
+
+  let solutions = [];
+  let solutionCount = 0;
+
+  function dfs(){
+    if(solutionCount >= limit) return;
+    const next = pickUnassigned();
+    if(next === null){
+      // complete assignment
+      solutionCount++;
+      if(solutions.length < 1){
+        solutions.push(Object.fromEntries(assignment.entries()));
+      }
+      return;
+    }
+
+    const values = setToSortedArray(domains.get(next));
+    for(const v of values){
+      if(solutionCount >= limit) return;
+      if(!isConsistentVar(next, v)) continue;
+      assignment.set(next, v);
+      dfs();
+      assignment.delete(next);
+    }
+  }
+
+  // initial consistency check for prefilled ones
+  for(const [id,val] of assignment.entries()){
+    if(!isConsistentVar(id, val)){
+      return {exists:false, solution:null, count:0, capped:false};
+    }
+  }
+
+  dfs();
+  return {exists: solutionCount>0, solution: solutions[0] || null, count: solutionCount, capped: solutionCount>=limit};
+}
+
+function checkEdgeViolations(currentAssignment){
+  const violations = [];
+  for(const e of state.edges){
+    const u = currentAssignment[e.source];
+    const v = currentAssignment[e.target];
+    if(u === undefined || v === undefined) continue;
+    if(!constraintSatisfied(e, u, v)){
+      violations.push({edgeId:e.id, source:e.source, target:e.target, u, v, expr:e.expr});
+    }
+  }
+  return violations;
+}
+
+// ---------- Rendering ----------
+function renderNodeList(prunedDomains=null){
+  nodeListEl.innerHTML = "";
+  for(const n of state.nodes){
+    const item = document.createElement("div");
+    item.className = "nodeItem";
+    const dom = (prunedDomains && prunedDomains.has(n.id)) ? setToSortedArray(prunedDomains.get(n.id)) : n.domain.slice();
+    const fixed = (n.value !== null && n.value !== undefined);
+
+    // status
+    let statusClass = "warn";
+    let statusText = "partial";
+    if(prunedDomains && prunedDomains.has(n.id) && prunedDomains.get(n.id).size === 0){
+      statusClass = "bad"; statusText = "empty";
+    }else if(fixed){
+      statusClass = "good"; statusText = "fixed";
+    }else{
+      statusClass = "warn"; statusText = "free";
+    }
+
+    item.innerHTML = `
+      <div class="nodeHead">
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="badge">${n.id}</div>
+          <div class="status ${statusClass}">${statusText}</div>
+        </div>
+        <div class="badge" title="Current pruned domain (after propagation)">|F(${n.id})|=${dom.length}</div>
+      </div>
+
+      <div class="nodeControls">
+        <div>
+          <label>Domain F(${n.id}) (comma-separated)</label>
+          <input type="text" data-node-domain="${n.id}" value="${n.domain.join(",")}" />
+          <div class="hint">Pruned: <span class="mono">${dom.length ? dom.join(", ") : "∅"}</span></div>
+        </div>
+        <div>
+          <label>Chosen value</label>
+          <select data-node-value="${n.id}">
+            <option value="">?</option>
+            ${n.domain.map(v => `<option value="${v}" ${fixed && Number(n.value)===Number(v) ? "selected" : ""}>${v}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+    `;
+
+    // wire controls
+    item.querySelector(`[data-node-domain="${n.id}"]`).addEventListener("change", (ev)=>{
+      const raw = ev.target.value.trim();
+      const parts = raw ? raw.split(",").map(s=>s.trim()).filter(Boolean) : [];
+      const nums = [];
+      for(const p of parts){
+        const x = Number(p);
+        if(Number.isFinite(x)) nums.push(x);
+      }
+      // unique sorted
+      n.domain = Array.from(new Set(nums)).sort((a,b)=>a-b);
+      // if selected value no longer present, clear it
+      if(n.value !== null && !n.domain.includes(n.value)) n.value = null;
+      renderAll();
+      showToast("Domain updated", `F(${n.id}) = { ${n.domain.join(", ")} }`);
+    });
+
+    item.querySelector(`[data-node-value="${n.id}"]`).addEventListener("change", (ev)=>{
+      const v = ev.target.value;
+      n.value = (v === "") ? null : Number(v);
+      renderAll();
+    });
+
+    nodeListEl.appendChild(item);
+  }
+}
+
+function ensureDefs(){
+  const defs = document.createElementNS("http://www.w3.org/2000/svg","defs");
+
+  const marker = document.createElementNS("http://www.w3.org/2000/svg","marker");
+  marker.setAttribute("id","arrow");
+  marker.setAttribute("markerWidth","10");
+  marker.setAttribute("markerHeight","10");
+  marker.setAttribute("refX","8");
+  marker.setAttribute("refY","3");
+  marker.setAttribute("orient","auto");
+  marker.setAttribute("markerUnits","strokeWidth");
+  const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+  path.setAttribute("d","M0,0 L8,3 L0,6 Z");
+  path.setAttribute("class","arrow");
+  marker.appendChild(path);
+
+  const markerBad = marker.cloneNode(true);
+  markerBad.setAttribute("id","arrowBad");
+  markerBad.querySelector("path").setAttribute("class","arrow bad");
+
+  const markerSel = marker.cloneNode(true);
+  markerSel.setAttribute("id","arrowSel");
+  markerSel.querySelector("path").setAttribute("class","arrow selected");
+
+  defs.appendChild(marker);
+  defs.appendChild(markerBad);
+  defs.appendChild(markerSel);
+  svg.appendChild(defs);
+}
+
+function clearSvg(){
+  svg.innerHTML = "";
+  ensureDefs();
+}
+
+function renderGraph(prunedDomains=null, edgeViolations=new Set()){
+  clearSvg();
+
+  // edges first
+  for(const e of state.edges){
+    const u = getNode(e.source);
+    const v = getNode(e.target);
+    const line = document.createElementNS("http://www.w3.org/2000/svg","line");
+    line.setAttribute("x1", u.x);
+    line.setAttribute("y1", u.y);
+    line.setAttribute("x2", v.x);
+    line.setAttribute("y2", v.y);
+    line.setAttribute("class", "edge" + (edgeViolations.has(e.id) ? " bad" : "") + (state.selectedEdgeId===e.id ? " selected" : ""));
+    line.setAttribute("marker-end", state.selectedEdgeId===e.id ? "url(#arrowSel)" : (edgeViolations.has(e.id) ? "url(#arrowBad)" : "url(#arrow)"));
+    line.dataset.edgeId = e.id;
+
+    line.addEventListener("click", (ev)=>{
+      ev.stopPropagation();
+      state.selectedEdgeId = e.id;
+      renderAll();
+    });
+
+    svg.appendChild(line);
+  }
+
+  // nodes
+  for(const n of state.nodes){
+    const g = document.createElementNS("http://www.w3.org/2000/svg","g");
+    g.setAttribute("class", "node");
+    g.dataset.nodeId = n.id;
+    g.setAttribute("transform", `translate(${n.x},${n.y})`);
+
+    // determine status class based on pruned domain
+    let st = "";
+    if(prunedDomains && prunedDomains.has(n.id)){
+      const size = prunedDomains.get(n.id).size;
+      if(size === 0) st = " bad";
+      else if(n.value !== null) st = " good";
+      else st = " warn";
+    }else{
+      st = (n.value !== null) ? " good" : " warn";
+    }
+    g.setAttribute("class","node"+st);
+
+    const c = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("r","26");
+    g.appendChild(c);
+
+    const t = document.createElementNS("http://www.w3.org/2000/svg","text");
+    t.textContent = n.label;
+    t.setAttribute("y","-2");
+    g.appendChild(t);
+
+    const v = document.createElementNS("http://www.w3.org/2000/svg","text");
+    v.textContent = (n.value === null) ? "?" : String(n.value);
+    v.setAttribute("class","val");
+    v.setAttribute("y","16");
+    g.appendChild(v);
+
+    // drag
+    let drag = {active:false, dx:0, dy:0};
+    g.addEventListener("mousedown", (ev)=>{
+      drag.active = true;
+      g.style.cursor = "grabbing";
+      const pt = clientToSvg(ev.clientX, ev.clientY);
+      drag.dx = n.x - pt.x;
+      drag.dy = n.y - pt.y;
+      ev.preventDefault();
+    });
+    window.addEventListener("mousemove", (ev)=>{
+      if(!drag.active) return;
+      const pt = clientToSvg(ev.clientX, ev.clientY);
+      n.x = clamp(pt.x + drag.dx, 40, 860);
+      n.y = clamp(pt.y + drag.dy, 40, 480);
+      renderAll(); // simple re-render
+    });
+    window.addEventListener("mouseup", ()=>{
+      if(drag.active){
+        drag.active = false;
+        g.style.cursor = "grab";
+      }
+    });
+
+    svg.appendChild(g);
+  }
+
+  // click on empty space clears selection
+  svg.addEventListener("click", ()=>{
+    state.selectedEdgeId = null;
+    renderAll();
+  });
+}
+
+function clientToSvg(clientX, clientY){
+  const rect = svg.getBoundingClientRect();
+  const x = (clientX - rect.left) * (900 / rect.width);
+  const y = (clientY - rect.top) * (520 / rect.height);
+  return {x,y};
+}
+function clamp(x, lo, hi){ return Math.max(lo, Math.min(hi, x)); }
+
+// ---------- Edge inspector ----------
+function renderEdgeInspector(domains){
+  const e = state.selectedEdgeId ? getEdge(state.selectedEdgeId) : null;
+  const info = edgeInfoEl.querySelectorAll(".v");
+  if(!e){
+    info[0].textContent = "none";
+    info[1].textContent = "—";
+    info[2].textContent = "—";
+    compatTableBody.innerHTML = "";
+    return;
+  }
+  info[0].textContent = `${e.source} → ${e.target}`;
+  info[1].textContent = e.expr + (e._compileError ? "  (⚠ compile error)" : "");
+  info[2].textContent = e.interpretation || "—";
+
+  // Build compatibility table from current domains
+  const Du = setToSortedArray(domains.get(e.source));
+  const Dv = setToSortedArray(domains.get(e.target));
+  compatTableBody.innerHTML = "";
+  for(const uVal of Du){
+    const allowed = Dv.filter(vVal => constraintSatisfied(e, uVal, vVal));
+    const tr = document.createElement("tr");
+    const td1 = document.createElement("td");
+    const td2 = document.createElement("td");
+    td1.textContent = String(uVal);
+    td2.textContent = allowed.length ? allowed.join(", ") : "∅";
+    if(!allowed.length){
+      td2.style.color = "var(--bad)";
+      td2.style.fontWeight = "900";
+    }
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    compatTableBody.appendChild(tr);
+  }
+}
+
+// ---------- Gluing report ----------
+function renderReport(result){
+  if(!result){
+    glueReportEl.innerHTML = `<span class="mono">Press “Glue / Solve” to compute a global section or detect an obstruction.</span>`;
+    statusBadge.textContent = "ready";
+    statusBadge.style.color = "var(--muted)";
+    return;
+  }
+
+  const {ac, solve} = result;
+
+  const empty = Array.from(ac.emptyNodes);
+  const capped = solve.capped ? " (count capped)" : "";
+  const domSummary = state.nodes.map(n => {
+    const d = ac.domains.get(n.id);
+    return `${n.id}:${d.size === 0 ? "∅" : "{"+setToSortedArray(d).join(",")+"}"}`;
+  }).join("  ");
+
+  if(empty.length){
+    statusBadge.textContent = "obstruction";
+    statusBadge.style.color = "var(--bad)";
+    glueReportEl.innerHTML = `
+      <div><strong style="color:var(--bad)">No global section.</strong> Arc-consistency propagation produced an empty domain at: <span class="mono">${empty.join(", ")}</span>.</div>
+      <div class="divider"></div>
+      <div class="mono">Pruned domains: ${domSummary}</div>
+      <div class="divider"></div>
+      <div><strong>Removal log (last ~12)</strong></div>
+      <div class="mono">${ac.reasons.slice(-12).map(r=>`• removed ${r.value} from ${r.node} because of ${r.becauseEdge} (with ${r.becauseWithNode})`).join("<br/>")}</div>
+      <div class="divider"></div>
+      <div>Try: widen a local domain, or relax one of the downstream constraints (click an edge to inspect).</div>
+    `;
+    return;
+  }
+
+  if(solve.exists){
+    statusBadge.textContent = "gluable";
+    statusBadge.style.color = "var(--good)";
+    const sol = solve.solution;
+    const entries = Object.entries(sol).map(([k,v])=>`${k}:${v}`).join(", ");
+    const score = Object.values(sol).reduce((a,b)=>a+Number(b),0);
+    glueReportEl.innerHTML = `
+      <div><strong style="color:var(--good)">Global section exists.</strong> Found ${solve.count} solution(s)${capped}.</div>
+      <div class="divider"></div>
+      <div><strong>One global section</strong></div>
+      <div class="mono">{ ${entries} }</div>
+      <div class="divider"></div>
+      <div><strong>Example project metric</strong> (sum of node values): <span class="mono">${score}</span></div>
+      <div class="divider"></div>
+      <div class="mono">Arc-consistent domains: ${domSummary}</div>
+      <div class="divider"></div>
+      <div>To see an obstruction, try the “Obstruction demo (diamond)” example, or tighten a domain until something becomes impossible.</div>
+    `;
+  }else{
+    statusBadge.textContent = "obstruction";
+    statusBadge.style.color = "var(--bad)";
+    glueReportEl.innerHTML = `
+      <div><strong style="color:var(--bad)">No global section.</strong> Domains are nonempty but no full assignment satisfies all constraints.</div>
+      <div class="divider"></div>
+      <div class="mono">Arc-consistent domains: ${domSummary}</div>
+      <div class="divider"></div>
+      <div>Try: clear some fixed values, or relax one constraint.</div>
+    `;
+  }
+}
+
+// ---------- Master render ----------
+function renderAll(){
+  compileEdges();
+
+  // AC-3 + solve
+  const baseDomains = currentDomains();
+  const ac = arcConsistency(baseDomains);
+  const solve = solveGlobal(ac.domains, 500);
+
+  // Determine violated edges under (a) user-fixed assignments if all assigned, else under solution if exists.
+  let edgeViolations = new Set();
+  const userAssigned = {};
+  let allFixed = true;
+  for(const n of state.nodes){
+    if(n.value === null){ allFixed = false; }
+    else userAssigned[n.id] = n.value;
+  }
+  if(allFixed){
+    const v = checkEdgeViolations(userAssigned);
+    for(const it of v) edgeViolations.add(it.edgeId);
+  }else if(solve.exists && solve.solution){
+    // show violations none for solution
+    edgeViolations = new Set();
+  }else{
+    // if no solution, highlight edges that look locally unsupported
+    for(const e of state.edges){
+      const Du = ac.domains.get(e.source);
+      const Dv = ac.domains.get(e.target);
+      let locallySupported = false;
+      for(const uVal of Du){
+        for(const vVal of Dv){
+          if(constraintSatisfied(e, uVal, vVal)){
+            locallySupported = true; break;
+          }
+        }
+        if(locallySupported) break;
+      }
+      if(!locallySupported) edgeViolations.add(e.id);
+    }
+  }
+
+  state.lastSolve = {ac, solve};
+
+  renderNodeList(ac.domains);
+  renderGraph(ac.domains, edgeViolations);
+  renderEdgeInspector(ac.domains);
+  renderReport(state.lastSolve);
+
+  // keep JSON editor synced (but don't override if user is typing?)
+  if(!jsonEditor.matches(":focus")){
+    jsonEditor.value = JSON.stringify(serializeState(), null, 2);
+  }
+}
+
+// ---------- JSON import/export ----------
+function serializeState(){
+  const cleanEdges = state.edges.map(e=>({
+    id:e.id, source:e.source, target:e.target, expr:e.expr, interpretation:e.interpretation
+  }));
+  const cleanNodes = state.nodes.map(n=>({
+    id:n.id, label:n.label, domain:n.domain, value:n.value, x:n.x, y:n.y
+  }));
+  return {
+    meta: Examples[state.exampleKey]?.meta || {title:"custom"},
+    nodes: cleanNodes,
+    edges: cleanEdges
+  };
+}
+
+function loadFromObject(obj){
+  if(!obj || !Array.isArray(obj.nodes) || !Array.isArray(obj.edges)){
+    showToast("Load failed", "JSON must have {nodes:[...], edges:[...]}");
+    return;
+  }
+  // Normalize
+  state.nodes = obj.nodes.map(n=>({
+    id:String(n.id),
+    label: n.label ?? String(n.id),
+    domain: (n.domain||[]).map(Number).filter(Number.isFinite),
+    value: (n.value===null||n.value===undefined||n.value==="") ? null : Number(n.value),
+    x: Number.isFinite(Number(n.x)) ? Number(n.x) : 120,
+    y: Number.isFinite(Number(n.y)) ? Number(n.y) : 120
+  }));
+  state.edges = obj.edges.map(e=>({
+    id: e.id ?? `${e.source}->${e.target}`,
+    source:String(e.source),
+    target:String(e.target),
+    expr: String(e.expr ?? "true"),
+    interpretation: e.interpretation ?? ""
+  }));
+  state.selectedEdgeId = null;
+  renderAll();
+  showToast("Loaded", "Graph + sheaf data loaded from JSON.");
+}
+
+// ---------- Controls ----------
+document.getElementById("glueBtn").addEventListener("click", ()=>{
+  renderAll();
+  if(state.lastSolve?.solve?.exists){
+    showToast("Gluing succeeded", "A global section exists; see right panel.");
+  }else{
+    showToast("Obstruction", "No global section under current locals; see right panel.");
+  }
+});
+
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  initExample(state.exampleKey);
+  showToast("Reset", "Restored the selected example.");
+});
+
+exampleSelectEl.addEventListener("change", ()=>{
+  initExample(exampleSelectEl.value);
+});
+
+document.getElementById("loadJsonBtn").addEventListener("click", ()=>{
+  try{
+    const obj = JSON.parse(jsonEditor.value);
+    state.exampleKey = "custom";
+    loadFromObject(obj);
+  }catch(err){
+    showToast("JSON parse error", String(err));
+  }
+});
+
+document.getElementById("exportJsonBtn").addEventListener("click", ()=>{
+  jsonEditor.value = JSON.stringify(serializeState(), null, 2);
+  jsonEditor.focus();
+  jsonEditor.select();
+  showToast("Exported", "JSON copied into the editor (select + copy).");
+});
+
+// ---------- Init ----------
+function initExample(key){
+  state.exampleKey = key;
+  const ex = Examples[key];
+  state.nodes = deepClone(ex.nodes);
+  state.edges = deepClone(ex.edges);
+  state.selectedEdgeId = null;
+  renderAll();
+  showToast("Example loaded", ex.meta.title);
+}
+
+// Boot
+initExample("risk");
+</script>
+</body>
+</html>
