@@ -29,8 +29,15 @@ function Navbar() {
 }
 
 function App() {
+  const baseUrl = import.meta.env.BASE_URL;
+  const baseFromPath = window.location.pathname.replace(
+    /(projects\/solway-tunnel\/|projects\/|glossary\/|ai-tools\/|brief\/|sandbox\/|storyboard\/|insights\/)$/,
+    ''
+  );
+  const basename = baseUrl === './' ? baseFromPath : baseUrl;
+
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <BrowserRouter basename={basename}>
       <Navbar />
       <div className="container mx-auto px-4">
         <Routes>
