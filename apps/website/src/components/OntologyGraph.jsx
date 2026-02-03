@@ -45,6 +45,10 @@ function buildNeighborMap(links) {
   return map;
 }
 
+function normalizeLinkEndpoint(endpoint) {
+  return typeof endpoint === 'object' ? endpoint.id : endpoint;
+}
+
 const OntologyGraph = forwardRef(function OntologyGraph(_, ref) {
   const containerRef = useRef(null);
   const graphRef = useRef(null);
@@ -161,7 +165,11 @@ const OntologyGraph = forwardRef(function OntologyGraph(_, ref) {
       nodes = nodes.filter(node => node.group === filter);
     }
     const nodeIds = new Set(nodes.map(node => node.id));
-    links = links.filter(link => nodeIds.has(link.source) && nodeIds.has(link.target));
+    links = links.filter(link => {
+      const source = normalizeLinkEndpoint(link.source);
+      const target = normalizeLinkEndpoint(link.target);
+      return nodeIds.has(source) && nodeIds.has(target);
+    });
     return { nodes, links };
   }, [graphData, filter, viewMode]);
 
@@ -175,8 +183,8 @@ const OntologyGraph = forwardRef(function OntologyGraph(_, ref) {
     if (!selectedNode) return new Set();
     return new Set(
       graphData.links.filter(link => {
-        const source = typeof link.source === 'object' ? link.source.id : link.source;
-        const target = typeof link.target === 'object' ? link.target.id : link.target;
+        const source = normalizeLinkEndpoint(link.source);
+        const target = normalizeLinkEndpoint(link.target);
         return source === selectedNode.id || target === selectedNode.id;
       })
     );
