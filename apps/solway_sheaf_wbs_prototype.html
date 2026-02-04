@@ -1,0 +1,1451 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Solway Firth Tunnel — Local-to-Global Sheaf Prototype (WBS / Risk / Resources / Obstructions)</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#101823;
+      --panel2:#0f1720;
+      --text:#e7edf5;
+      --muted:#a7b3c3;
+      --accent:#6aa9ff;
+      --good:#4dd27d;
+      --warn:#ffcc66;
+      --bad:#ff6a6a;
+      --line:#2a3a4d;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:linear-gradient(180deg, #070a0f, #0b0f14);
+      color:var(--text);
+    }
+    header{
+      padding:14px 18px;
+      border-bottom:1px solid var(--line);
+      background:rgba(16,24,35,0.95);
+      position:sticky; top:0; z-index:10;
+    }
+    header h1{margin:0; font-size:16px; font-weight:650; letter-spacing:0.2px;}
+    header .sub{margin-top:6px; font-size:12px; color:var(--muted); line-height:1.35;}
+    main{
+      display:grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap:12px;
+      padding:12px;
+      height: calc(100% - 92px);
+      box-sizing:border-box;
+    }
+    .card{
+      background:rgba(16,24,35,0.9);
+      border:1px solid var(--line);
+      border-radius:12px;
+      overflow:hidden;
+      box-shadow:0 12px 28px rgba(0,0,0,0.35);
+    }
+    .card .card-hd{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      background:rgba(15,23,32,0.85);
+    }
+    .card .card-hd .title{
+      font-size:13px; font-weight:650;
+    }
+    .tabs{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    .tab{
+      cursor:pointer;
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(8,12,18,0.6);
+      color:var(--muted);
+      user-select:none;
+    }
+    .tab.active{
+      background:rgba(106,169,255,0.16);
+      border-color:rgba(106,169,255,0.55);
+      color:var(--text);
+    }
+    .card .card-bd{
+      padding:12px;
+    }
+    .row{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    button{
+      cursor:pointer;
+      border:1px solid var(--line);
+      background:rgba(8,12,18,0.8);
+      color:var(--text);
+      border-radius:10px;
+      padding:7px 10px;
+      font-size:12px;
+    }
+    button:hover{border-color:rgba(106,169,255,0.65);}
+    select, input, textarea{
+      border:1px solid var(--line);
+      background:rgba(8,12,18,0.85);
+      color:var(--text);
+      border-radius:10px;
+      padding:6px 8px;
+      font-size:12px;
+      outline:none;
+    }
+    textarea{min-height:84px; width:100%; resize:vertical; box-sizing:border-box;}
+    .pill{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:12px;
+      background:rgba(8,12,18,0.5);
+    }
+    .pill.good{color:var(--good); border-color:rgba(77,210,125,0.5); background:rgba(77,210,125,0.08);}
+    .pill.bad{color:var(--bad); border-color:rgba(255,106,106,0.5); background:rgba(255,106,106,0.08);}
+    .pill.warn{color:var(--warn); border-color:rgba(255,204,102,0.5); background:rgba(255,204,102,0.08);}
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .grid3{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:10px;
+    }
+    .small{font-size:12px; color:var(--muted); line-height:1.35;}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .kvs{
+      display:grid;
+      grid-template-columns: 140px 1fr;
+      gap:6px 10px;
+      font-size:12px;
+      align-items:start;
+    }
+    .kvs .k{color:var(--muted);}
+    .hr{height:1px; background:var(--line); margin:12px 0;}
+    .svgwrap{
+      border:1px solid var(--line);
+      border-radius:12px;
+      overflow:hidden;
+      background:rgba(8,12,18,0.6);
+    }
+    .log{
+      padding:10px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:rgba(8,12,18,0.65);
+      max-height:240px;
+      overflow:auto;
+      font-size:12px;
+      line-height:1.35;
+      white-space:pre-wrap;
+    }
+    .legend{
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    .legend span{
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:12px; color:var(--muted);
+    }
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,0.22);
+    }
+    .dot.good{background:rgba(77,210,125,0.9);}
+    .dot.bad{background:rgba(255,106,106,0.9);}
+    .dot.warn{background:rgba(255,204,102,0.9);}
+    .dot.neutral{background:rgba(106,169,255,0.9);}
+    .footnote{font-size:11px; color:rgba(167,179,195,0.75); line-height:1.35;}
+    a{color:var(--accent); text-decoration:none;}
+    a:hover{text-decoration:underline;}
+  </style>
+</head>
+<body>
+<header>
+  <h1>Solway Firth Tunnel — “Local data → Global WBS” via sheaves (prototype)</h1>
+  <div class="sub">
+    Three views of the same idea: (i) a <span class="mono">Set</span>-valued risk presheaf on a task-dependency category, (ii) a function-valued “headcount over time” presheaf with overlap-restrictions, and (iii) a linear cohomological obstruction demo (a 1‑cochain not in <span class="mono">im δ⁰</span>).
+    <br/>
+    Nothing here is “project truth”: it’s a minimal canvas to test the patching/obstruction pipeline.
+  </div>
+</header>
+
+<main>
+  <!-- Left: interactive canvas -->
+  <section class="card" id="canvasCard">
+    <div class="card-hd">
+      <div class="title">Canvas</div>
+      <div class="tabs">
+        <div class="tab active" data-tab="risk">Risk sheaf (Set-valued)</div>
+        <div class="tab" data-tab="resources">Resources (function-valued)</div>
+        <div class="tab" data-tab="cohomology">Obstruction (H¹ / 1‑cocycles)</div>
+      </div>
+    </div>
+    <div class="card-bd">
+      <!-- RISK TAB -->
+      <div class="tabpane" id="tab-risk">
+        <div class="row" style="margin-bottom:10px;">
+          <button id="btnSolveRisk">Solve global sections</button>
+          <button id="btnExpectedRisk">Expected-risk metric</button>
+          <button id="btnToggleInfeasible">Toggle “make infeasible”</button>
+          <span class="pill" id="riskStatusPill">—</span>
+        </div>
+        <div class="legend" style="margin-bottom:10px;">
+          <span><span class="dot neutral"></span>task</span>
+          <span><span class="dot good"></span>task fixed by constraints</span>
+          <span><span class="dot warn"></span>multiple feasible values</span>
+          <span><span class="dot bad"></span>constraint conflict</span>
+        </div>
+
+        <div class="svgwrap">
+          <svg id="riskSvg" width="100%" viewBox="0 0 820 420"></svg>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="grid2">
+          <div>
+            <div class="title" style="font-size:12px; font-weight:650; margin-bottom:6px;">Selected task (local stalk)</div>
+            <div class="kvs" id="riskTaskKvs"></div>
+            <div class="hr"></div>
+            <div class="title" style="font-size:12px; font-weight:650; margin-bottom:6px;">Edit local risk data</div>
+            <div class="small">Risk values (comma-separated ints):</div>
+            <input id="riskValuesInput" style="width:100%;" />
+            <div class="small" style="margin-top:8px;">Probabilities (comma-separated, same length; auto-normalised):</div>
+            <input id="riskProbsInput" style="width:100%;" />
+            <div class="row" style="margin-top:10px;">
+              <button id="btnUpdateRiskTask">Update task</button>
+              <span class="small" id="riskEditHint"></span>
+            </div>
+          </div>
+
+          <div>
+            <div class="title" style="font-size:12px; font-weight:650; margin-bottom:6px;">Selected dependency (restriction)</div>
+            <div class="kvs" id="riskEdgeKvs"></div>
+            <div class="hr"></div>
+            <div class="title" style="font-size:12px; font-weight:650; margin-bottom:6px;">Edit restriction map (inequality)</div>
+            <div class="small">Interpretation: downstream ≥ upstream + Δ</div>
+            <div class="row" style="margin-top:8px;">
+              <span class="small">Δ = </span>
+              <input id="riskDeltaInput" style="width:80px;" />
+              <button id="btnUpdateRiskEdge">Update edge</button>
+            </div>
+
+            <div class="hr"></div>
+            <div class="title" style="font-size:12px; font-weight:650; margin-bottom:6px;">Output</div>
+            <div class="log mono" id="riskLog">(click a node or edge; then “Solve global sections”)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESOURCES TAB -->
+      <div class="tabpane" id="tab-resources" style="display:none;">
+        <div class="row" style="margin-bottom:10px;">
+          <button id="btnCheckResources">Check overlap agreement</button>
+          <button id="btnGlueResources">Glue (if consistent)</button>
+          <button id="btnSheafifyResources">Sheafify (force consistency)</button>
+          <label class="pill" style="gap:10px;">
+            Reconcile rule:
+            <select id="reconcileRule">
+              <option value="max">max</option>
+              <option value="min">min</option>
+              <option value="mean">mean</option>
+            </select>
+          </label>
+          <span class="pill" id="resStatusPill">—</span>
+        </div>
+        <div class="small" style="margin-bottom:10px;">
+          Each phase claims a piecewise-constant “headcount plan” on its own interval; agreement on overlaps is the sheaf condition in the 2024-12 resource draft (restriction = interval restriction; gluing = global headcount profile). If inconsistent, “sheafify” projects the inconsistent family to a consistent one by choosing a single global profile and restricting it back to each phase.
+        </div>
+
+        <div class="svgwrap" style="margin-bottom:10px;">
+          <svg id="resSvg" width="100%" viewBox="0 0 820 320"></svg>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <div class="title" style="font-size:12px; font-weight:650; margin-bottom:6px;">Phases (local data)</div>
+            <div class="log mono" id="resPhasesLog"></div>
+            <div class="footnote" style="margin-top:8px;">
+              Tip: after sheafification, each phase becomes literally the restriction of the global profile (so overlaps necessarily match).
+            </div>
+          </div>
+          <div>
+            <div class="title" style="font-size:12px; font-weight:650; margin-bottom:6px;">Checks / metrics</div>
+            <div class="log mono" id="resLog">(click “Check overlap agreement”)</div>
+            <div class="hr"></div>
+            <div class="kvs" id="resMetricsKvs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COHOMOLOGY TAB -->
+      <div class="tabpane" id="tab-cohomology" style="display:none;">
+        <div class="row" style="margin-bottom:10px;">
+          <button id="btnSolveCohom">Solve δ⁰x = ω (find potential)</button>
+          <button id="btnPerturbCohom">Perturb one edge</button>
+          <span class="pill" id="cohomStatusPill">—</span>
+        </div>
+        <div class="small" style="margin-bottom:10px;">
+          Here ω is an <span class="mono">R</span>-valued 1‑cochain on a cyclic “interface graph” (think: interdependent design constraints). A global “spec potential” exists iff ω is a coboundary (ω ∈ im δ⁰), i.e. the cycle-sums vanish; otherwise ω represents a nontrivial class in H¹ (an obstruction to global coherence).
+        </div>
+
+        <div class="svgwrap" style="margin-bottom:10px;">
+          <svg id="cohomSvg" width="100%" viewBox="0 0 820 360"></svg>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <div class="title" style="font-size:12px; font-weight:650; margin-bottom:6px;">Edit edge offsets ω(e)</div>
+            <div class="small">Equation per edge i→j: x<sub>j</sub> − x<sub>i</sub> = ω(i→j)</div>
+            <div id="cohomEdgeEditor"></div>
+            <div class="footnote" style="margin-top:8px;">
+              In a project reading: ω is “local interface commitments”, x is the single global spec you wish existed.
+            </div>
+          </div>
+          <div>
+            <div class="title" style="font-size:12px; font-weight:650; margin-bottom:6px;">Output</div>
+            <div class="log mono" id="cohomLog">(click “Solve δ⁰x = ω”)</div>
+            <div class="hr"></div>
+            <div class="kvs" id="cohomKvs"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Right: explainers -->
+  <aside class="card">
+    <div class="card-hd">
+      <div class="title">Notes / “what to look for”</div>
+    </div>
+    <div class="card-bd">
+      <div class="small">
+        <b>1) Treat the WBS as a site.</b><br/>
+        The least painful formal base is the WBS poset (tasks/work‑packages ordered by refinement or precedence), equipped with the Alexandrov topology, where presheaves and sheaves coincide (so you can work functorially without constantly re-proving the sheaf axiom).<br/><br/>
+
+        <b>2) Local data is a presheaf; “global plan” is Γ(F).</b><br/>
+        A “global section” is literally a compatible choice of local elements whose restrictions agree on overlaps (graph edges as overlaps; time-interval overlaps as overlaps).<br/><br/>
+
+        <b>3) Cohomology as an obstruction indicator.</b><br/>
+        For a cellular sheaf F of vector spaces, H⁰(X;F)=ker δ⁰ is the space of global sections; nontrivial H¹(X;F) measures failure-to-glue (a quotient by im δ⁰). In practice, you compute a residual and visualise its support as the “where the boundary conditions disagree”.<br/><br/>
+
+        <b>4) Sheafification is a governance move.</b><br/>
+        The “design” paper angle: choosing the Grothendieck topology J is choosing which overlaps must agree; sheafification is a left adjoint that forces agreement, “creatively preserving” the base category while resolving unknowns.
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="title" style="font-size:12px; font-weight:650; margin-bottom:6px;">LLM analytics hook (where it belongs)</div>
+      <div class="small">
+        The LLM should act as a <i>sheaf compiler</i>, not as the sheaf engine: extract stalk data (risk sets, distributions, interval functions) and restriction maps (interface constraints) from heterogeneous local artefacts, then let a deterministic solver compute Γ(F), δ⁰, and any obstruction residuals. That keeps traceability and lets you unit-test restriction-map properties (monotone, continuous, etc.).
+      </div>
+
+      <div class="hr"></div>
+      <div class="footnote">
+        Prototype is intentionally small (9 tasks; a handful of phases; a single cycle). The point is to make
+        “patching” and “obstruction” visceral, before scaling.
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script>
+/* ===========================
+   Small utilities
+=========================== */
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const uniqSorted = arr => Array.from(new Set(arr)).sort((a,b)=>a-b);
+
+function fmt(obj){
+  return JSON.stringify(obj, null, 2);
+}
+
+function normaliseProbs(vals){
+  const s = vals.reduce((a,b)=>a+b,0);
+  if(!isFinite(s) || s<=0) return vals.map(_=>1/vals.length);
+  return vals.map(x=>x/s);
+}
+
+function parseIntList(s){
+  return s.split(",").map(x=>x.trim()).filter(x=>x.length>0).map(x=>parseInt(x,10)).filter(x=>Number.isFinite(x));
+}
+function parseFloatList(s){
+  return s.split(",").map(x=>x.trim()).filter(x=>x.length>0).map(x=>parseFloat(x)).filter(x=>Number.isFinite(x));
+}
+
+/* ===========================
+   Tabs
+=========================== */
+const tabs = Array.from(document.querySelectorAll(".tab"));
+const panes = {
+  risk: document.getElementById("tab-risk"),
+  resources: document.getElementById("tab-resources"),
+  cohomology: document.getElementById("tab-cohomology")
+};
+tabs.forEach(t=>{
+  t.addEventListener("click", ()=>{
+    tabs.forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    const key = t.dataset.tab;
+    Object.entries(panes).forEach(([k,el])=>{
+      el.style.display = (k===key) ? "block" : "none";
+    });
+  });
+});
+
+/* ===========================
+   RISK SHEAF (Set-valued)
+   WBS for a Solway Firth tunnel (tiny toy WBS)
+=========================== */
+const riskSvg = document.getElementById("riskSvg");
+const riskLog = document.getElementById("riskLog");
+const riskStatusPill = document.getElementById("riskStatusPill");
+
+let makeInfeasible = false;
+
+const riskTasks = [
+  {id:"A", name:"Geotechnical survey",                x:120, y:70,  values:[1,2,3], probs:[0.25,0.5,0.25]},
+  {id:"B", name:"Environmental consents",             x:120, y:170, values:[1,2,3,4], probs:[0.2,0.3,0.3,0.2]},
+  {id:"C", name:"Reference + detailed design",        x:300, y:120, values:[2,3,4,5], probs:[0.15,0.35,0.35,0.15]},
+  {id:"D", name:"TBM procurement",                    x:480, y:70,  values:[3,4,5,6], probs:[0.2,0.3,0.3,0.2]},
+  {id:"E", name:"Shafts + portals (both banks)",      x:480, y:170, values:[2,3,4,5], probs:[0.2,0.3,0.3,0.2]},
+  {id:"F", name:"Twin-bore drives (TBM operations)",  x:640, y:120, values:[4,5,6,7], probs:[0.2,0.3,0.3,0.2]},
+  {id:"G", name:"Lining + waterproofing",             x:780, y:120, values:[3,4,5,6], probs:[0.2,0.3,0.3,0.2]},
+  {id:"H", name:"M&E + safety systems",               x:780, y:220, values:[2,3,4,5], probs:[0.2,0.3,0.3,0.2]},
+  {id:"I", name:"Testing + commissioning",            x:780, y:320, values:[1,2,3,4], probs:[0.2,0.3,0.3,0.2]},
+];
+
+const baseEdges = [
+  // deps into design
+  {id:"A->C", from:"A", to:"C", delta:1},
+  {id:"B->C", from:"B", to:"C", delta:1},
+
+  // design to procurement/shafts
+  {id:"C->D", from:"C", to:"D", delta:1},
+  {id:"C->E", from:"C", to:"E", delta:0},
+
+  // convergence at drives
+  {id:"D->F", from:"D", to:"F", delta:1},
+  {id:"E->F", from:"E", to:"F", delta:1},
+
+  // downstream
+  {id:"F->G", from:"F", to:"G", delta:-1},
+  {id:"G->H", from:"G", to:"H", delta:-1},
+  {id:"H->I", from:"H", to:"I", delta:-1},
+];
+
+let riskEdges = JSON.parse(JSON.stringify(baseEdges));
+
+let selectedRiskTaskId = "C";
+let selectedRiskEdgeId = "C->D";
+
+function getRiskTask(id){ return riskTasks.find(t=>t.id===id); }
+function getRiskEdge(id){ return riskEdges.find(e=>e.id===id); }
+
+function setRiskPill(kind, text){
+  riskStatusPill.className = "pill " + (kind||"");
+  riskStatusPill.textContent = text;
+}
+
+function drawRisk(){
+  const svg = riskSvg;
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+
+  // defs
+  const ns = "http://www.w3.org/2000/svg";
+  const defs = document.createElementNS(ns, "defs");
+  const marker = document.createElementNS(ns, "marker");
+  marker.setAttribute("id", "arrow");
+  marker.setAttribute("markerWidth", "10");
+  marker.setAttribute("markerHeight", "10");
+  marker.setAttribute("refX", "10");
+  marker.setAttribute("refY", "3");
+  marker.setAttribute("orient", "auto");
+  marker.setAttribute("markerUnits", "strokeWidth");
+  const path = document.createElementNS(ns, "path");
+  path.setAttribute("d", "M0,0 L10,3 L0,6 Z");
+  path.setAttribute("fill", "rgba(167,179,195,0.9)");
+  marker.appendChild(path);
+  defs.appendChild(marker);
+  svg.appendChild(defs);
+
+  // edges
+  for(const e of riskEdges){
+    const a = getRiskTask(e.from);
+    const b = getRiskTask(e.to);
+    const line = document.createElementNS(ns, "line");
+    line.setAttribute("x1", a.x);
+    line.setAttribute("y1", a.y);
+    line.setAttribute("x2", b.x);
+    line.setAttribute("y2", b.y);
+    line.setAttribute("stroke", (e.id===selectedRiskEdgeId) ? "rgba(106,169,255,0.95)" : "rgba(167,179,195,0.45)");
+    line.setAttribute("stroke-width", (e.id===selectedRiskEdgeId) ? "2.2" : "1.3");
+    line.setAttribute("marker-end", "url(#arrow)");
+    line.style.cursor = "pointer";
+    line.addEventListener("click", ()=>{
+      selectedRiskEdgeId = e.id;
+      selectedRiskTaskId = e.from; // useful default
+      renderRiskSelection();
+      drawRisk();
+    });
+    svg.appendChild(line);
+
+    // label
+    const mx = (a.x+b.x)/2;
+    const my = (a.y+b.y)/2;
+    const lbl = document.createElementNS(ns, "text");
+    lbl.setAttribute("x", mx+6);
+    lbl.setAttribute("y", my-6);
+    lbl.setAttribute("fill", "rgba(167,179,195,0.85)");
+    lbl.setAttribute("font-size", "11");
+    lbl.setAttribute("class","mono");
+    lbl.textContent = "Δ="+e.delta;
+    svg.appendChild(lbl);
+  }
+
+  // nodes
+  for(const t of riskTasks){
+    const g = document.createElementNS(ns, "g");
+    g.style.cursor = "pointer";
+    g.addEventListener("click", ()=>{
+      selectedRiskTaskId = t.id;
+      renderRiskSelection();
+      drawRisk();
+    });
+
+    const circle = document.createElementNS(ns, "circle");
+    circle.setAttribute("cx", t.x);
+    circle.setAttribute("cy", t.y);
+    circle.setAttribute("r", 22);
+    circle.setAttribute("stroke", (t.id===selectedRiskTaskId) ? "rgba(106,169,255,0.95)" : "rgba(255,255,255,0.20)");
+    circle.setAttribute("stroke-width", (t.id===selectedRiskTaskId) ? "2.2" : "1.3");
+    circle.setAttribute("fill", "rgba(106,169,255,0.16)");
+    g.appendChild(circle);
+
+    const label = document.createElementNS(ns, "text");
+    label.setAttribute("x", t.x);
+    label.setAttribute("y", t.y+4);
+    label.setAttribute("text-anchor", "middle");
+    label.setAttribute("fill", "rgba(231,237,245,0.92)");
+    label.setAttribute("font-size", "12");
+    label.setAttribute("class", "mono");
+    label.textContent = t.id;
+    g.appendChild(label);
+
+    const name = document.createElementNS(ns, "text");
+    name.setAttribute("x", t.x);
+    name.setAttribute("y", t.y+40);
+    name.setAttribute("text-anchor", "middle");
+    name.setAttribute("fill", "rgba(167,179,195,0.85)");
+    name.setAttribute("font-size", "10");
+    name.textContent = t.name;
+    g.appendChild(name);
+
+    svg.appendChild(g);
+  }
+}
+
+function topoOrder(tasks, edges){
+  const ids = tasks.map(t=>t.id);
+  const indeg = new Map(ids.map(id=>[id,0]));
+  const out = new Map(ids.map(id=>[id,[]]));
+  for(const e of edges){
+    out.get(e.from).push(e.to);
+    indeg.set(e.to, (indeg.get(e.to)||0)+1);
+  }
+  const q = ids.filter(id=>indeg.get(id)===0);
+  const ord = [];
+  while(q.length){
+    q.sort(); // deterministic
+    const v = q.shift();
+    ord.push(v);
+    for(const u of out.get(v)){
+      indeg.set(u, indeg.get(u)-1);
+      if(indeg.get(u)===0) q.push(u);
+    }
+  }
+  return ord;
+}
+
+function solveRiskGlobalSections(limit=200){
+  // apply toggle infeasible by forcing a too-strong delta on E->F (just as a demo)
+  const edges = riskEdges.map(e=>({...e}));
+  if(makeInfeasible){
+    const ef = edges.find(e=>e.id==="E->F");
+    if(ef) ef.delta = 5;
+  }
+
+  const order = topoOrder(riskTasks, edges);
+  const preds = new Map(riskTasks.map(t=>[t.id,[]]));
+  for(const e of edges){
+    preds.get(e.to).push(e);
+  }
+
+  const solutions = [];
+  const partial = {};
+
+  function backtrack(i){
+    if(solutions.length>=limit) return;
+    if(i>=order.length){
+      solutions.push({...partial});
+      return;
+    }
+    const id = order[i];
+    const task = getRiskTask(id);
+    for(const v of task.values){
+      let ok = true;
+      for(const e of preds.get(id)){
+        const pv = partial[e.from];
+        if(pv===undefined) continue;
+        if(!(v >= pv + e.delta)){
+          ok = false; break;
+        }
+      }
+      if(!ok) continue;
+      partial[id]=v;
+      backtrack(i+1);
+      delete partial[id];
+    }
+  }
+  backtrack(0);
+  return {order, edges, solutions};
+}
+
+function expectedRiskMetric(solutions){
+  // independence assumption: P(section) ∝ Π_i p_i(value_i), conditioned on feasibility
+  let weights = [];
+  for(const sol of solutions){
+    let w = 1.0;
+    for(const t of riskTasks){
+      const idx = t.values.indexOf(sol[t.id]);
+      const p = (idx>=0 && t.probs[idx]!=null) ? t.probs[idx] : (1/t.values.length);
+      w *= p;
+    }
+    weights.push(w);
+  }
+  const Z = weights.reduce((a,b)=>a+b,0);
+  if(Z<=0) return null;
+  weights = weights.map(w=>w/Z);
+
+  let expTotal = 0;
+  const expByTask = new Map(riskTasks.map(t=>[t.id,0]));
+  for(let i=0;i<solutions.length;i++){
+    const sol = solutions[i];
+    const w = weights[i];
+    let total = 0;
+    for(const t of riskTasks){
+      total += sol[t.id];
+      expByTask.set(t.id, expByTask.get(t.id) + w*sol[t.id]);
+    }
+    expTotal += w*total;
+  }
+  return {expTotal, expByTask};
+}
+
+function renderRiskSelection(){
+  const task = getRiskTask(selectedRiskTaskId);
+  const edge = getRiskEdge(selectedRiskEdgeId);
+
+  // task kvs
+  const taskKvs = document.getElementById("riskTaskKvs");
+  taskKvs.innerHTML = "";
+  const addKV = (k,v)=>{
+    const dk = document.createElement("div"); dk.className="k"; dk.textContent=k;
+    const dv = document.createElement("div"); dv.className="mono"; dv.textContent=v;
+    taskKvs.appendChild(dk); taskKvs.appendChild(dv);
+  };
+  if(task){
+    addKV("Task", `${task.id} — ${task.name}`);
+    addKV("Risk set", `{ ${task.values.join(", ")} }`);
+    addKV("Probs", `[ ${task.probs.map(x=>x.toFixed(3)).join(", ")} ]`);
+  }
+
+  // edit inputs
+  const vIn = document.getElementById("riskValuesInput");
+  const pIn = document.getElementById("riskProbsInput");
+  if(task){
+    vIn.value = task.values.join(", ");
+    pIn.value = task.probs.join(", ");
+  }
+
+  // edge kvs
+  const edgeKvs = document.getElementById("riskEdgeKvs");
+  edgeKvs.innerHTML = "";
+  const addKV2=(k,v)=>{
+    const dk = document.createElement("div"); dk.className="k"; dk.textContent=k;
+    const dv = document.createElement("div"); dv.className="mono"; dv.textContent=v;
+    edgeKvs.appendChild(dk); edgeKvs.appendChild(dv);
+  };
+  if(edge){
+    addKV2("Dependency", `${edge.from} → ${edge.to}`);
+    addKV2("Constraint", `${edge.to} ≥ ${edge.from} + ${edge.delta}`);
+  }
+
+  const dIn = document.getElementById("riskDeltaInput");
+  if(edge) dIn.value = edge.delta;
+}
+
+document.getElementById("btnUpdateRiskTask").addEventListener("click", ()=>{
+  const task = getRiskTask(selectedRiskTaskId);
+  if(!task) return;
+  const vs = parseIntList(document.getElementById("riskValuesInput").value);
+  const ps = parseFloatList(document.getElementById("riskProbsInput").value);
+  if(vs.length===0){
+    document.getElementById("riskEditHint").textContent = "Need ≥1 value.";
+    return;
+  }
+  let probs = ps;
+  if(ps.length !== vs.length){
+    probs = vs.map(_=>1/vs.length);
+  }
+  probs = normaliseProbs(probs);
+  task.values = vs;
+  task.probs = probs;
+  document.getElementById("riskEditHint").textContent = "Updated.";
+  renderRiskSelection();
+});
+
+document.getElementById("btnUpdateRiskEdge").addEventListener("click", ()=>{
+  const edge = getRiskEdge(selectedRiskEdgeId);
+  if(!edge) return;
+  const d = parseInt(document.getElementById("riskDeltaInput").value, 10);
+  if(!Number.isFinite(d)){
+    riskLog.textContent = "Δ must be an integer.";
+    return;
+  }
+  edge.delta = d;
+  renderRiskSelection();
+  drawRisk();
+});
+
+document.getElementById("btnToggleInfeasible").addEventListener("click", ()=>{
+  makeInfeasible = !makeInfeasible;
+  setRiskPill("warn", makeInfeasible ? "feasibility toggled: harder constraints" : "normal constraints");
+  riskLog.textContent = makeInfeasible
+    ? "Injected demo inconsistency: edge E->F now has Δ=5 (often kills all global sections)."
+    : "Restored original constraints.";
+  drawRisk();
+});
+
+document.getElementById("btnSolveRisk").addEventListener("click", ()=>{
+  const {order, edges, solutions} = solveRiskGlobalSections(250);
+  if(solutions.length===0){
+    setRiskPill("bad", "Γ(F)=∅ (no global section)");
+    riskLog.textContent =
+      "No global sections found.\n\n" +
+      "Interpretation: local risk sets + restriction inequalities are incompatible.\n" +
+      "You can treat this as a “hard” obstruction (in the discrete Set-valued case).\n\n" +
+      "Try toggling back, or weakening some Δ on dependencies.";
+    return;
+  }
+  setRiskPill("good", `Γ(F) nonempty: ${solutions.length} section(s)`);
+  const show = solutions.slice(0, 12);
+  const lines = [];
+  lines.push("Topological order: " + order.join(" → "));
+  lines.push("");
+  lines.push(`Found ${solutions.length} global section(s) (showing up to ${show.length}):`);
+  for(const sol of show){
+    const pairs = order.map(id=>`${id}:${sol[id]}`).join("  ");
+    lines.push("  " + pairs);
+  }
+  if(solutions.length>show.length) lines.push("  …");
+  riskLog.textContent = lines.join("\n");
+});
+
+document.getElementById("btnExpectedRisk").addEventListener("click", ()=>{
+  const {solutions} = solveRiskGlobalSections(800);
+  if(solutions.length===0){
+    setRiskPill("bad", "Γ(F)=∅");
+    riskLog.textContent = "No feasible global section; expected risk under the conditioned model is undefined.";
+    return;
+  }
+  const m = expectedRiskMetric(solutions);
+  if(!m){
+    riskLog.textContent = "Could not compute expected risk (normalisation failed).";
+    return;
+  }
+  setRiskPill("good", "metric computed");
+  const lines = [];
+  lines.push("Expected-risk metric (conditioning on feasibility; independence assumption):");
+  lines.push("");
+  lines.push(`E[ total risk ] = ${m.expTotal.toFixed(3)}`);
+  lines.push("");
+  lines.push("E[ task risk ]:");
+  for(const t of riskTasks){
+    lines.push(`  ${t.id} ${t.name.padEnd(28)}  ${m.expByTask.get(t.id).toFixed(3)}`);
+  }
+  lines.push("");
+  lines.push("Note: this is the simplest posterior over feasible global sections: P(section) ∝ Π_i p_i(value_i).");
+  riskLog.textContent = lines.join("\n");
+});
+
+drawRisk();
+renderRiskSelection();
+setRiskPill("", "click a node/edge; then solve");
+
+
+/* ===========================
+   RESOURCES (function-valued)
+=========================== */
+
+const resSvg = document.getElementById("resSvg");
+const resLog = document.getElementById("resLog");
+const resStatusPill = document.getElementById("resStatusPill");
+const resPhasesLog = document.getElementById("resPhasesLog");
+const resMetricsKvs = document.getElementById("resMetricsKvs");
+const reconcileRuleSel = document.getElementById("reconcileRule");
+
+function setResPill(kind, text){
+  resStatusPill.className = "pill " + (kind||"");
+  resStatusPill.textContent = text;
+}
+
+let phases = [
+  // time in months from Notice-to-Proceed
+  {id:"P1", name:"Consents + stakeholder",  start:0,  end:10, steps:[[0,6,8],[6,10,6]]},
+  {id:"P2", name:"Design (reference + detailed)", start:2,  end:14, steps:[[2,8,10],[8,14,12]]},
+  {id:"P3", name:"Procurement (TBM, segments, M&E)", start:6,  end:16, steps:[[6,12,9],[12,16,7]]},
+  {id:"P4", name:"Shafts + portals (both banks)", start:8,  end:18, steps:[[8,14,11],[14,18,13]]},
+  {id:"P5", name:"TBM drives + logistics", start:14, end:26, steps:[[14,20,14],[20,26,12]]},
+  {id:"P6", name:"Fit-out + systems integration", start:22, end:32, steps:[[22,28,10],[28,32,8]]},
+  {id:"P7", name:"Testing + commissioning", start:30, end:36, steps:[[30,36,6]]},
+];
+
+// Create a deliberate inconsistency on overlaps (so the check has something to detect):
+// Eg: between P2 and P3 on [6,8], P2 says 10, P3 says 9. Between P4 and P5 on [14,18], P4 says 13, P5 says 14.
+function headcountAt(phase, t){
+  for(const [a,b,v] of phase.steps){
+    if(t>=a && t<b) return v;
+  }
+  return null;
+}
+
+function allBreakpoints(phases){
+  const pts = [];
+  for(const ph of phases){
+    pts.push(ph.start, ph.end);
+    for(const [a,b,_] of ph.steps){ pts.push(a,b); }
+  }
+  return uniqSorted(pts);
+}
+
+function atomicIntervals(phases){
+  const pts = allBreakpoints(phases);
+  const intervals = [];
+  for(let i=0;i<pts.length-1;i++){
+    const a = pts[i], b = pts[i+1];
+    if(b>a) intervals.push([a,b]);
+  }
+  return intervals;
+}
+
+function checkResourceAgreement(phases){
+  const atoms = atomicIntervals(phases);
+  const conflicts = [];
+  const consistent = [];
+  for(const [a,b] of atoms){
+    const mid = (a+b)/2;
+    const props = [];
+    for(const ph of phases){
+      if(mid>=ph.start && mid<ph.end){
+        const v = headcountAt(ph, mid);
+        if(v!=null) props.push({phase:ph.id, name:ph.name, v});
+      }
+    }
+    if(props.length<=1) continue; // nothing to compare
+    const vals = uniqSorted(props.map(p=>p.v));
+    if(vals.length===1){
+      consistent.push({interval:[a,b], v:vals[0], props});
+    }else{
+      conflicts.push({interval:[a,b], vals, props});
+    }
+  }
+  return {conflicts, consistent};
+}
+
+function reconcileValue(props, rule){
+  const vals = props.map(p=>p.v);
+  if(vals.length===0) return null;
+  if(rule==="max") return Math.max(...vals);
+  if(rule==="min") return Math.min(...vals);
+  const s = vals.reduce((a,b)=>a+b,0);
+  return s/vals.length;
+}
+
+function glueIfConsistent(phases){
+  const atoms = atomicIntervals(phases);
+  const global = [];
+  for(const [a,b] of atoms){
+    const mid = (a+b)/2;
+    const props = [];
+    for(const ph of phases){
+      if(mid>=ph.start && mid<ph.end){
+        const v = headcountAt(ph, mid);
+        if(v!=null) props.push(v);
+      }
+    }
+    if(props.length===0) continue;
+    const vals = uniqSorted(props);
+    if(vals.length!==1){
+      return {ok:false, global:null, at:[a,b], vals};
+    }
+    global.push([a,b,vals[0]]);
+  }
+  // merge adjacent same-valued intervals
+  const merged = [];
+  for(const seg of global){
+    if(merged.length===0){
+      merged.push(seg);
+    }else{
+      const last = merged[merged.length-1];
+      if(Math.abs(last[1]-seg[0])<1e-9 && last[2]===seg[2]){
+        last[1]=seg[1];
+      }else{
+        merged.push(seg);
+      }
+    }
+  }
+  return {ok:true, global:merged};
+}
+
+function sheafifyResources(phases, rule){
+  const atoms = atomicIntervals(phases);
+  const global = [];
+  for(const [a,b] of atoms){
+    const mid=(a+b)/2;
+    const props = [];
+    for(const ph of phases){
+      if(mid>=ph.start && mid<ph.end){
+        const v = headcountAt(ph, mid);
+        if(v!=null) props.push({phase:ph.id, v});
+      }
+    }
+    if(props.length===0) continue;
+    const v = reconcileValue(props, rule);
+    global.push([a,b,v]);
+  }
+  // merge
+  const merged=[];
+  for(const seg of global){
+    if(merged.length===0) merged.push(seg);
+    else{
+      const last=merged[merged.length-1];
+      if(Math.abs(last[1]-seg[0])<1e-9 && Math.abs(last[2]-seg[2])<1e-9){
+        last[1]=seg[1];
+      }else merged.push(seg);
+    }
+  }
+
+  // Now "restrict back": each phase gets steps = restriction of global to its interval
+  const newPhases = phases.map(ph=>{
+    const steps=[];
+    for(const [a,b,v] of merged){
+      const aa = Math.max(a, ph.start);
+      const bb = Math.min(b, ph.end);
+      if(bb>aa){
+        steps.push([aa,bb,v]);
+      }
+    }
+    // merge inside phase
+    const m=[];
+    for(const s of steps){
+      if(m.length===0) m.push(s);
+      else{
+        const last=m[m.length-1];
+        if(Math.abs(last[1]-s[0])<1e-9 && Math.abs(last[2]-s[2])<1e-9){
+          last[1]=s[1];
+        }else m.push(s);
+      }
+    }
+    return {...ph, steps:m};
+  });
+
+  return {global:merged, phases:newPhases};
+}
+
+function computeMetrics(globalSegs){
+  if(!globalSegs || globalSegs.length===0) return null;
+  let peak = -Infinity;
+  let total = 0;
+  for(const [a,b,v] of globalSegs){
+    peak = Math.max(peak, v);
+    total += v*(b-a);
+  }
+  return {peak, totalStaffMonths:total};
+}
+
+function drawResources(phases, globalSegs=null, conflicts=null){
+  const svg = resSvg;
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  const ns="http://www.w3.org/2000/svg";
+
+  const W=820, H=320;
+  const padL=50, padR=20, padT=20, padB=34;
+  const tMin=0, tMax=36;
+  const yMax=18; // max headcount in this toy example
+
+  const x = t => padL + (t-tMin)/(tMax-tMin)*(W-padL-padR);
+  const y = v => (H-padB) - (v/yMax)*(H-padT-padB);
+
+  // axes
+  const axis = document.createElementNS(ns,"path");
+  axis.setAttribute("d", `M${padL},${H-padB} L${W-padR},${H-padB} M${padL},${padT} L${padL},${H-padB}`);
+  axis.setAttribute("stroke","rgba(167,179,195,0.45)");
+  axis.setAttribute("stroke-width","1.2");
+  svg.appendChild(axis);
+
+  // x ticks
+  for(let t=0;t<=36;t+=6){
+    const tx = x(t);
+    const l = document.createElementNS(ns,"line");
+    l.setAttribute("x1", tx);
+    l.setAttribute("x2", tx);
+    l.setAttribute("y1", H-padB);
+    l.setAttribute("y2", H-padB+6);
+    l.setAttribute("stroke","rgba(167,179,195,0.45)");
+    svg.appendChild(l);
+    const lab = document.createElementNS(ns,"text");
+    lab.setAttribute("x", tx);
+    lab.setAttribute("y", H-10);
+    lab.setAttribute("text-anchor","middle");
+    lab.setAttribute("font-size","10");
+    lab.setAttribute("fill","rgba(167,179,195,0.85)");
+    lab.textContent = t+"m";
+    svg.appendChild(lab);
+  }
+
+  // y ticks
+  for(let v=0; v<=18; v+=3){
+    const ty = y(v);
+    const l = document.createElementNS(ns,"line");
+    l.setAttribute("x1", padL-6);
+    l.setAttribute("x2", padL);
+    l.setAttribute("y1", ty);
+    l.setAttribute("y2", ty);
+    l.setAttribute("stroke","rgba(167,179,195,0.45)");
+    svg.appendChild(l);
+    const lab = document.createElementNS(ns,"text");
+    lab.setAttribute("x", padL-10);
+    lab.setAttribute("y", ty+3);
+    lab.setAttribute("text-anchor","end");
+    lab.setAttribute("font-size","10");
+    lab.setAttribute("fill","rgba(167,179,195,0.85)");
+    lab.textContent = v;
+    svg.appendChild(lab);
+  }
+
+  // draw phase step functions
+  const colors = [
+    "rgba(106,169,255,0.9)",
+    "rgba(77,210,125,0.9)",
+    "rgba(255,204,102,0.9)",
+    "rgba(255,106,106,0.9)",
+    "rgba(185,141,255,0.9)",
+    "rgba(120,240,240,0.9)",
+    "rgba(255,160,220,0.9)",
+  ];
+
+  const conflictIntervals = (conflicts||[]).map(c=>c.interval);
+
+  function isConflictSeg(a,b){
+    for(const [c1,c2] of conflictIntervals){
+      if(!(b<=c1 || a>=c2)) return true;
+    }
+    return false;
+  }
+
+  phases.forEach((ph, idx)=>{
+    const col = colors[idx % colors.length];
+    for(const [a,b,v] of ph.steps){
+      const rect = document.createElementNS(ns,"rect");
+      rect.setAttribute("x", x(a));
+      rect.setAttribute("y", y(v));
+      rect.setAttribute("width", Math.max(1, x(b)-x(a)));
+      rect.setAttribute("height", Math.max(1, (H-padB) - y(v)));
+      const bad = isConflictSeg(a,b);
+      rect.setAttribute("fill", bad ? "rgba(255,106,106,0.12)" : "rgba(106,169,255,0.08)");
+      rect.setAttribute("stroke", bad ? "rgba(255,106,106,0.55)" : col);
+      rect.setAttribute("stroke-width", bad ? "1.8" : "1.0");
+      svg.appendChild(rect);
+    }
+    const lbl = document.createElementNS(ns,"text");
+    lbl.setAttribute("x", x(ph.start)+6);
+    lbl.setAttribute("y", yMax>0 ? y(yMax)-6 + 14*idx : 20);
+    lbl.setAttribute("font-size","10");
+    lbl.setAttribute("fill", "rgba(167,179,195,0.9)");
+    lbl.textContent = `${ph.id} ${ph.name}`;
+    svg.appendChild(lbl);
+  });
+
+  // global overlay
+  if(globalSegs && globalSegs.length){
+    // polyline path for step function
+    let d="";
+    let first=true;
+    for(const [a,b,v] of globalSegs){
+      const xa=x(a), xb=x(b), yv=y(v);
+      if(first){
+        d += `M${xa},${yv} `;
+        first=false;
+      }else{
+        d += `L${xa},${yv} `;
+      }
+      d += `L${xb},${yv} `;
+    }
+    const p = document.createElementNS(ns,"path");
+    p.setAttribute("d", d.trim());
+    p.setAttribute("fill","none");
+    p.setAttribute("stroke","rgba(231,237,245,0.95)");
+    p.setAttribute("stroke-width","2.4");
+    svg.appendChild(p);
+
+    const lab = document.createElementNS(ns,"text");
+    lab.setAttribute("x", W-24);
+    lab.setAttribute("y", padT+12);
+    lab.setAttribute("text-anchor","end");
+    lab.setAttribute("font-size","11");
+    lab.setAttribute("fill","rgba(231,237,245,0.92)");
+    lab.textContent = "global section";
+    svg.appendChild(lab);
+  }
+}
+
+function renderPhasesLog(phases){
+  const lines = [];
+  for(const ph of phases){
+    lines.push(`${ph.id} ${ph.name}`);
+    lines.push(`  interval: [${ph.start}, ${ph.end}] months`);
+    lines.push(`  steps: ` + ph.steps.map(s=>`[${s[0]},${s[1]}→${s[2]}]`).join(" "));
+    lines.push("");
+  }
+  resPhasesLog.textContent = lines.join("\n");
+}
+
+function renderMetrics(metrics){
+  resMetricsKvs.innerHTML="";
+  const add=(k,v)=>{
+    const dk=document.createElement("div"); dk.className="k"; dk.textContent=k;
+    const dv=document.createElement("div"); dv.className="mono"; dv.textContent=v;
+    resMetricsKvs.appendChild(dk); resMetricsKvs.appendChild(dv);
+  };
+  if(!metrics){
+    add("Peak headcount","—");
+    add("Total staff-months","—");
+    add("Note","—");
+    return;
+  }
+  add("Peak headcount", metrics.peak.toFixed(2));
+  add("Total staff-months", metrics.totalStaffMonths.toFixed(2));
+  add("If 1 staff-month ≈ 160h", (metrics.totalStaffMonths*160).toFixed(0) + " staff-hours (toy)");
+}
+
+document.getElementById("btnCheckResources").addEventListener("click", ()=>{
+  const {conflicts, consistent} = checkResourceAgreement(phases);
+  if(conflicts.length===0){
+    setResPill("good", "overlaps agree");
+    resLog.textContent = "All overlaps agree; the family is compatible on pairwise overlaps.\nYou should be able to glue a unique global headcount profile.";
+  }else{
+    setResPill("bad", `${conflicts.length} conflicting overlap(s)`);
+    const lines=[];
+    lines.push("Conflicts (intervals where ≥2 phases disagree):\n");
+    for(const c of conflicts.slice(0,30)){
+      const [a,b]=c.interval;
+      lines.push(`[${a},${b}] months  values: {${c.vals.join(",")}}`);
+      for(const p of c.props){
+        lines.push(`  - ${p.phase}: ${p.v}   (${p.name})`);
+      }
+      lines.push("");
+    }
+    if(conflicts.length>30) lines.push("…");
+    resLog.textContent = lines.join("\n");
+  }
+  drawResources(phases, null, conflicts);
+});
+
+document.getElementById("btnGlueResources").addEventListener("click", ()=>{
+  const g = glueIfConsistent(phases);
+  if(!g.ok){
+    setResPill("bad","cannot glue (inconsistent)");
+    resLog.textContent =
+      `Cannot glue: found disagreement on interval [${g.at[0]},${g.at[1]}] with values {${g.vals.join(",")}}.\n` +
+      "Try “sheafify” to project to a consistent family.";
+    drawResources(phases, null, checkResourceAgreement(phases).conflicts);
+    renderMetrics(null);
+    return;
+  }
+  setResPill("good","glued global section");
+  const metrics = computeMetrics(g.global);
+  renderMetrics(metrics);
+  resLog.textContent =
+    "Gluing succeeded: constructed a unique global step-function by identifying equal values on overlaps and merging.\n\n" +
+    "Global segments:\n" + g.global.map(s=>`  [${s[0]},${s[1]}→${s[2]}]`).join("\n");
+  drawResources(phases, g.global, []);
+});
+
+document.getElementById("btnSheafifyResources").addEventListener("click", ()=>{
+  const rule = reconcileRuleSel.value;
+  const out = sheafifyResources(phases, rule);
+  phases = out.phases;
+  const metrics = computeMetrics(out.global);
+  renderMetrics(metrics);
+  setResPill("warn", `sheafified via ${rule}`);
+  resLog.textContent =
+    "Sheafification (pragmatic): built a single global profile by reconciling disagreements on each atomic interval,\n" +
+    "then restricted that global profile back to each phase.\n\n" +
+    "Result: overlaps now agree by construction (the family is literally a set of restrictions).\n\n" +
+    "Global segments:\n" + out.global.map(s=>`  [${s[0]},${s[1]}→${s[2].toFixed(2)}]`).join("\n");
+  renderPhasesLog(phases);
+  drawResources(phases, out.global, []);
+});
+
+renderPhasesLog(phases);
+drawResources(phases);
+setResPill("", "click check / glue / sheafify");
+renderMetrics(null);
+
+
+/* ===========================
+   COHOMOLOGY / OBSTRUCTION DEMO
+=========================== */
+
+const cohomSvg = document.getElementById("cohomSvg");
+const cohomLog = document.getElementById("cohomLog");
+const cohomStatusPill = document.getElementById("cohomStatusPill");
+const cohomEdgeEditor = document.getElementById("cohomEdgeEditor");
+const cohomKvs = document.getElementById("cohomKvs");
+
+function setCohomPill(kind, text){
+  cohomStatusPill.className = "pill " + (kind||"");
+  cohomStatusPill.textContent = text;
+}
+
+const cohomNodes = [
+  {id:"S", name:"Structural design", x:180, y:180},
+  {id:"T", name:"TBM/lining procurement", x:420, y:80},
+  {id:"V", name:"Ventilation/safety design", x:660, y:180},
+  {id:"E", name:"Energy/power constraints", x:420, y:300},
+];
+
+// cycle edges (ω)
+let cohomEdges = [
+  {id:"S->T", from:"S", to:"T", w:0.20},
+  {id:"T->V", from:"T", to:"V", w:0.15},
+  {id:"V->E", from:"V", to:"E", w:-0.10},
+  {id:"E->S", from:"E", to:"S", w:-0.25}, // sums to 0 => solvable
+];
+
+function getNode(id){ return cohomNodes.find(n=>n.id===id); }
+function redrawCohom(){
+  const svg = cohomSvg;
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  const ns="http://www.w3.org/2000/svg";
+
+  // arrow marker
+  const defs=document.createElementNS(ns,"defs");
+  const marker=document.createElementNS(ns,"marker");
+  marker.setAttribute("id","carrow");
+  marker.setAttribute("markerWidth","10");
+  marker.setAttribute("markerHeight","10");
+  marker.setAttribute("refX","10");
+  marker.setAttribute("refY","3");
+  marker.setAttribute("orient","auto");
+  marker.setAttribute("markerUnits","strokeWidth");
+  const pth=document.createElementNS(ns,"path");
+  pth.setAttribute("d","M0,0 L10,3 L0,6 Z");
+  pth.setAttribute("fill","rgba(167,179,195,0.9)");
+  marker.appendChild(pth);
+  defs.appendChild(marker);
+  svg.appendChild(defs);
+
+  // edges
+  for(const e of cohomEdges){
+    const a=getNode(e.from), b=getNode(e.to);
+    const line=document.createElementNS(ns,"line");
+    line.setAttribute("x1", a.x);
+    line.setAttribute("y1", a.y);
+    line.setAttribute("x2", b.x);
+    line.setAttribute("y2", b.y);
+    line.setAttribute("stroke","rgba(167,179,195,0.55)");
+    line.setAttribute("stroke-width","1.6");
+    line.setAttribute("marker-end","url(#carrow)");
+    svg.appendChild(line);
+
+    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+    const lab=document.createElementNS(ns,"text");
+    lab.setAttribute("x", mx+6);
+    lab.setAttribute("y", my-6);
+    lab.setAttribute("fill","rgba(231,237,245,0.9)");
+    lab.setAttribute("font-size","11");
+    lab.setAttribute("class","mono");
+    lab.textContent = e.w.toFixed(3);
+    svg.appendChild(lab);
+  }
+
+  // nodes
+  for(const n of cohomNodes){
+    const g=document.createElementNS(ns,"g");
+    const c=document.createElementNS(ns,"circle");
+    c.setAttribute("cx", n.x);
+    c.setAttribute("cy", n.y);
+    c.setAttribute("r", 26);
+    c.setAttribute("fill","rgba(106,169,255,0.14)");
+    c.setAttribute("stroke","rgba(106,169,255,0.75)");
+    c.setAttribute("stroke-width","1.4");
+    g.appendChild(c);
+
+    const t=document.createElementNS(ns,"text");
+    t.setAttribute("x", n.x);
+    t.setAttribute("y", n.y+4);
+    t.setAttribute("text-anchor","middle");
+    t.setAttribute("fill","rgba(231,237,245,0.95)");
+    t.setAttribute("font-size","12");
+    t.setAttribute("class","mono");
+    t.textContent=n.id;
+    g.appendChild(t);
+
+    const nm=document.createElementNS(ns,"text");
+    nm.setAttribute("x", n.x);
+    nm.setAttribute("y", n.y+44);
+    nm.setAttribute("text-anchor","middle");
+    nm.setAttribute("fill","rgba(167,179,195,0.85)");
+    nm.setAttribute("font-size","10");
+    nm.textContent=n.name;
+    g.appendChild(nm);
+
+    svg.appendChild(g);
+  }
+}
+
+function renderCohomEditor(){
+  cohomEdgeEditor.innerHTML="";
+  for(const e of cohomEdges){
+    const row=document.createElement("div");
+    row.className="row";
+    row.style.margin="8px 0";
+    const lbl=document.createElement("span");
+    lbl.className="pill mono";
+    lbl.textContent = `${e.from}→${e.to}`;
+    const inp=document.createElement("input");
+    inp.value = e.w;
+    inp.style.width="120px";
+    inp.className="mono";
+    inp.addEventListener("change", ()=>{
+      const v=parseFloat(inp.value);
+      if(Number.isFinite(v)){
+        e.w = v;
+        redrawCohom();
+      }
+    });
+    row.appendChild(lbl);
+    row.appendChild(document.createTextNode(" ω = "));
+    row.appendChild(inp);
+    cohomEdgeEditor.appendChild(row);
+  }
+}
+
+function solvePotential(){
+  // Solve x_j - x_i = w for all edges (if possible), by spanning-tree propagation.
+  // Choose x_S = 0.
+  const x = new Map(cohomNodes.map(n=>[n.id, null]));
+  x.set("S", 0);
+  let changed=true;
+  let inconsistent=[];
+  for(let iter=0; iter<20 && changed; iter++){
+    changed=false;
+    for(const e of cohomEdges){
+      const xi = x.get(e.from);
+      const xj = x.get(e.to);
+      if(xi!=null && xj==null){
+        x.set(e.to, xi + e.w);
+        changed=true;
+      }else if(xi==null && xj!=null){
+        x.set(e.from, xj - e.w);
+        changed=true;
+      }else if(xi!=null && xj!=null){
+        const lhs = xj - xi;
+        if(Math.abs(lhs - e.w) > 1e-6){
+          inconsistent.push({edge:e.id, expected:e.w, got:lhs});
+        }
+      }
+    }
+  }
+  // compute cycle sum (since we have one 4-cycle, just sum ω)
+  const cycleSum = cohomEdges.reduce((a,e)=>a+e.w,0);
+
+  return {x, inconsistent, cycleSum};
+}
+
+function renderCohomKvs(obj){
+  cohomKvs.innerHTML="";
+  const add=(k,v)=>{
+    const dk=document.createElement("div"); dk.className="k"; dk.textContent=k;
+    const dv=document.createElement("div"); dv.className="mono"; dv.textContent=v;
+    cohomKvs.appendChild(dk); cohomKvs.appendChild(dv);
+  };
+  add("Graph", "4 nodes / 4 edges (one cycle)");
+  add("H¹ dim (const. sheaf on cycle)", "1 (cycle rank)");
+  add("Criterion", "ω in im δ⁰ ⇔ cycle sum = 0");
+  add("Cycle sum Σω", obj.cycleSum.toFixed(6));
+}
+
+document.getElementById("btnSolveCohom").addEventListener("click", ()=>{
+  const out = solvePotential();
+  renderCohomKvs(out);
+
+  if(Math.abs(out.cycleSum) < 1e-6 && out.inconsistent.length===0){
+    setCohomPill("good", "ω is a coboundary (global spec exists)");
+    const lines=[];
+    lines.push("Solved δ⁰x = ω (one solution, gauge-fixed by x_S=0):\n");
+    for(const [k,v] of out.x.entries()){
+      lines.push(`  x_${k} = ${v==null? "?" : v.toFixed(6)}`);
+    }
+    lines.push("\nInterpretation: local interface commitments are mutually consistent; a single global spec can be patched.");
+    cohomLog.textContent = lines.join("\n");
+  }else{
+    setCohomPill("bad", "obstruction in H¹ (no global spec)");
+    const lines=[];
+    lines.push("No solution to δ⁰x = ω.\n");
+    lines.push(`Cycle sum Σω = ${out.cycleSum.toFixed(6)} (must be 0 for a 1‑cochain to be a gradient).`);
+    if(out.inconsistent.length){
+      lines.push("\nLocal inconsistency witnesses (edge check failures):");
+      for(const w of out.inconsistent){
+        lines.push(`  ${w.edge}: expected ${w.expected.toFixed(6)}, but got ${w.got.toFixed(6)}`);
+      }
+    }
+    lines.push("\nCohomology reading: ω represents a nontrivial class in H¹, i.e. an obstruction to globally coherent patching.");
+    cohomLog.textContent = lines.join("\n");
+  }
+});
+
+document.getElementById("btnPerturbCohom").addEventListener("click", ()=>{
+  // perturb a random edge by +0.1
+  const idx = Math.floor(Math.random()*cohomEdges.length);
+  cohomEdges[idx].w += 0.10;
+  redrawCohom();
+  renderCohomEditor();
+  setCohomPill("warn", "perturbed ω");
+  cohomLog.textContent = "Perturbed one edge by +0.10; re-solve to see obstruction.";
+});
+
+redrawCohom();
+renderCohomEditor();
+setCohomPill("", "edit ω; then solve");
+</script>
+</body>
+</html>
