@@ -9,3 +9,5 @@
 8,two-possible-means,,local data to global WBS proposal with sheaf-based mini-demo,GPT-5.2-Codex,,"ontology, WBS, sheaf, proposal",,
 9,solway-firth-tunnel-fibration-demo,apps/solway_firth_tunnel_fibration_demo.html,interactive fibration example for the Solway Firth tunnel milestones,GPT-5.2-Codex,,"ontology, fibration, milestones, demo",,
 10,solway-sheaf-wbs-prototype,,local data to global WBS via sheaves (Solway Firth prototype),GPT-5.2-Codex,,"ontology, WBS, sheaf, prototype",,
+
+11,sheaves-for-tunnel-concept,,sheaves for tunnel concept (text overview + prototype notes),GPT-5.2-Codex,GPT-5.2-Codex,"ontology, WBS, sheaf, concept",,
