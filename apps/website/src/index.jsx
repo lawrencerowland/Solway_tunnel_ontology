@@ -11,6 +11,7 @@ import Storyboard from './pages/Storyboard.jsx';
 import Insights from './pages/Insights.jsx';
 import Glossary from './pages/Glossary.jsx';
 import SolwayTunnel from './pages/projects/SolwayTunnel.jsx';
+import FibrationDemoNotes from './pages/FibrationDemoNotes.jsx';
 
 function Navbar() {
   return (
@@ -23,6 +24,7 @@ function Navbar() {
       <Link className="hover:text-accent-600 hover:underline decoration-2" to="/storyboard">Storyboard</Link>
       <Link className="hover:text-accent-600 hover:underline decoration-2" to="/insights">Insights</Link>
       <Link className="hover:text-accent-600 hover:underline decoration-2" to="/glossary">Glossary</Link>
+      <Link className="hover:text-accent-600 hover:underline decoration-2" to="/fibration-demo-notes">Fibration demo notes</Link>
       <a className="hover:text-accent-600 hover:underline decoration-2" href="../../app-index.html">App Index</a>
     </nav>
   );
@@ -31,7 +33,7 @@ function Navbar() {
 function App() {
   const baseUrl = import.meta.env.BASE_URL;
   const baseFromPath = window.location.pathname.replace(
-    /(projects\/solway-tunnel\/|projects\/|glossary\/|ai-tools\/|brief\/|sandbox\/|storyboard\/|insights\/)$/,
+    /(projects\/solway-tunnel\/|projects\/|glossary\/|ai-tools\/|brief\/|sandbox\/|storyboard\/|insights\/|fibration-demo-notes\/)$/,
     ''
   );
   const basename = baseUrl === './' ? baseFromPath : baseUrl;
@@ -49,6 +51,7 @@ function App() {
           <Route path="/storyboard" element={<Storyboard />} />
           <Route path="/insights" element={<Insights />} />
           <Route path="/glossary" element={<Glossary />} />
+          <Route path="/fibration-demo-notes" element={<FibrationDemoNotes />} />
           <Route path="/projects/solway-tunnel" element={<SolwayTunnel />} />
         </Routes>
       </div>
