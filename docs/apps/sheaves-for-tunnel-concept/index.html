@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sheaves for tunnel concept</title>
+  <link rel="stylesheet" href="../../common.css" />
+  <style>
+    .page-wrap {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .callout {
+      border-left: 4px solid #0ea5e9;
+      background: #f0f9ff;
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .download {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      border-radius: 999px;
+      background: #111827;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .download:hover {
+      background: #1f2937;
+    }
+    .section-title {
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <p><a href="../../index.html">Back to app index</a></p>
+    <h1>Sheaves for tunnel concept</h1>
+
+    <div class="callout">
+      <p>
+        If you model a tunnel project’s WBS as a small site (poset/category + a chosen topology of “what counts as an overlap”),
+        then “scope/schedule/state” becomes a multi-sheaf whose global sections are exactly the globally coherent plans you want,
+        and whose H¹ (or more practically, a computable obstruction residual) localises which interfaces prevent gluing.
+        The trick is to treat each department’s artefact as a stalk (risk sets, interval headcount functions, spec parameters),
+        and each interface as a restriction map; then Γ(F) is your patched global view, and project metrics become honest functionals on Γ(F)
+        (integrals for resource curves, expectations for risk). This is the same local-to-global mechanism as the textbook sheaf condition
+        (matching families glue uniquely).
+      </p>
+    </div>
+
+    <p>
+      <a class="download" href="../sheaf_wbs_prototype.html" download>
+        Download the interactive HTML prototype
+      </a>
+    </p>
+
+    <h2 class="section-title">What the prototype contains</h2>
+
+    <p>It’s one self-contained page with three canvases, each instantiating a different “ways” route you listed:</p>
+
+    <h3>1) Risk as a Set-valued sheaf on a task-dependency category</h3>
+    <ul>
+      <li><strong>Base:</strong> a tiny Solway Firth tunnel WBS DAG (9 tasks, with a “diamond” at Design → {Procurement, Shafts} → Drives).</li>
+      <li><strong>Stalks:</strong> each task has a finite risk-exposure set (integers) + a probability mass on that set.</li>
+      <li><strong>Restrictions:</strong> each dependency edge carries an inequality “downstream ≥ upstream + Δ” (monotone constraint maps), exactly the style used in the 2024‑12 risk draft.</li>
+      <li><strong>Button Solve global sections</strong> computes Γ(F): all globally consistent risk assignments (or Γ(F)=∅ if incompatible).</li>
+      <li><strong>Button Expected-risk metric</strong> computes a conditioned expectation over feasible global sections using the simple independence ansatz (the audit rightly flags you must state/justify the independence assumption if you keep it).</li>
+    </ul>
+    <p>
+      Why this is a genuine sheaf move (not just CSP cosplay): global sections are the “globally consistent fusions” the sheaf-on-graph
+      exposition makes concrete: choose an element in each node stalk so that both node restrictions to each edge’s overlap agree.
+    </p>
+
+    <h3>2) Resource schedule as a function-valued sheaf over time-interval overlaps</h3>
+    <ul>
+      <li><strong>Base:</strong> phases as time intervals (months since NTP); overlaps are literal set-theoretic overlaps of intervals.</li>
+      <li><strong>Stalks:</strong> piecewise-constant headcount functions on each phase interval.</li>
+      <li><strong>Restrictions:</strong> interval restriction (the canonical map in the 2024‑12 resource draft).</li>
+      <li><strong>Button Check overlap agreement</strong> reports exactly where phase functions disagree on overlaps (i.e., where the matching-family condition fails).</li>
+      <li><strong>Button Glue</strong> constructs the unique global section if overlap agreement holds (draft’s “gluing to a global function”).</li>
+      <li><strong>Button Sheafify</strong> forces consistency by selecting a single global profile via a reconciliation rule (max/min/mean) and restricting it back to each phase; this is deliberately framed as “pragmatic sheafification”, mirroring the topos/design view that sheafification is a left adjoint that forces gluing while preserving the base category.</li>
+    </ul>
+    <p>
+      The audit explicitly called out that the resource draft had manual adjustment but no algorithmic procedure; this prototype gives you an
+      algorithmic “minimum viable sheafifier” (it’s not canonical in the Grothendieck sense, but it’s operational).
+    </p>
+
+    <h3>3) A cohomological obstruction demo (H¹ / “cycle-sum” witness)</h3>
+    <ul>
+      <li><strong>Base:</strong> a small cyclic “interface graph” (think coupled design/procurement/safety constraints, i.e., the part of a megaproject that is not a DAG).</li>
+      <li><strong>Data:</strong> an ℝ-valued 1‑cochain ω on edges; you want to know if there exists a “global potential/spec” x on nodes with δ⁰x = ω.</li>
+      <li>The page shows the classic phenomenon: ω is globally integrable iff cycle sums vanish; otherwise ω represents a nontrivial H¹ class (an obstruction to patching). This is the same conceptual move as the cellular sheaf cohomology story: H⁰ is global sections, and nontrivial H¹ measures failure-to-glue.</li>
+    </ul>
+    <p>
+      This is the piece your “Čech cohomology detects contradictions” conjecture is gesturing at, but in a computationally cheap linear setting
+      where the obstruction is visible as a residual/witness, not just a slogan.
+    </p>
+
+    <h2 class="section-title">The representation you asked for (clean formal core)</h2>
+
+    <h3>Base object: WBS as a site</h3>
+    <p>Take a WBS as either:</p>
+    <ul>
+      <li>a poset (by refinement, or by precedence if you quotient to antisymmetry), equipped with an Alexandrov topology, where presheaves and sheaves coincide (so you can just write a functor and call it a sheaf on that topology).</li>
+      <li>a graph/cell complex (to support overlaps as edges/2‑simplices), enabling cellular sheaf cohomology computations.</li>
+    </ul>
+    <p>
+      The “less popular but useful” move is to treat the choice of covers as governance: picking a Grothendieck topology J on your WBS category says what
+      families of local artefacts must be jointly reconcilable before you declare “the plan is coherent.”
+    </p>
+
+    <h3>Data: a multisorted sheaf of project state</h3>
+    <p>
+      Let State be a product of components (risk, resources, schedule, specs, etc.). Formally: a sheaf valued not in Set alone, but in a category that
+      supports the structure you care about (Sets for discrete, Vect/Modules for linear constraints, Convex sets for LP‑feasible regions, etc.).
+    </p>
+    <p>A simple archetype:</p>
+    <ul>
+      <li>For each task/work-package U, assign a stalk F(U) of feasible local states (e.g., admissible (start,end,crew,risk) tuples).</li>
+      <li>For overlaps V ⊆ U (interfaces, shared resources, handover artefacts), provide restriction maps F(U) → F(V) (“forget down to the interface variables” or “restrict a function to a sub-interval”), as in the resource draft’s interval restriction.</li>
+      <li>A global section is then exactly a coherent project plan. (And it may be empty, unique, or plural—your “multiple sections = equally valid variant plans” is literally correct in this language.)</li>
+    </ul>
+
+    <h3>Metrics as continuous functionals on Γ(F)</h3>
+    <p>Once Γ(F) is nonempty, define metrics as maps Γ(F) → ℝ:</p>
+    <ul>
+      <li>For function-valued resources, metrics are integrals like ∫ cost_rate(t)·headcount(t) dt (continuous functional in standard topologies on function spaces).</li>
+      <li>For discrete risk, metrics are expectations under a chosen measure on Γ(F) (your 2024‑12 risk draft’s “expected risk score” idea).</li>
+    </ul>
+    <p>
+      The audit is correct that your earlier drafts stop one step short: they produce a global section but don’t explicitly wire it into a higher-level project
+      fitness function (earned value, SLA conformance, etc.).
+    </p>
+
+    <h2 class="section-title">How an LLM actually fits (without “hand-waving oracle” failure)</h2>
+    <p>The most robust role is: LLM as extractor + proposer, deterministic sheaf engine as judge.</p>
+    <ul>
+      <li><strong>Extract:</strong> from local plans, minutes, risk registers, and Primavera/MSP exports, the LLM proposes stalk data (risk sets/distributions, piecewise resource curves, interface specs) and candidate restriction maps (inequalities, unit conversions, tolerance constraints).</li>
+      <li><strong>Judge:</strong> the sheaf engine checks functoriality/unit laws (composition constraints), computes Γ(F), and computes obstruction witnesses (residuals, nonzero cohomology classes in linearised cases).</li>
+      <li><strong>Propose remediation:</strong> LLM suggests minimal edits to local artefacts that would kill the obstruction (e.g., weaken Δ on a dependency, reconcile inconsistent overlaps, or add a missing interface object—“fill in a 2‑simplex” in the cellular picture to tighten consistency checks, as the cohomology exposition hints).</li>
+    </ul>
+
+    <h2 class="section-title">Stretch target: “blueprint gradually filled in” as a sheaf over a state poset (domain-theoretic flavour)</h2>
+    <ol>
+      <li>Let P be the poset of partial completions (states), ordered by information/refinement (“⊑”: you add constraints/decisions; you don’t retract).</li>
+      <li>Put the Scott topology on P if you want convergence/limits of directed refinements (this is exactly where the sheaf text gestures that Scott topology is appropriate when the poset includes infinite elements; it’s the natural bridge to domain theory).</li>
+      <li>Define a sheaf (or stack, if you want nontrivial automorphisms like alternative designs) of admissible local states over P; then “project execution” is literally a directed path in P, and “completion” is a maximal (or terminal) global section.</li>
+    </ol>
+    <p>
+      The geometric rhetoric (“manifold of project states”, “tangent bundle = admissible next moves”) becomes concrete if you use a combinatorial/poset analogue:
+      the “tangent directions” are the immediate refinement moves from a state (covering relations), and a “policy” is a section of the corresponding cosheaf
+      of allowable transitions; you can then ask for path-lifting, obstruction to extension, etc., exactly as in gluing problems. (If you want the more Grothendieckian twist:
+      changing what counts as a cover/topology J is changing what counts as a legitimate local-to-global inference during execution—very close to the “creative preservation”
+      sheafification story in the design paper.)
+    </p>
+
+    <p>
+      If you want the next move to be maximally “Solway Firth tunnel” rather than generic, we can replace the toy variables with one hard interface loop
+      (e.g., ventilation capacity ↔ power supply ↔ shaft geometry ↔ safety case) and treat the obstruction residual as a manager-facing “which constraint set must be renegotiated”
+      heat-map.
+    </p>
+
+    <p>
+      One angle: try enriching the WBS category in a Lawvere metric (time/cost “distance”) so that obstructions carry not just existence/nonexistence but a minimal repair cost.
+    </p>
+
+    <p><a href="../../index.html">Back to app index</a></p>
+  </div>
+</body>
+</html>
