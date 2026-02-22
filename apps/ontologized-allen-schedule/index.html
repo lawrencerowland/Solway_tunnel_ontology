@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ontologized Allen Interval Algebra — Worked Schedule CSP Example</title>
+  <link rel="stylesheet" href="../../common.css" />
+  <style>
+    :root { color-scheme: light dark; }
+    body { line-height: 1.4; margin: 2rem; max-width: 1100px; }
+    h1, h2, h3 { line-height: 1.15; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    pre { padding: 1rem; border: 1px solid rgba(127,127,127,.35); border-radius: .5rem; overflow: auto; }
+    .grid { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+    @media (min-width: 900px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+    .muted { opacity: .8; }
+    .pill { display: inline-block; padding: .15rem .5rem; border-radius: 999px; border: 1px solid rgba(127,127,127,.35); font-size: .85rem; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid rgba(127,127,127,.35); padding: .5rem .6rem; vertical-align: top; }
+    th { text-align: left; }
+    .ok { font-weight: 700; }
+    .bad { font-weight: 700; }
+    .small { font-size: .92rem; }
+    details { border: 1px solid rgba(127,127,127,.35); border-radius: .5rem; padding: .75rem 1rem; }
+    details + details { margin-top: .75rem; }
+    summary { cursor: pointer; font-weight: 700; }
+    .two-col { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+    @media (min-width: 900px) { .two-col { grid-template-columns: 1fr 1fr; } }
+    .note { border-left: 4px solid rgba(127,127,127,.5); padding-left: .75rem; margin: .75rem 0; }
+  </style>
+</head>
+
+<body>
+  <p><a href="../../index.html">Back to app index</a></p>
+  <h1>Ontologized Allen Interval Algebra — a Schedule as a Temporal CSP</h1>
+
+  <p class="muted">
+    This file is self-contained. Save it as <code>ontologized-allen-schedule.html</code> and open in any modern browser.
+    It includes: (A) an ontology excerpt in CLIF-like first-order syntax, (B) a small Allen constraint network (the “schedule”),
+    (C) one concrete numeric model (start/end datetimes), and (D) a checker that validates the constraints against the numeric model.
+  </p>
+
+  <div class="note small">
+    <strong>Interpretive stance:</strong> the “schedule” below is a constraint network in the signature of Allen relations. In the Grüninger–Li spirit,
+    you can view a solution as a <em>model</em> of the schedule-theory plus the underlying time ontology (intervals as primitives; no timepoints).
+  </div>
+
+  <div class="grid">
+    <section>
+      <h2>A. Ontology excerpt (CLIF-like)</h2>
+      <p class="small muted">
+        The core below is <span class="pill">bounded meeting</span>: primitive <code>meets</code> plus a derived preorder <code>prec</code> that guarantees upper/lower bounds,
+        avoiding the “infinite-model pressure” of the old Infinity axiom while retaining enough structure to interpret the Allen relations.
+        The Allen relations are then given as definitional extensions over <code>meets</code>.
+      </p>
+
+      <details open>
+        <summary>T<sub>bounded_meeting</sub> core axioms (reformatted)</summary>
+        <pre>
+; ===========
+; Signature:
+;   TimeInterval(x)
+;   meets(x,y)      ; primitive adjacency
+;   prec(x,y)       ; induced ordering over intervals (preorder-ish)
+; ===========
+
+; Typing: if x meets y, both are intervals.
+(forall (x y)
+  (if (meets x y)
+      (and (TimeInterval x) (TimeInterval y))))
+
+; Extensional-like condition on "who meets whom" (matches the standard bounded-meeting core).
+(forall (i j k m)
+  (if (and (meets i k) (meets j k) (meets i m))
+      (meets j m)))
+
+; Ordering/connectedness condition: if i meets j and k meets l, either i meets l
+; or there is an n that links across by a 2-step meet-chain on one side.
+(forall (i j k l)
+  (if (and (meets i j) (meets k l))
+      (or (meets i l)
+          (exists (n)
+            (or (and (meets i n) (meets n l))
+                (and (meets k n) (meets n j)))))))
+
+; Asymmetry:
+(forall (x y)
+  (if (meets x y)
+      (not (meets y x))))
+
+; A “sum-like” axiom: three-step meet chain entails existence of a bridging meet.
+(forall (i j k m)
+  (if (and (meets i j) (meets j k) (meets k m))
+      (exists (n) (and (meets i n) (meets n m)))))
+
+; Boundedness: any pair has a common upper bound and a common lower bound w.r.t. prec.
+(forall (x y) (exists (z) (and (prec x z) (prec y z))))
+(forall (x y) (exists (z) (and (prec z x) (prec z y))))
+
+; Definition of prec (one-step meet, or two-step meet, or equality).
+(forall (x y)
+  (iff (prec x y)
+       (or (meets x y)
+           (exists (z) (and (meets x z) (meets z y)))
+           (= x y))))</pre>
+      </details>
+
+      <details>
+        <summary>Allen relations as definitional extensions over <code>meets</code></summary>
+        <pre>
+; ===========
+; Allen base relations (one common axiomatisation uses these definitional patterns):
+;   before, meets, overlaps, starts, during, ends, equals,
+;   plus inverses after, met_by, overlapped_by, started_by, contains, ended_by
+; ===========
+; NOTE: "ends" here corresponds to Allen's "finishes"; "ended_by" to "finished_by".
+
+(forall (i j)
+  (iff (before i j)
+       (exists (k) (and (meets i k) (meets k j)))))
+
+(forall (i j)
+  (iff (starts i j)
+       (exists (k m n)
+         (and (meets k i) (meets i m) (meets m n)
+              (meets k j) (meets j n)))))
+
+(forall (i j)
+  (iff (ends i j)
+       (exists (k m n)
+         (and (meets k m) (meets m i) (meets i n)
+              (meets k j) (meets j n)))))
+
+(forall (i j)
+  (iff (overlaps i j)
+       (exists (k m n o p)
+         (and (meets k m) (meets m n) (meets n o) (meets o p)
+              (meets m j) (meets j p)
+              (meets k i) (meets i o)))))
+
+(forall (i j)
+  (iff (during i j)
+       (exists (k m n o)
+         (and (meets k m) (meets m i) (meets i n) (meets n o)
+              (meets k j) (meets j o)))))
+
+; Inverses (definitions by converse):
+(forall (i j) (iff (after i j)          (before j i)))
+(forall (i j) (iff (met_by i j)        (meets j i)))
+(forall (i j) (iff (started_by i j)    (starts j i)))
+(forall (i j) (iff (ended_by i j)      (ends j i)))
+(forall (i j) (iff (overlapped_by i j) (overlaps j i)))
+(forall (i j) (iff (contains i j)      (during j i)))
+
+; Equality-as-relation:
+(forall (i j) (iff (equals i j) (= i j)))</pre>
+      </details>
+    </section>
+
+    <section>
+      <h2>B. The schedule as a constraint network</h2>
+      <p class="small muted">
+        Think “variables = intervals” and “constraints = allowed Allen base relations between variable-pairs”.
+        Here we mostly use singleton constraints (one base relation), but the reified constraint objects
+        below also allow disjunctions (sets of allowed relations) if you want the full CSP(A) style.
+      </p>
+
+      <details open>
+        <summary>Qualitative constraint network (human-readable)</summary>
+        <table class="small">
+          <thead>
+            <tr>
+              <th>Constraint</th>
+              <th>Between</th>
+              <th>Allowed Allen relation(s)</th>
+              <th>Intuition</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>c1</td>
+              <td>Kickoff ↔ Project</td>
+              <td><code>starts</code></td>
+              <td>Kickoff shares the project start, ends earlier.</td>
+            </tr>
+            <tr>
+              <td>c2</td>
+              <td>Kickoff ↔ Design</td>
+              <td><code>meets</code></td>
+              <td>Design begins exactly when kickoff ends.</td>
+            </tr>
+            <tr>
+              <td>c3</td>
+              <td>Design ↔ Project</td>
+              <td><code>during</code></td>
+              <td>Design occurs strictly within the project interval.</td>
+            </tr>
+            <tr>
+              <td>c4</td>
+              <td>Implementation ↔ Project</td>
+              <td><code>during</code></td>
+              <td>Implementation occurs strictly within the project interval.</td>
+            </tr>
+            <tr>
+              <td>c5</td>
+              <td>Design ↔ Implementation</td>
+              <td><code>overlaps</code></td>
+              <td>Implementation begins before design is finished.</td>
+            </tr>
+            <tr>
+              <td>c6</td>
+              <td>Implementation ↔ Documentation</td>
+              <td><code>overlaps</code></td>
+              <td>Docs start mid-implementation and finish afterward.</td>
+            </tr>
+            <tr>
+              <td>c7</td>
+              <td>Implementation ↔ CodeFreeze</td>
+              <td><code>meets</code></td>
+              <td>CodeFreeze starts exactly when implementation ends.</td>
+            </tr>
+            <tr>
+              <td>c8</td>
+              <td>CodeFreeze ↔ Testing</td>
+              <td><code>meets</code></td>
+              <td>Testing starts exactly when code freeze ends.</td>
+            </tr>
+            <tr>
+              <td>c9</td>
+              <td>Testing ↔ ReleaseWindow</td>
+              <td><code>during</code></td>
+              <td>Testing is strictly inside the release window.</td>
+            </tr>
+            <tr>
+              <td>c10</td>
+              <td>ReleaseWindow ↔ Project</td>
+              <td><code>ends</code></td>
+              <td>Release window shares the project end, starts later.</td>
+            </tr>
+          </tbody>
+        </table>
+      </details>
+
+      <details>
+        <summary>Some consequences you can infer (composition-style)</summary>
+        <ul class="small">
+          <li><code>meets(Kickoff, Design)</code> ∧ <code>overlaps(Design, Implementation)</code> ⟹ <code>before(Kickoff, Implementation)</code></li>
+          <li><code>meets(Implementation, CodeFreeze)</code> ∧ <code>meets(CodeFreeze, Testing)</code> ⟹ <code>before(Implementation, Testing)</code></li>
+          <li><code>during(Testing, ReleaseWindow)</code> ∧ <code>ends(ReleaseWindow, Project)</code> ⟹ <code>during(Testing, Project)</code></li>
+        </ul>
+        <p class="small muted">
+          In CSP terms: these are entailments in the Allen theory (or its synonymous bounded-meeting ontology), i.e. constraints you can propagate.
+        </p>
+      </details>
+    </section>
+  </div>
+
+  <h2>C. One concrete model (grounding with datetimes)</h2>
+  <p class="small muted">
+    The datetimes below are just <em>a</em> satisfying interpretation. Your “schedule” remains meaningful even before you pick dates,
+    but once you pick them you can validate constraints (and potentially learn your qualitative network was inconsistent).
+  </p>
+
+  <div class="two-col">
+    <details open>
+      <summary>Primary schedule intervals</summary>
+      <table class="small" id="interval-table">
+        <thead>
+          <tr>
+            <th>Interval</th>
+            <th>Start (UTC)</th>
+            <th>End (UTC)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- filled by JS -->
+        </tbody>
+      </table>
+    </details>
+
+    <details>
+      <summary>Witness intervals (optional) — temporal parts that make “overlaps” reducible to meets</summary>
+      <p class="small muted">
+        In the meets-based definitional extension, relations like <code>overlaps(i,j)</code> are witnessed by additional intervals (often interpretable
+        as temporal parts/gaps). Below we explicitly name a few such witnesses for <code>overlaps(Design, Implementation)</code>.
+      </p>
+      <table class="small" id="witness-table">
+        <thead>
+          <tr>
+            <th>Witness interval</th>
+            <th>Start (UTC)</th>
+            <th>End (UTC)</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- filled by JS -->
+        </tbody>
+      </table>
+
+      <details>
+        <summary>Witnessed meets-facts (one concrete Skolemization)</summary>
+        <pre class="small" id="witness-facts"></pre>
+      </details>
+    </details>
+  </div>
+
+  <h2>D. Data in JSON-LD (ontology-friendly “in HTML” encoding)</h2>
+  <p class="small muted">
+    This JSON-LD reifies each Allen constraint as an object (<code>AllenConstraint</code>) whose <code>allowed</code> field is a set of admissible relations;
+    that’s the natural encoding for a temporal CSP network where constraints can be disjunctions.
+  </p>
+
+  <details>
+    <summary>Show JSON-LD payload</summary>
+    <pre id="jsonld-view"></pre>
+  </details>
+
+  <h2>E. Constraint checker (computed Allen base relations)</h2>
+  <p class="small muted">
+    The table below is computed by comparing starts/ends of each pair and classifying them into one of Allen’s 13 base relations.
+    It then checks whether the computed relation is in the constraint’s <code>allowed</code> set.
+  </p>
+
+  <details open>
+    <summary>Results</summary>
+    <table class="small" id="check-table">
+      <thead>
+        <tr>
+          <th>Constraint</th>
+          <th>X</th>
+          <th>Allowed</th>
+          <th>Y</th>
+          <th>Computed</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- filled by JS -->
+      </tbody>
+    </table>
+
+    <h3>Derived checks (not asserted as constraints)</h3>
+    <table class="small" id="derived-table">
+      <thead>
+        <tr>
+          <th>Derived statement</th>
+          <th>Computed relation</th>
+          <th>Holds?</th>
+        </tr>
+      </thead>
+      <tbody><!-- filled by JS --></tbody>
+    </table>
+  </details>
+
+  <script id="schedule-jsonld" type="application/ld+json">
+  {
+    "@context": {
+      "ex": "http://example.org/schedule#",
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "name": "http://schema.org/name",
+
+      "TimeInterval": "ex:TimeInterval",
+      "TemporalConstraintNetwork": "ex:TemporalConstraintNetwork",
+      "AllenConstraint": "ex:AllenConstraint",
+
+      "variables": { "@id": "ex:variables", "@container": "@set" },
+      "constraints": { "@id": "ex:constraints", "@container": "@set" },
+
+      "start": { "@id": "ex:start", "@type": "xsd:dateTime" },
+      "end":   { "@id": "ex:end",   "@type": "xsd:dateTime" },
+
+      "between": { "@id": "ex:between", "@container": "@list" },
+      "allowed": { "@id": "ex:allowed", "@container": "@set" },
+
+      "starts": "ex:starts",
+      "meets": "ex:meets",
+      "before": "ex:before",
+      "overlaps": "ex:overlaps",
+      "during": "ex:during",
+      "ends": "ex:ends",
+      "equals": "ex:equals",
+
+      "after": "ex:after",
+      "met_by": "ex:met_by",
+      "overlapped_by": "ex:overlapped_by",
+      "started_by": "ex:started_by",
+      "contains": "ex:contains",
+      "ended_by": "ex:ended_by"
+    },
+
+    "@id": "ex:ReleasePlan_2026Q1",
+    "@type": "TemporalConstraintNetwork",
+    "name": "Release plan (qualitative Allen CSP + one numeric model)",
+
+    "variables": [
+      { "@id": "ex:Project",          "@type": "TimeInterval", "name": "Project",          "start": "2026-03-01T09:00:00Z", "end": "2026-03-31T17:00:00Z" },
+      { "@id": "ex:Kickoff",          "@type": "TimeInterval", "name": "Kickoff",          "start": "2026-03-01T09:00:00Z", "end": "2026-03-01T10:00:00Z" },
+      { "@id": "ex:Design",           "@type": "TimeInterval", "name": "Design",           "start": "2026-03-01T10:00:00Z", "end": "2026-03-10T17:00:00Z" },
+      { "@id": "ex:Implementation",   "@type": "TimeInterval", "name": "Implementation",   "start": "2026-03-05T09:00:00Z", "end": "2026-03-20T17:00:00Z" },
+      { "@id": "ex:Documentation",    "@type": "TimeInterval", "name": "Documentation",    "start": "2026-03-15T09:00:00Z", "end": "2026-03-25T17:00:00Z" },
+      { "@id": "ex:CodeFreeze",       "@type": "TimeInterval", "name": "CodeFreeze",       "start": "2026-03-20T17:00:00Z", "end": "2026-03-21T09:00:00Z" },
+      { "@id": "ex:Testing",          "@type": "TimeInterval", "name": "Testing",          "start": "2026-03-21T09:00:00Z", "end": "2026-03-30T17:00:00Z" },
+      { "@id": "ex:ReleaseWindow",    "@type": "TimeInterval", "name": "ReleaseWindow",    "start": "2026-03-20T17:00:00Z", "end": "2026-03-31T17:00:00Z" },
+
+      { "@id": "ex:PreProject",           "@type": "TimeInterval", "name": "PreProject (witness)",            "start": "2026-02-28T17:00:00Z", "end": "2026-03-01T09:00:00Z" },
+      { "@id": "ex:PostProject",          "@type": "TimeInterval", "name": "PostProject (witness)",           "start": "2026-03-31T17:00:00Z", "end": "2026-04-01T09:00:00Z" },
+      { "@id": "ex:RestOfProject",        "@type": "TimeInterval", "name": "RestOfProjectAfterKickoff",       "start": "2026-03-01T10:00:00Z", "end": "2026-03-31T17:00:00Z" },
+      { "@id": "ex:ProjectBeforeRelease", "@type": "TimeInterval", "name": "ProjectBeforeReleaseWindow",      "start": "2026-03-01T09:00:00Z", "end": "2026-03-20T17:00:00Z" },
+
+      { "@id": "ex:DesignPrefix",         "@type": "TimeInterval", "name": "DesignPrefix (witness)",          "start": "2026-03-01T10:00:00Z", "end": "2026-03-05T09:00:00Z" },
+      { "@id": "ex:OverlapSegment",       "@type": "TimeInterval", "name": "Design∩Impl overlap segment",      "start": "2026-03-05T09:00:00Z", "end": "2026-03-10T17:00:00Z" },
+      { "@id": "ex:ImplementationSuffix", "@type": "TimeInterval", "name": "ImplementationSuffix (witness)",  "start": "2026-03-10T17:00:00Z", "end": "2026-03-20T17:00:00Z" }
+    ],
+
+    "constraints": [
+      { "@id": "ex:c1",  "@type": "AllenConstraint", "between": [ { "@id": "ex:Kickoff" },        { "@id": "ex:Project" } ],        "allowed": [ { "@id": "ex:starts" } ] },
+      { "@id": "ex:c2",  "@type": "AllenConstraint", "between": [ { "@id": "ex:Kickoff" },        { "@id": "ex:Design" } ],         "allowed": [ { "@id": "ex:meets" } ] },
+      { "@id": "ex:c3",  "@type": "AllenConstraint", "between": [ { "@id": "ex:Design" },         { "@id": "ex:Project" } ],        "allowed": [ { "@id": "ex:during" } ] },
+      { "@id": "ex:c4",  "@type": "AllenConstraint", "between": [ { "@id": "ex:Implementation" }, { "@id": "ex:Project" } ],        "allowed": [ { "@id": "ex:during" } ] },
+      { "@id": "ex:c5",  "@type": "AllenConstraint", "between": [ { "@id": "ex:Design" },         { "@id": "ex:Implementation" } ], "allowed": [ { "@id": "ex:overlaps" } ] },
+      { "@id": "ex:c6",  "@type": "AllenConstraint", "between": [ { "@id": "ex:Implementation" }, { "@id": "ex:Documentation" } ],  "allowed": [ { "@id": "ex:overlaps" } ] },
+      { "@id": "ex:c7",  "@type": "AllenConstraint", "between": [ { "@id": "ex:Implementation" }, { "@id": "ex:CodeFreeze" } ],      "allowed": [ { "@id": "ex:meets" } ] },
+      { "@id": "ex:c8",  "@type": "AllenConstraint", "between": [ { "@id": "ex:CodeFreeze" },     { "@id": "ex:Testing" } ],        "allowed": [ { "@id": "ex:meets" } ] },
+      { "@id": "ex:c9",  "@type": "AllenConstraint", "between": [ { "@id": "ex:Testing" },        { "@id": "ex:ReleaseWindow" } ],  "allowed": [ { "@id": "ex:during" } ] },
+      { "@id": "ex:c10", "@type": "AllenConstraint", "between": [ { "@id": "ex:ReleaseWindow" },  { "@id": "ex:Project" } ],        "allowed": [ { "@id": "ex:ends" } ] }
+    ]
+  }
+  </script>
+
+  <script>
+    function localName(iriOrCurie) {
+      if (!iriOrCurie) return "";
+      const s = String(iriOrCurie);
+      if (s.includes("#")) return s.split("#").pop();
+      if (s.includes(":")) return s.split(":").pop();
+      return s;
+    }
+
+    function parseDateTime(dt) {
+      const ms = Date.parse(dt);
+      if (Number.isNaN(ms)) throw new Error("Bad dateTime: " + dt);
+      return ms;
+    }
+
+    function allenRelation(a, b) {
+      const s1 = a.startMs, e1 = a.endMs, s2 = b.startMs, e2 = b.endMs;
+
+      if (!(s1 < e1) || !(s2 < e2)) return "unknown";
+      if (e1 < s2) return "before";
+      if (e1 === s2) return "meets";
+      if (s1 < s2 && s2 < e1 && e1 < e2) return "overlaps";
+      if (s1 === s2 && e1 < e2) return "starts";
+      if (s2 < s1 && e1 < e2) return "during";
+      if (s2 < s1 && e1 === e2) return "ends";
+      if (s1 === s2 && e1 === e2) return "equals";
+      if (s1 > e2) return "after";
+      if (s1 === e2) return "met_by";
+      if (s2 < s1 && s1 < e2 && e2 < e1) return "overlapped_by";
+      if (s1 === s2 && e1 > e2) return "started_by";
+      if (s1 < s2 && e2 < e1) return "contains";
+      if (s1 < s2 && e1 === e2) return "ended_by";
+      return "unknown";
+    }
+
+    function el(tag, attrs = {}, children = []) {
+      const node = document.createElement(tag);
+      for (const [k,v] of Object.entries(attrs)) {
+        if (k === "class") node.className = v;
+        else if (k === "text") node.textContent = v;
+        else node.setAttribute(k, v);
+      }
+      for (const child of children) node.appendChild(child);
+      return node;
+    }
+
+    const jsonldText = document.getElementById("schedule-jsonld").textContent.trim();
+    const data = JSON.parse(jsonldText);
+    document.getElementById("jsonld-view").textContent = JSON.stringify(data, null, 2);
+
+    const intervals = new Map();
+    for (const v of data.variables) {
+      const id = v["@id"];
+      intervals.set(id, {
+        id,
+        name: v.name || localName(id),
+        start: v.start,
+        end: v.end,
+        startMs: parseDateTime(v.start),
+        endMs: parseDateTime(v.end)
+      });
+    }
+
+    const witnessPrefix = new Set([
+      "PreProject","PostProject","RestOfProject","ProjectBeforeRelease",
+      "DesignPrefix","OverlapSegment","ImplementationSuffix"
+    ]);
+    const primary = [];
+    const witness = [];
+    for (const it of intervals.values()) {
+      const ln = localName(it.id);
+      if (witnessPrefix.has(ln)) witness.push(it); else primary.push(it);
+    }
+
+    primary.sort((a,b) => a.startMs - b.startMs);
+    witness.sort((a,b) => a.startMs - b.startMs);
+
+    const intervalTbody = document.querySelector("#interval-table tbody");
+    for (const it of primary) {
+      intervalTbody.appendChild(el("tr", {}, [
+        el("td", { text: it.name }),
+        el("td", { text: it.start }),
+        el("td", { text: it.end })
+      ]));
+    }
+
+    const witnessTbody = document.querySelector("#witness-table tbody");
+    const witnessRoles = new Map([
+      ["PreProject", "Common predecessor for starts/ends/during witnesses"],
+      ["PostProject", "Common successor for starts/ends/during witnesses"],
+      ["RestOfProject", "Witness m for starts(Kickoff,Project)"],
+      ["ProjectBeforeRelease", "Witness m for ends(ReleaseWindow,Project)"],
+      ["DesignPrefix", "Witness m for overlaps(Design,Implementation)"],
+      ["OverlapSegment", "Witness n for overlaps(Design,Implementation)"],
+      ["ImplementationSuffix", "Witness o for overlaps(Design,Implementation)"]
+    ]);
+    for (const it of witness) {
+      const ln = localName(it.id);
+      witnessTbody.appendChild(el("tr", {}, [
+        el("td", { text: it.name }),
+        el("td", { text: it.start }),
+        el("td", { text: it.end }),
+        el("td", { text: witnessRoles.get(ln) || "" })
+      ]));
+    }
+
+    const wf = [];
+    wf.push("; Witnessing overlaps(Design, Implementation) using named temporal parts:");
+    wf.push("(meets Kickoff DesignPrefix)");
+    wf.push("(meets DesignPrefix OverlapSegment)");
+    wf.push("(meets OverlapSegment ImplementationSuffix)");
+    wf.push("(meets ImplementationSuffix CodeFreeze)");
+    wf.push("");
+    wf.push("(meets DesignPrefix Implementation)");
+    wf.push("(meets Implementation CodeFreeze)");
+    wf.push("(meets Kickoff Design)");
+    wf.push("(meets Design ImplementationSuffix)");
+    document.getElementById("witness-facts").textContent = wf.join("\n");
+
+    const checkTbody = document.querySelector("#check-table tbody");
+    function constraintRow(c) {
+      const cid = localName(c["@id"]);
+      const xId = c.between[0]["@id"];
+      const yId = c.between[1]["@id"];
+      const x = intervals.get(xId);
+      const y = intervals.get(yId);
+      const computed = allenRelation(x, y);
+
+      const allowed = (c.allowed || []).map(a => localName(a["@id"]));
+      const ok = allowed.includes(computed);
+
+      return el("tr", {}, [
+        el("td", { text: cid }),
+        el("td", { text: x.name }),
+        el("td", { text: allowed.length ? allowed.join(" ∨ ") : "(none)" }),
+        el("td", { text: y.name }),
+        el("td", { text: computed }),
+        el("td", { text: ok ? "OK" : "FAIL", class: ok ? "ok" : "bad" })
+      ]);
+    }
+
+    for (const c of data.constraints) {
+      checkTbody.appendChild(constraintRow(c));
+    }
+
+    const derived = [
+      { stmt: "before(Kickoff, Implementation)", x: "ex:Kickoff", y: "ex:Implementation", expect: "before" },
+      { stmt: "before(Implementation, Testing)", x: "ex:Implementation", y: "ex:Testing", expect: "before" },
+      { stmt: "during(Testing, Project)", x: "ex:Testing", y: "ex:Project", expect: "during" }
+    ];
+
+    const derivedTbody = document.querySelector("#derived-table tbody");
+    for (const d of derived) {
+      const x = intervals.get(d.x);
+      const y = intervals.get(d.y);
+      const computed = allenRelation(x, y);
+      const ok = (computed === d.expect);
+      derivedTbody.appendChild(el("tr", {}, [
+        el("td", { text: d.stmt }),
+        el("td", { text: computed }),
+        el("td", { text: ok ? "YES" : "NO", class: ok ? "ok" : "bad" })
+      ]));
+    }
+  </script>
+
+  <hr />
+
+  <p class="small muted">
+    If you want to push this toward a “real” solver: replace the concrete <code>start</code>/<code>end</code> fields with domains
+    (or leave them blank), allow disjunctive constraint sets, and run path-consistency / algebraic closure against the Allen composition table;
+    the ontological move is that satisfiable networks correspond to models of the underlying time ontology rather than mere spreadsheet coherence.
+  </p>
+</body>
+</html>
