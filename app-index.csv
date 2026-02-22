@@ -11,3 +11,4 @@
 10,solway-sheaf-wbs-prototype,,local data to global WBS via sheaves (Solway Firth prototype),GPT-5.2-Codex,,"ontology, WBS, sheaf, prototype",,
 
 11,sheaves-for-tunnel-concept,,sheaves for tunnel concept (text overview + prototype notes),GPT-5.2-Codex,GPT-5.2-Codex,"ontology, WBS, sheaf, concept",,
+12,ontologized-allen-schedule,,interactive ontology-backed Allen interval algebra schedule CSP with JSON-LD and checker,GPT-5.2-Codex,,"ontology, temporal-logic, allen-algebra, CSP",,
