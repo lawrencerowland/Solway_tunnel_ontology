@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>kglab ontology audit — Solway Firth Tunnel</title>
+  <link rel="stylesheet" href="../../common.css">
+  <style>
+    body { max-width: 980px; margin: 0 auto; padding: 1rem 1.25rem 3rem; }
+    .pipeline { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+    .stage { flex: 1 1 130px; border: 1px solid #d0d7de; border-radius: 8px;
+             padding: .6rem .7rem; background: #f6f8fa; font-size: .85rem; }
+    .stage b { display: block; margin-bottom: .25rem; }
+    table.res { border-collapse: collapse; width: 100%; margin: .5rem 0 1.5rem;
+                font-size: .88rem; }
+    table.res th, table.res td { border: 1px solid #d0d7de; padding: .35rem .55rem;
+                                 text-align: left; vertical-align: top; }
+    table.res th { background: #f6f8fa; }
+    .pass { color: #1a7f37; font-weight: 600; }
+    .fail { color: #cf222e; font-weight: 600; }
+    pre.report { background: #0d1117; color: #e6edf3; padding: .8rem 1rem;
+                 border-radius: 8px; overflow-x: auto; font-size: .78rem;
+                 max-height: 320px; }
+    .stat-row { display: flex; flex-wrap: wrap; gap: .6rem; margin: .8rem 0 1.2rem; }
+    .stat { border: 1px solid #d0d7de; border-radius: 8px; padding: .5rem .8rem;
+            background: #fff; }
+    .stat .num { font-size: 1.4rem; font-weight: 700; display: block; }
+    .stat .lbl { font-size: .75rem; color: #57606a; }
+    .note { background: #fff8c5; border: 1px solid #d4a72c66; border-radius: 8px;
+            padding: .6rem .9rem; font-size: .88rem; }
+    code { background: #f6f8fa; padding: .1rem .3rem; border-radius: 4px; }
+    h2 { margin-top: 2.2rem; }
+    .prov { font-size: .8rem; color: #57606a; margin-top: 2.5rem;
+            border-top: 1px solid #d0d7de; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+  <h1>kglab ontology audit</h1>
+  <p><strong>The self-checking version of the tunnel knowledge graph.</strong>
+  The <a href="../tunnel-ontology-visualizer/index.html">tunnel-ontology-visualizer</a> tab
+  draws the KG; this tab makes the same graph <em>queryable, provenance-carrying and
+  machine-validated</em>. A small <a href="https://github.com/DerwenAI/kglab">kglab</a>
+  pipeline lifts the visualizer's D3 data into RDF, merges it with the previously
+  unused ontology file <code>not_yet_used/tunnel-ontology-visualizer.ttl.txt</code>,
+  reconciles the two by label, enforces an edge-provenance discipline with SHACL,
+  materialises OWL-RL inference, and answers plan questions as SPARQL &rarr; pandas
+  DataFrames. Everything below is the <em>actual output</em> of one pipeline run,
+  embedded at build time.</p>
+
+  <div class="pipeline">
+    <div class="stage"><b>1 · Lift</b>D3 nodes/links &rarr; RDF, each edge a first-class assertion with edge-type, confidence, source</div>
+    <div class="stage"><b>2 · Reconcile</b>match D3 nodes to ontology individuals by label; corroborated edges score 0.9, D3-only 0.6</div>
+    <div class="stage"><b>3 · Validate</b>SHACL shapes enforce the provenance rule — raw lift fails, repaired graph passes</div>
+    <div class="stage"><b>4 · Infer</b>OWL-RL closure lands everything in the Digital Construction Ontology upper classes</div>
+    <div class="stage"><b>5 · Query</b>SPARQL &rarr; DataFrame: census, weak edges, dependency chains, corroboration</div>
+    <div class="stage"><b>6 · Measure</b>kglab &rarr; NetworkX: betweenness picks out the graph's brokers</div>
+  </div>
+
+  <h2>1–2 · Lift &amp; reconcile</h2>
+  <div class="stat-row" id="lift-stats"></div>
+  <p>Reconciliation is done in SPARQL-adjacent fashion: a D3 node and an ontology
+  individual sharing an <code>rdfs:label</code> get <code>owl:sameAs</code>; an edge
+  present in <em>both</em> representations is marked corroborated. Confidence is
+  therefore not decoration — it records <strong>cross-representation agreement</strong>.</p>
+
+  <h2>3 · SHACL validation: fail first, then conform</h2>
+  <p>Two shapes (see <a href="data/shapes.ttl">shapes.ttl</a>): every edge assertion
+  needs an edge-type, a confidence in [0,1] and a source; <em>plan-critical</em> edges
+  (<code>dependsOn</code>, <code>precedes</code>) additionally need a
+  <strong>use statement</strong> and an <strong>update trigger</strong> — the
+  contingent-edge discipline from the portfolio AGENTS.md.</p>
+  <p>Run 1 — raw lift: <span id="run1-verdict"></span></p>
+  <pre class="report" id="run1-report"></pre>
+  <p>Run 2 — after the repair pass added use statements and update triggers to
+  <span id="repaired-count"></span> plan-critical edges: <span id="run2-verdict"></span></p>
+  <div class="note">This is the point of the spike: an undocumented dependency is now a
+  <em>validation error</em>, not a hope that reviewers notice.</div>
+
+  <h2>4 · OWL-RL closure</h2>
+  <p id="closure-line"></p>
+  <p>Census by <em>upper-ontology</em> class — answerable only because inference
+  materialised the <code>rdfs:subClassOf</code> bridge from the lifted D3 groups
+  into the Digital Construction Ontology:</p>
+  <table class="res" id="census"></table>
+
+  <h2>5 · SPARQL &rarr; DataFrame</h2>
+  <h3>Weak plan-critical edges (confidence &lt; 0.7)</h3>
+  <p>Dependencies asserted only by the D3 demo and never corroborated by the curated
+  ontology — the first candidates for review:</p>
+  <table class="res" id="weak"></table>
+
+  <h3>Transitive dependency chain</h3>
+  <p>Everything <code>SegmentInstallation</code> depends on, via the property path
+  <code>st:dependsOn+</code> (one line of SPARQL; no hand-rolled BFS):</p>
+  <table class="res" id="chain"></table>
+
+  <h3>Corroboration summary</h3>
+  <table class="res" id="corr"></table>
+
+  <h2>6 · Graph measure</h2>
+  <p>The merged graph projected into NetworkX; betweenness centrality names the
+  brokers everything routes through:</p>
+  <table class="res" id="central"></table>
+
+  <h2>Reproduce</h2>
+  <p>From the repo root: <code>pip install kglab</code> then
+  <code>python3 apps/kglab-ontology-audit/pipeline/kglab_spike.py</code>.
+  The script regenerates <a href="data/results.json">results.json</a>,
+  <a href="data/solway_merged.ttl">solway_merged.ttl</a> and this page.
+  Environment of the embedded run: <span id="env"></span>.</p>
+
+  <p class="back-link"><a href="../../index.html">Back to app index</a></p>
+  <div class="prov">Foray: FORAY-KGLAB-ONTOLOGY-AUDIT · sources:
+  <code>apps/tunnel-ontology-visualizer/src/App.tsx</code> (D3 layer),
+  <code>not_yet_used/tunnel-ontology-visualizer.ttl.txt</code> (ontology layer) ·
+  results embedded at build time by <code>pipeline/kglab_spike.py</code>.</div>
+
+  <script>
+    const R = {"steps": [], "lift": {"ontology_triples": 450, "d3_nodes": 30, "d3_links": 47, "nodes_matched_by_label": 12, "edges_corroborated_by_both": 11, "edges_d3_only": 36, "triples_after_lift": 1011}, "shacl_run1": {"conforms": false, "report": "Validation Report\nConforms: False\nResults (14):\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing use statement.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:useStatement ]\n\tFocus Node: ste:e022\n\tResult Path: stv:useStatement\n\tMessage: Plan-critical edge missing use statement.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing use statement.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:useStatement ]\n\tFocus Node: ste:e021\n\tResult Path: stv:useStatement\n\tMessage: Plan-critical edge missing use statement.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing use statement.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:useStatement ]\n\tFocus Node: ste:e020\n\tResult Path: stv:useStatement\n\tMessage: Plan-critical edge missing use statement.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing use statement.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:useStatement ]\n\tFocus Node: ste:e047\n\tResult Path: stv:useStatement\n\tMessage: Plan-critical edge missing use statement.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing use statement.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:useStatement ]\n\tFocus Node: ste:e045\n\tResult Path: stv:useStatement\n\tMessage: Plan-critical edge missing use statement.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing use statement.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:useStatement ]\n\tFocus Node: ste:e046\n\tResult Path: stv:useStatement\n\tMessage: Plan-critical edge missing use statement.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing use statement.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:useStatement ]\n\tFocus Node: ste:e044\n\tResult Path: stv:useStatement\n\tMessage: Plan-critical edge missing use statement.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing update trigger.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:updateTrigger ]\n\tFocus Node: ste:e022\n\tResult Path: stv:updateTrigger\n\tMessage: Plan-critical edge missing update trigger.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing update trigger.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:updateTrigger ]\n\tFocus Node: ste:e021\n\tResult Path: stv:updateTrigger\n\tMessage: Plan-critical edge missing update trigger.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing update trigger.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:updateTrigger ]\n\tFocus Node: ste:e020\n\tResult Path: stv:updateTrigger\n\tMessage: Plan-critical edge missing update trigger.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing update trigger.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:updateTrigger ]\n\tFocus Node: ste:e047\n\tResult Path: stv:updateTrigger\n\tMessage: Plan-critical edge missing update trigger.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing update trigger.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:updateTrigger ]\n\tFocus Node: ste:e045\n\tResult Path: stv:updateTrigger\n\tMessage: Plan-critical edge missing update trigger.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing update trigger.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:updateTrigger ]\n\tFocus Node: ste:e046\n\tResult Path: stv:updateTrigger\n\tMessage: Plan-critical edge missing update trigger.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing update trigger.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:updateTrigger ]\n\tFocus Node: ste:e044\n\tResult Path: stv:updateTrigger\n\tMessage: Plan-critical edge missing update trigger.\n"}, "shacl_run2": {"conforms": true, "repaired_edges": 7, "report": "Validation Report\nConforms: True\n"}, "closure": {"triples_before": 1025, "triples_after": 2411}, "census": [{"upperClass": "dice:Object", "individuals": "11"}, {"upperClass": "dicl:LifecyclePhase", "individuals": "7"}, {"upperClass": "dicp:Process", "individuals": "5"}, {"upperClass": "dica:Agent", "individuals": "5"}, {"upperClass": "dici:InformationContentEntity", "individuals": "4"}, {"upperClass": "dicbm:Material", "individuals": "4"}], "weak_plan_edges": [{"from": "std3:CommissioningPhase", "edge": "st:precedes", "to": "std3:OperationalPhase", "confidence": "0.6"}, {"from": "std3:ConstructionPhase", "edge": "st:precedes", "to": "std3:CommissioningPhase", "confidence": "0.6"}, {"from": "std3:DesignPhase", "edge": "st:precedes", "to": "std3:ConstructionPhase", "confidence": "0.6"}, {"from": "std3:FeasibilityPhase", "edge": "st:precedes", "to": "std3:DesignPhase", "confidence": "0.6"}, {"from": "std3:SegmentInstallation", "edge": "st:dependsOn", "to": "std3:TBMExcavation", "confidence": "0.6"}, {"from": "std3:SitePreparation", "edge": "st:precedes", "to": "std3:ConstructionPhase", "confidence": "0.6"}, {"from": "std3:TBMExcavation", "edge": "st:dependsOn", "to": "std3:SitePreparation", "confidence": "0.6"}], "dependency_chain": [{"upstream": "std3:TBMExcavation"}, {"upstream": "std3:SitePreparation"}], "corroboration": [{"corroborated": "True", "edges": "11", "meanConfidence": "0.9"}, {"corroborated": "False", "edges": "36", "meanConfidence": "0.6"}], "centrality_top5": [{"node": "std3:SolwayTunnel", "betweenness": 0.0714}, {"node": "std3:TunnelSection1", "betweenness": 0.0696}, {"node": "std3:TunnelDesign", "betweenness": 0.0653}, {"node": "std3:TunnelLining1", "betweenness": 0.0542}, {"node": "std3:EngineeringConsultant", "betweenness": 0.0308}], "environment": {"kglab": "0.6.6", "python": "3.10.12"}};
+
+    function stat(num, lbl) {
+      return `<div class="stat"><span class="num">${num}</span><span class="lbl">${lbl}</span></div>`;
+    }
+    document.getElementById('lift-stats').innerHTML =
+      stat(R.lift.ontology_triples, 'ontology triples loaded') +
+      stat(R.lift.d3_nodes, 'D3 nodes lifted') +
+      stat(R.lift.d3_links, 'D3 links lifted') +
+      stat(R.lift.nodes_matched_by_label, 'nodes matched by label') +
+      stat(R.lift.edges_corroborated_by_both, 'edges corroborated by both') +
+      stat(R.lift.edges_d3_only, 'edges attested by D3 only');
+
+    function verdict(el, ok) {
+      const e = document.getElementById(el);
+      e.textContent = ok ? 'CONFORMS' : 'DOES NOT CONFORM';
+      e.className = ok ? 'pass' : 'fail';
+    }
+    verdict('run1-verdict', R.shacl_run1.conforms);
+    verdict('run2-verdict', R.shacl_run2.conforms);
+    document.getElementById('repaired-count').textContent = R.shacl_run2.repaired_edges;
+    // trim the report to the violation lines for readability
+    const rep = R.shacl_run1.report;
+    document.getElementById('run1-report').textContent =
+      rep.length > 3500 ? rep.slice(0, 3500) + '\n… (truncated; full report in data/results.json)' : rep;
+
+    document.getElementById('closure-line').innerHTML =
+      `OWL-RL inference grew the graph from <b>${R.closure.triples_before}</b> to ` +
+      `<b>${R.closure.triples_after}</b> triples — the implied types, symmetric ` +
+      `properties and <code>sameAs</code> consequences are now explicit and queryable.`;
+
+    function table(id, rows) {
+      const t = document.getElementById(id);
+      if (!rows || !rows.length) { t.outerHTML = '<p><em>No rows.</em></p>'; return; }
+      const cols = Object.keys(rows[0]);
+      t.innerHTML = '<tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr>' +
+        rows.map(r => '<tr>' + cols.map(c => `<td>${r[c] ?? ''}</td>`).join('') + '</tr>').join('');
+    }
+    table('census', R.census);
+    table('weak', R.weak_plan_edges);
+    table('chain', R.dependency_chain);
+    table('corr', R.corroboration);
+    table('central', R.centrality_top5);
+    document.getElementById('env').textContent =
+      `kglab ${R.environment.kglab}, Python ${R.environment.python}`;
+  </script>
+</body>
+</html>
