@@ -1,0 +1,141 @@
+{
+ "steps": [],
+ "lift": {
+  "ontology_triples": 450,
+  "d3_nodes": 30,
+  "d3_links": 47,
+  "nodes_matched_by_label": 12,
+  "edges_corroborated_by_both": 11,
+  "edges_d3_only": 36,
+  "triples_after_lift": 1011
+ },
+ "shacl_run1": {
+  "conforms": false,
+  "report": "Validation Report\nConforms: False\nResults (14):\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing use statement.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:useStatement ]\n\tFocus Node: ste:e022\n\tResult Path: stv:useStatement\n\tMessage: Plan-critical edge missing use statement.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing use statement.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:useStatement ]\n\tFocus Node: ste:e021\n\tResult Path: stv:useStatement\n\tMessage: Plan-critical edge missing use statement.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing use statement.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:useStatement ]\n\tFocus Node: ste:e020\n\tResult Path: stv:useStatement\n\tMessage: Plan-critical edge missing use statement.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing use statement.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:useStatement ]\n\tFocus Node: ste:e047\n\tResult Path: stv:useStatement\n\tMessage: Plan-critical edge missing use statement.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing use statement.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:useStatement ]\n\tFocus Node: ste:e045\n\tResult Path: stv:useStatement\n\tMessage: Plan-critical edge missing use statement.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing use statement.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:useStatement ]\n\tFocus Node: ste:e046\n\tResult Path: stv:useStatement\n\tMessage: Plan-critical edge missing use statement.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing use statement.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:useStatement ]\n\tFocus Node: ste:e044\n\tResult Path: stv:useStatement\n\tMessage: Plan-critical edge missing use statement.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing update trigger.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:updateTrigger ]\n\tFocus Node: ste:e022\n\tResult Path: stv:updateTrigger\n\tMessage: Plan-critical edge missing update trigger.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing update trigger.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:updateTrigger ]\n\tFocus Node: ste:e021\n\tResult Path: stv:updateTrigger\n\tMessage: Plan-critical edge missing update trigger.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing update trigger.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:updateTrigger ]\n\tFocus Node: ste:e020\n\tResult Path: stv:updateTrigger\n\tMessage: Plan-critical edge missing update trigger.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing update trigger.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:updateTrigger ]\n\tFocus Node: ste:e047\n\tResult Path: stv:updateTrigger\n\tMessage: Plan-critical edge missing update trigger.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing update trigger.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:updateTrigger ]\n\tFocus Node: ste:e045\n\tResult Path: stv:updateTrigger\n\tMessage: Plan-critical edge missing update trigger.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing update trigger.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:updateTrigger ]\n\tFocus Node: ste:e046\n\tResult Path: stv:updateTrigger\n\tMessage: Plan-critical edge missing update trigger.\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:message Literal(\"Plan-critical edge missing update trigger.\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path stv:updateTrigger ]\n\tFocus Node: ste:e044\n\tResult Path: stv:updateTrigger\n\tMessage: Plan-critical edge missing update trigger.\n"
+ },
+ "shacl_run2": {
+  "conforms": true,
+  "repaired_edges": 7,
+  "report": "Validation Report\nConforms: True\n"
+ },
+ "closure": {
+  "triples_before": 1025,
+  "triples_after": 2411
+ },
+ "census": [
+  {
+   "upperClass": "dice:Object",
+   "individuals": "11"
+  },
+  {
+   "upperClass": "dicl:LifecyclePhase",
+   "individuals": "7"
+  },
+  {
+   "upperClass": "dicp:Process",
+   "individuals": "5"
+  },
+  {
+   "upperClass": "dica:Agent",
+   "individuals": "5"
+  },
+  {
+   "upperClass": "dici:InformationContentEntity",
+   "individuals": "4"
+  },
+  {
+   "upperClass": "dicbm:Material",
+   "individuals": "4"
+  }
+ ],
+ "weak_plan_edges": [
+  {
+   "from": "std3:CommissioningPhase",
+   "edge": "st:precedes",
+   "to": "std3:OperationalPhase",
+   "confidence": "0.6"
+  },
+  {
+   "from": "std3:ConstructionPhase",
+   "edge": "st:precedes",
+   "to": "std3:CommissioningPhase",
+   "confidence": "0.6"
+  },
+  {
+   "from": "std3:DesignPhase",
+   "edge": "st:precedes",
+   "to": "std3:ConstructionPhase",
+   "confidence": "0.6"
+  },
+  {
+   "from": "std3:FeasibilityPhase",
+   "edge": "st:precedes",
+   "to": "std3:DesignPhase",
+   "confidence": "0.6"
+  },
+  {
+   "from": "std3:SegmentInstallation",
+   "edge": "st:dependsOn",
+   "to": "std3:TBMExcavation",
+   "confidence": "0.6"
+  },
+  {
+   "from": "std3:SitePreparation",
+   "edge": "st:precedes",
+   "to": "std3:ConstructionPhase",
+   "confidence": "0.6"
+  },
+  {
+   "from": "std3:TBMExcavation",
+   "edge": "st:dependsOn",
+   "to": "std3:SitePreparation",
+   "confidence": "0.6"
+  }
+ ],
+ "dependency_chain": [
+  {
+   "upstream": "std3:TBMExcavation"
+  },
+  {
+   "upstream": "std3:SitePreparation"
+  }
+ ],
+ "corroboration": [
+  {
+   "corroborated": "True",
+   "edges": "11",
+   "meanConfidence": "0.9"
+  },
+  {
+   "corroborated": "False",
+   "edges": "36",
+   "meanConfidence": "0.6"
+  }
+ ],
+ "centrality_top5": [
+  {
+   "node": "std3:SolwayTunnel",
+   "betweenness": 0.0714
+  },
+  {
+   "node": "std3:TunnelSection1",
+   "betweenness": 0.0696
+  },
+  {
+   "node": "std3:TunnelDesign",
+   "betweenness": 0.0653
+  },
+  {
+   "node": "std3:TunnelLining1",
+   "betweenness": 0.0542
+  },
+  {
+   "node": "std3:EngineeringConsultant",
+   "betweenness": 0.0308
+  }
+ ],
+ "environment": {
+  "kglab": "0.6.6",
+  "python": "3.10.12"
+ }
+}

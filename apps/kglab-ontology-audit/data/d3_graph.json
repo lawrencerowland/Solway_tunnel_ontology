@@ -1,0 +1,468 @@
+{
+ "nodes": [
+  {
+   "id": "SolwayTunnel",
+   "group": "Entity",
+   "label": "Solway Firth Tunnel",
+   "size": 20
+  },
+  {
+   "id": "TunnelSection1",
+   "group": "Entity",
+   "label": "Scottish Approach Section",
+   "size": 15
+  },
+  {
+   "id": "TunnelSection2",
+   "group": "Entity",
+   "label": "Main Undersea Section",
+   "size": 15
+  },
+  {
+   "id": "TunnelSection3",
+   "group": "Entity",
+   "label": "English Approach Section",
+   "size": 15
+  },
+  {
+   "id": "TunnelBore1",
+   "group": "Entity",
+   "label": "Scottish Approach Bore",
+   "size": 12
+  },
+  {
+   "id": "TunnelLining1",
+   "group": "Entity",
+   "label": "Section 1 Lining",
+   "size": 12
+  },
+  {
+   "id": "LiningSegment1",
+   "group": "Entity",
+   "label": "Standard Segment A-Type",
+   "size": 10
+  },
+  {
+   "id": "VentilationSystem",
+   "group": "Entity",
+   "label": "Main Ventilation System",
+   "size": 12
+  },
+  {
+   "id": "EmergencyExit1",
+   "group": "Entity",
+   "label": "Emergency Exit 1",
+   "size": 8
+  },
+  {
+   "id": "EmergencyExit2",
+   "group": "Entity",
+   "label": "Emergency Exit 2",
+   "size": 8
+  },
+  {
+   "id": "HighStrengthConcrete",
+   "group": "Material",
+   "label": "High Strength Marine Concrete",
+   "size": 10
+  },
+  {
+   "id": "MarineGradeSteel",
+   "group": "Material",
+   "label": "Marine Grade Steel",
+   "size": 10
+  },
+  {
+   "id": "MembraneWaterproofing",
+   "group": "Material",
+   "label": "HDPE Membrane Waterproofing",
+   "size": 10
+  },
+  {
+   "id": "TBMExcavation",
+   "group": "Process",
+   "label": "TBM Excavation - Main Drive",
+   "size": 12
+  },
+  {
+   "id": "SegmentInstallation",
+   "group": "Process",
+   "label": "Segment Installation",
+   "size": 12
+  },
+  {
+   "id": "GroundTreatment",
+   "group": "Process",
+   "label": "Ground Treatment",
+   "size": 12
+  },
+  {
+   "id": "SitePreparation",
+   "group": "Process",
+   "label": "Site Preparation",
+   "size": 12
+  },
+  {
+   "id": "TunnelContractor",
+   "group": "Agent",
+   "label": "Solway Tunnel Construction JV",
+   "size": 15
+  },
+  {
+   "id": "EngineeringConsultant",
+   "group": "Agent",
+   "label": "Marine Infrastructure Design Partners",
+   "size": 15
+  },
+  {
+   "id": "TransportAuthority",
+   "group": "Agent",
+   "label": "UK Transport Authority",
+   "size": 15
+  },
+  {
+   "id": "ProjectManager",
+   "group": "Agent",
+   "label": "Lead Project Manager",
+   "size": 10
+  },
+  {
+   "id": "TunnelDesign",
+   "group": "Information",
+   "label": "Solway Tunnel Detailed Design",
+   "size": 12
+  },
+  {
+   "id": "GeotechnicalReport",
+   "group": "Information",
+   "label": "Solway Firth Geotechnical Assessment",
+   "size": 12
+  },
+  {
+   "id": "ConstructionPlan",
+   "group": "Information",
+   "label": "Construction Execution Plan",
+   "size": 12
+  },
+  {
+   "id": "EnvironmentalAssessment",
+   "group": "Information",
+   "label": "Environmental Impact Assessment",
+   "size": 12
+  },
+  {
+   "id": "FeasibilityPhase",
+   "group": "Lifecycle",
+   "label": "Feasibility Phase",
+   "size": 10
+  },
+  {
+   "id": "DesignPhase",
+   "group": "Lifecycle",
+   "label": "Design Phase",
+   "size": 10
+  },
+  {
+   "id": "ConstructionPhase",
+   "group": "Lifecycle",
+   "label": "Construction Phase",
+   "size": 10
+  },
+  {
+   "id": "CommissioningPhase",
+   "group": "Lifecycle",
+   "label": "Commissioning Phase",
+   "size": 10
+  },
+  {
+   "id": "OperationalPhase",
+   "group": "Lifecycle",
+   "label": "Operational Phase",
+   "size": 10
+  }
+ ],
+ "links": [
+  {
+   "source": "SolwayTunnel",
+   "target": "TunnelSection1",
+   "value": 1,
+   "label": "hasSubOrganization"
+  },
+  {
+   "source": "SolwayTunnel",
+   "target": "TunnelSection2",
+   "value": 1,
+   "label": "hasSubOrganization"
+  },
+  {
+   "source": "SolwayTunnel",
+   "target": "TunnelSection3",
+   "value": 1,
+   "label": "hasSubOrganization"
+  },
+  {
+   "source": "TunnelSection1",
+   "target": "TunnelBore1",
+   "value": 1,
+   "label": "hasBore"
+  },
+  {
+   "source": "TunnelSection1",
+   "target": "TunnelLining1",
+   "value": 1,
+   "label": "hasLining"
+  },
+  {
+   "source": "TunnelLining1",
+   "target": "LiningSegment1",
+   "value": 1,
+   "label": "hasSegment"
+  },
+  {
+   "source": "SolwayTunnel",
+   "target": "VentilationSystem",
+   "value": 1,
+   "label": "hasVentilation"
+  },
+  {
+   "source": "SolwayTunnel",
+   "target": "EmergencyExit1",
+   "value": 1,
+   "label": "hasEmergencyExit"
+  },
+  {
+   "source": "SolwayTunnel",
+   "target": "EmergencyExit2",
+   "value": 1,
+   "label": "hasEmergencyExit"
+  },
+  {
+   "source": "LiningSegment1",
+   "target": "HighStrengthConcrete",
+   "value": 1,
+   "label": "madeOf"
+  },
+  {
+   "source": "LiningSegment1",
+   "target": "MarineGradeSteel",
+   "value": 1,
+   "label": "reinforcedWith"
+  },
+  {
+   "source": "TunnelLining1",
+   "target": "MembraneWaterproofing",
+   "value": 1,
+   "label": "protectedBy"
+  },
+  {
+   "source": "HighStrengthConcrete",
+   "target": "MarineGradeSteel",
+   "value": 1,
+   "label": "compatibleWith"
+  },
+  {
+   "source": "HighStrengthConcrete",
+   "target": "MembraneWaterproofing",
+   "value": 1,
+   "label": "complementsProperties"
+  },
+  {
+   "source": "MarineGradeSteel",
+   "target": "HighStrengthConcrete",
+   "value": 1,
+   "label": "complementsProperties"
+  },
+  {
+   "source": "MembraneWaterproofing",
+   "target": "HighStrengthConcrete",
+   "value": 1,
+   "label": "compatibleWith"
+  },
+  {
+   "source": "TBMExcavation",
+   "target": "TunnelBore1",
+   "value": 1,
+   "label": "creates"
+  },
+  {
+   "source": "SegmentInstallation",
+   "target": "LiningSegment1",
+   "value": 1,
+   "label": "installs"
+  },
+  {
+   "source": "GroundTreatment",
+   "target": "TunnelSection1",
+   "value": 1,
+   "label": "stabilizes"
+  },
+  {
+   "source": "SitePreparation",
+   "target": "ConstructionPhase",
+   "value": 1,
+   "label": "precedes"
+  },
+  {
+   "source": "TBMExcavation",
+   "target": "SitePreparation",
+   "value": 1,
+   "label": "dependsOn"
+  },
+  {
+   "source": "SegmentInstallation",
+   "target": "TBMExcavation",
+   "value": 1,
+   "label": "dependsOn"
+  },
+  {
+   "source": "GroundTreatment",
+   "target": "TBMExcavation",
+   "value": 1,
+   "label": "sharesResources"
+  },
+  {
+   "source": "TBMExcavation",
+   "target": "ConstructionPhase",
+   "value": 1,
+   "label": "partOfPhase"
+  },
+  {
+   "source": "SegmentInstallation",
+   "target": "ConstructionPhase",
+   "value": 1,
+   "label": "partOfPhase"
+  },
+  {
+   "source": "GroundTreatment",
+   "target": "ConstructionPhase",
+   "value": 1,
+   "label": "partOfPhase"
+  },
+  {
+   "source": "SitePreparation",
+   "target": "ConstructionPhase",
+   "value": 1,
+   "label": "partOfPhase"
+  },
+  {
+   "source": "TunnelContractor",
+   "target": "TBMExcavation",
+   "value": 1,
+   "label": "performs"
+  },
+  {
+   "source": "EngineeringConsultant",
+   "target": "TunnelDesign",
+   "value": 1,
+   "label": "creates"
+  },
+  {
+   "source": "TransportAuthority",
+   "target": "EnvironmentalAssessment",
+   "value": 1,
+   "label": "approves"
+  },
+  {
+   "source": "ProjectManager",
+   "target": "ConstructionPlan",
+   "value": 1,
+   "label": "manages"
+  },
+  {
+   "source": "TunnelContractor",
+   "target": "EngineeringConsultant",
+   "value": 1,
+   "label": "contractsWith"
+  },
+  {
+   "source": "EngineeringConsultant",
+   "target": "TransportAuthority",
+   "value": 1,
+   "label": "collaboratesWith"
+  },
+  {
+   "source": "ProjectManager",
+   "target": "EngineeringConsultant",
+   "value": 1,
+   "label": "collaboratesWith"
+  },
+  {
+   "source": "TunnelContractor",
+   "target": "ProjectManager",
+   "value": 1,
+   "label": "collaboratesWith"
+  },
+  {
+   "source": "TunnelDesign",
+   "target": "SolwayTunnel",
+   "value": 1,
+   "label": "specifies"
+  },
+  {
+   "source": "GeotechnicalReport",
+   "target": "TunnelSection1",
+   "value": 1,
+   "label": "informs"
+  },
+  {
+   "source": "ConstructionPlan",
+   "target": "TBMExcavation",
+   "value": 1,
+   "label": "schedules"
+  },
+  {
+   "source": "EnvironmentalAssessment",
+   "target": "SolwayTunnel",
+   "value": 1,
+   "label": "evaluates"
+  },
+  {
+   "source": "TunnelDesign",
+   "target": "GeotechnicalReport",
+   "value": 1,
+   "label": "references"
+  },
+  {
+   "source": "ConstructionPlan",
+   "target": "TunnelDesign",
+   "value": 1,
+   "label": "references"
+  },
+  {
+   "source": "EnvironmentalAssessment",
+   "target": "GeotechnicalReport",
+   "value": 1,
+   "label": "complementsData"
+  },
+  {
+   "source": "ConstructionPlan",
+   "target": "TunnelDesign",
+   "value": 1,
+   "label": "updatesInformation"
+  },
+  {
+   "source": "FeasibilityPhase",
+   "target": "DesignPhase",
+   "value": 1,
+   "label": "precedes"
+  },
+  {
+   "source": "DesignPhase",
+   "target": "ConstructionPhase",
+   "value": 1,
+   "label": "precedes"
+  },
+  {
+   "source": "ConstructionPhase",
+   "target": "CommissioningPhase",
+   "value": 1,
+   "label": "precedes"
+  },
+  {
+   "source": "CommissioningPhase",
+   "target": "OperationalPhase",
+   "value": 1,
+   "label": "precedes"
+  }
+ ]
+}

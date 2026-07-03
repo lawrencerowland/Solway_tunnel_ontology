@@ -1,0 +1,44 @@
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix stv:  <http://example.org/solwaytunnel/vocab#> .
+@prefix st:   <http://example.org/solwaytunnel#> .
+
+# Shape 1 - every lifted edge assertion must carry the base provenance record:
+# an edge type, a confidence in [0,1], and at least one source.
+stv:EdgeAssertionShape
+    a sh:NodeShape ;
+    sh:targetClass stv:EdgeAssertion ;
+    sh:property [
+        sh:path stv:edgeType ;
+        sh:minCount 1 ;
+        sh:message "Edge assertion missing edge type." ;
+    ] ;
+    sh:property [
+        sh:path stv:confidence ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ; sh:maxInclusive 1.0 ;
+        sh:message "Edge assertion missing confidence in [0,1]." ;
+    ] ;
+    sh:property [
+        sh:path dct:source ;
+        sh:minCount 1 ;
+        sh:message "Edge assertion missing provenance source." ;
+    ] .
+
+# Shape 2 - plan-critical edges (dependsOn / precedes) additionally need the
+# AGENTS.md contingent-edge fields: a use statement and an update trigger.
+stv:PlanCriticalEdgeShape
+    a sh:NodeShape ;
+    sh:targetClass stv:PlanCriticalEdge ;
+    sh:property [
+        sh:path stv:useStatement ;
+        sh:minCount 1 ;
+        sh:message "Plan-critical edge missing use statement." ;
+    ] ;
+    sh:property [
+        sh:path stv:updateTrigger ;
+        sh:minCount 1 ;
+        sh:message "Plan-critical edge missing update trigger." ;
+    ] .

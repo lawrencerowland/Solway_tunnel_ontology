@@ -1,0 +1,1199 @@
+@base <http://example.org/solwaytunnel#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix dica: <https://w3id.org/digitalconstruction/Agents#> .
+@prefix dicbm: <https://w3id.org/digitalconstruction/BuildingMaterials#> .
+@prefix dicc: <https://w3id.org/digitalconstruction/Contexts#> .
+@prefix dice: <https://w3id.org/digitalconstruction/Entities#> .
+@prefix dici: <https://w3id.org/digitalconstruction/Information#> .
+@prefix dicl: <https://w3id.org/digitalconstruction/Lifecycle#> .
+@prefix dicp: <https://w3id.org/digitalconstruction/Processes#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix st: <http://example.org/solwaytunnel#> .
+@prefix std3: <http://example.org/solwaytunnel/d3#> .
+@prefix ste: <http://example.org/solwaytunnel/edge#> .
+@prefix stv: <http://example.org/solwaytunnel/vocab#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> a owl:Ontology ;
+    rdfs:label "Solway Firth Tunnel Ontology" ;
+    rdfs:comment "Application ontology for the Solway Firth Tunnel project based on Digital Construction Ontology" ;
+    owl:versionInfo "1.0" .
+
+<AsBuiltContext> a owl:Class ;
+    rdfs:label "As-Built Context" ;
+    rdfs:comment "Context representing the actual construction" ;
+    rdfs:subClassOf dicc:Context .
+
+<AsDesignedContext> a owl:Class ;
+    rdfs:label "As-Designed Context" ;
+    rdfs:comment "Context representing the design specifications" ;
+    rdfs:subClassOf dicc:Context .
+
+<CommissioningPhase> a owl:Class ;
+    rdfs:label "Commissioning Phase" ;
+    rdfs:comment "Phase for testing and preparation for operation" ;
+    rdfs:subClassOf dicl:LifecyclePhase .
+
+<DesignPhase> a owl:Class ;
+    rdfs:label "Design Phase" ;
+    rdfs:comment "Phase for detailed design work" ;
+    rdfs:subClassOf dicl:LifecyclePhase .
+
+<FeasibilityPhase> a owl:Class ;
+    rdfs:label "Feasibility Phase" ;
+    rdfs:comment "Initial project feasibility assessment phase" ;
+    rdfs:subClassOf dicl:LifecyclePhase .
+
+<OperationalPhase> a owl:Class ;
+    rdfs:label "Operational Phase" ;
+    rdfs:comment "Phase during which the tunnel is in operation" ;
+    rdfs:subClassOf dicl:LifecyclePhase .
+
+<SitePreparation> a owl:Class ;
+    rdfs:label "Site Preparation" ;
+    rdfs:comment "Initial preparation of the tunnel sites" ;
+    rdfs:subClassOf dicp:Process .
+
+<chainage> a owl:DatatypeProperty ;
+    rdfs:label "chainage" ;
+    rdfs:comment "Distance from the starting point in meters" ;
+    rdfs:domain <TunnelSection> ;
+    rdfs:range xsd:float .
+
+<constructionPlan> <references> <designDoc> ;
+    <updatesInformation> <designDoc> .
+
+<contains> a owl:ObjectProperty ;
+    rdfs:label "contains" ;
+    rdfs:comment "Relates a context to the information it contains" ;
+    rdfs:domain dicc:Context ;
+    rdfs:range dici:InformationContentEntity .
+
+<diameter> a owl:DatatypeProperty ;
+    rdfs:label "diameter" ;
+    rdfs:comment "Diameter in meters" ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( <SolwayTunnel> <TunnelBore> ) ] ;
+    rdfs:range xsd:float .
+
+<endDate> a owl:DatatypeProperty ;
+    rdfs:label "end date" ;
+    rdfs:comment "End date and time" ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( dicp:Process dicl:LifecyclePhase ) ] ;
+    rdfs:range xsd:dateTime .
+
+<environmentalAssessment> <complementsData> <geotechnicalReport> .
+
+<groundTreatment> <partOfPhase> <constructionPhase> ;
+    <sharesResources> <tbmExcavation> .
+
+<partOfConsortium> a owl:ObjectProperty ;
+    rdfs:label "part of consortium" ;
+    rdfs:comment "Indicates organizations that are part of the same consortium" ;
+    rdfs:domain dica:FormalOrganization ;
+    rdfs:range dica:FormalOrganization .
+
+<represents> a owl:ObjectProperty ;
+    rdfs:label "represents" ;
+    rdfs:comment "Relates a context to what it represents" ;
+    rdfs:domain dicc:Context ;
+    rdfs:range dice:Entity .
+
+<ringCount> a owl:DatatypeProperty ;
+    rdfs:label "ring count" ;
+    rdfs:comment "Number of rings in the lining" ;
+    rdfs:domain <TunnelLining> ;
+    rdfs:range xsd:integer .
+
+<segmentInstallation> <dependsOn> <tbmExcavation> ;
+    <partOfPhase> <constructionPhase> .
+
+<similarTo> a owl:ObjectProperty ;
+    rdfs:label "similar to" ;
+    rdfs:comment "Indicates materials with similar properties or applications" ;
+    rdfs:domain dicbm:Material ;
+    rdfs:range dicbm:Material .
+
+<startDate> a owl:DatatypeProperty ;
+    rdfs:label "start date" ;
+    rdfs:comment "Start date and time" ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( dicp:Process dicl:LifecyclePhase ) ] ;
+    rdfs:range xsd:dateTime .
+
+<strength> a owl:DatatypeProperty ;
+    rdfs:label "strength" ;
+    rdfs:comment "Concrete strength in MPa" ;
+    rdfs:domain <Concrete> ;
+    rdfs:range xsd:float .
+
+<thickness> a owl:DatatypeProperty ;
+    rdfs:label "thickness" ;
+    rdfs:comment "Thickness in millimeters" ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( <TunnelLining> <Waterproofing> ) ] ;
+    rdfs:range xsd:float .
+
+<tunnelContractor> a <ContractingCompany> ;
+    rdfs:label "Solway Tunnel Construction Joint Venture" ;
+    <collaboratesWith> <projectManager> ;
+    <contractsWith> <engineeringConsultant> ;
+    dica:role "Main Contractor" .
+
+<waterResistance> a owl:DatatypeProperty ;
+    rdfs:label "water resistance" ;
+    rdfs:comment "Water resistance rating" ;
+    rdfs:domain <Concrete> ;
+    rdfs:range xsd:float .
+
+<weight> a owl:DatatypeProperty ;
+    rdfs:label "weight" ;
+    rdfs:comment "Weight in kilograms" ;
+    rdfs:domain <LiningSegment> ;
+    rdfs:range xsd:float .
+
+ste:e001 a stv:EdgeAssertion ;
+    stv:confidence 0.9 ;
+    stv:corroborated true ;
+    stv:edgeType dice:hasSubOrganization ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx",
+        "not_yet_used/tunnel-ontology-visualizer.ttl.txt" ;
+    rdf:object std3:TunnelSection1 ;
+    rdf:predicate dice:hasSubOrganization ;
+    rdf:subject std3:SolwayTunnel .
+
+ste:e002 a stv:EdgeAssertion ;
+    stv:confidence 0.9 ;
+    stv:corroborated true ;
+    stv:edgeType dice:hasSubOrganization ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx",
+        "not_yet_used/tunnel-ontology-visualizer.ttl.txt" ;
+    rdf:object std3:TunnelSection2 ;
+    rdf:predicate dice:hasSubOrganization ;
+    rdf:subject std3:SolwayTunnel .
+
+ste:e003 a stv:EdgeAssertion ;
+    stv:confidence 0.9 ;
+    stv:corroborated true ;
+    stv:edgeType dice:hasSubOrganization ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx",
+        "not_yet_used/tunnel-ontology-visualizer.ttl.txt" ;
+    rdf:object std3:TunnelSection3 ;
+    rdf:predicate dice:hasSubOrganization ;
+    rdf:subject std3:SolwayTunnel .
+
+ste:e004 a stv:EdgeAssertion ;
+    stv:confidence 0.9 ;
+    stv:corroborated true ;
+    stv:edgeType <hasBore> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx",
+        "not_yet_used/tunnel-ontology-visualizer.ttl.txt" ;
+    rdf:object std3:TunnelBore1 ;
+    rdf:predicate <hasBore> ;
+    rdf:subject std3:TunnelSection1 .
+
+ste:e005 a stv:EdgeAssertion ;
+    stv:confidence 0.9 ;
+    stv:corroborated true ;
+    stv:edgeType <hasLining> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx",
+        "not_yet_used/tunnel-ontology-visualizer.ttl.txt" ;
+    rdf:object std3:TunnelLining1 ;
+    rdf:predicate <hasLining> ;
+    rdf:subject std3:TunnelSection1 .
+
+ste:e006 a stv:EdgeAssertion ;
+    stv:confidence 0.9 ;
+    stv:corroborated true ;
+    stv:edgeType <hasSegment> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx",
+        "not_yet_used/tunnel-ontology-visualizer.ttl.txt" ;
+    rdf:object std3:LiningSegment1 ;
+    rdf:predicate <hasSegment> ;
+    rdf:subject std3:TunnelLining1 .
+
+ste:e007 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <hasVentilation> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:VentilationSystem ;
+    rdf:predicate <hasVentilation> ;
+    rdf:subject std3:SolwayTunnel .
+
+ste:e008 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <hasEmergencyExit> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:EmergencyExit1 ;
+    rdf:predicate <hasEmergencyExit> ;
+    rdf:subject std3:SolwayTunnel .
+
+ste:e009 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <hasEmergencyExit> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:EmergencyExit2 ;
+    rdf:predicate <hasEmergencyExit> ;
+    rdf:subject std3:SolwayTunnel .
+
+ste:e010 a stv:EdgeAssertion ;
+    stv:confidence 0.9 ;
+    stv:corroborated true ;
+    stv:edgeType <madeOf> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx",
+        "not_yet_used/tunnel-ontology-visualizer.ttl.txt" ;
+    rdf:object std3:HighStrengthConcrete ;
+    rdf:predicate <madeOf> ;
+    rdf:subject std3:LiningSegment1 .
+
+ste:e011 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <reinforcedWith> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:MarineGradeSteel ;
+    rdf:predicate <reinforcedWith> ;
+    rdf:subject std3:LiningSegment1 .
+
+ste:e012 a stv:EdgeAssertion ;
+    stv:confidence 0.9 ;
+    stv:corroborated true ;
+    stv:edgeType <protectedBy> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx",
+        "not_yet_used/tunnel-ontology-visualizer.ttl.txt" ;
+    rdf:object std3:MembraneWaterproofing ;
+    rdf:predicate <protectedBy> ;
+    rdf:subject std3:TunnelLining1 .
+
+ste:e013 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <compatibleWith> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:MarineGradeSteel ;
+    rdf:predicate <compatibleWith> ;
+    rdf:subject std3:HighStrengthConcrete .
+
+ste:e014 a stv:EdgeAssertion ;
+    stv:confidence 0.9 ;
+    stv:corroborated true ;
+    stv:edgeType <complementsProperties> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx",
+        "not_yet_used/tunnel-ontology-visualizer.ttl.txt" ;
+    rdf:object std3:MembraneWaterproofing ;
+    rdf:predicate <complementsProperties> ;
+    rdf:subject std3:HighStrengthConcrete .
+
+ste:e015 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <complementsProperties> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:HighStrengthConcrete ;
+    rdf:predicate <complementsProperties> ;
+    rdf:subject std3:MarineGradeSteel .
+
+ste:e016 a stv:EdgeAssertion ;
+    stv:confidence 0.9 ;
+    stv:corroborated true ;
+    stv:edgeType <compatibleWith> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx",
+        "not_yet_used/tunnel-ontology-visualizer.ttl.txt" ;
+    rdf:object std3:HighStrengthConcrete ;
+    rdf:predicate <compatibleWith> ;
+    rdf:subject std3:MembraneWaterproofing .
+
+ste:e017 a stv:EdgeAssertion ;
+    stv:confidence 0.9 ;
+    stv:corroborated true ;
+    stv:edgeType <creates> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx",
+        "not_yet_used/tunnel-ontology-visualizer.ttl.txt" ;
+    rdf:object std3:TunnelBore1 ;
+    rdf:predicate <creates> ;
+    rdf:subject std3:TBMExcavation .
+
+ste:e018 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <installs> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:LiningSegment1 ;
+    rdf:predicate <installs> ;
+    rdf:subject std3:SegmentInstallation .
+
+ste:e019 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <stabilizes> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:TunnelSection1 ;
+    rdf:predicate <stabilizes> ;
+    rdf:subject std3:GroundTreatment .
+
+ste:e020 a stv:EdgeAssertion,
+        stv:PlanCriticalEdge ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <precedes> ;
+    stv:updateTrigger "Re-check if early-works packages start ahead of main phase." ;
+    stv:useStatement "Site establishment gates the construction phase start." ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:ConstructionPhase ;
+    rdf:predicate <precedes> ;
+    rdf:subject std3:SitePreparation .
+
+ste:e021 a stv:EdgeAssertion,
+        stv:PlanCriticalEdge ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <dependsOn> ;
+    stv:updateTrigger "Re-check if launch site layout or TBM procurement changes." ;
+    stv:useStatement "Sequencing constraint: TBM launch chamber must exist before main drive." ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:SitePreparation ;
+    rdf:predicate <dependsOn> ;
+    rdf:subject std3:TBMExcavation .
+
+ste:e022 a stv:EdgeAssertion,
+        stv:PlanCriticalEdge ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <dependsOn> ;
+    stv:updateTrigger "Re-check if TBM type changes (open vs closed face)." ;
+    stv:useStatement "Ring build can only follow the advancing bore." ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:TBMExcavation ;
+    rdf:predicate <dependsOn> ;
+    rdf:subject std3:SegmentInstallation .
+
+ste:e023 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <sharesResources> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:TBMExcavation ;
+    rdf:predicate <sharesResources> ;
+    rdf:subject std3:GroundTreatment .
+
+ste:e024 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <partOfPhase> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:ConstructionPhase ;
+    rdf:predicate <partOfPhase> ;
+    rdf:subject std3:TBMExcavation .
+
+ste:e025 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <partOfPhase> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:ConstructionPhase ;
+    rdf:predicate <partOfPhase> ;
+    rdf:subject std3:SegmentInstallation .
+
+ste:e026 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <partOfPhase> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:ConstructionPhase ;
+    rdf:predicate <partOfPhase> ;
+    rdf:subject std3:GroundTreatment .
+
+ste:e027 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <partOfPhase> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:ConstructionPhase ;
+    rdf:predicate <partOfPhase> ;
+    rdf:subject std3:SitePreparation .
+
+ste:e028 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <performs> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:TBMExcavation ;
+    rdf:predicate <performs> ;
+    rdf:subject std3:TunnelContractor .
+
+ste:e029 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <creates> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:TunnelDesign ;
+    rdf:predicate <creates> ;
+    rdf:subject std3:EngineeringConsultant .
+
+ste:e030 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <approves> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:EnvironmentalAssessment ;
+    rdf:predicate <approves> ;
+    rdf:subject std3:TransportAuthority .
+
+ste:e031 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <manages> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:ConstructionPlan ;
+    rdf:predicate <manages> ;
+    rdf:subject std3:ProjectManager .
+
+ste:e032 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <contractsWith> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:EngineeringConsultant ;
+    rdf:predicate <contractsWith> ;
+    rdf:subject std3:TunnelContractor .
+
+ste:e033 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <collaboratesWith> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:TransportAuthority ;
+    rdf:predicate <collaboratesWith> ;
+    rdf:subject std3:EngineeringConsultant .
+
+ste:e034 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <collaboratesWith> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:EngineeringConsultant ;
+    rdf:predicate <collaboratesWith> ;
+    rdf:subject std3:ProjectManager .
+
+ste:e035 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <collaboratesWith> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:ProjectManager ;
+    rdf:predicate <collaboratesWith> ;
+    rdf:subject std3:TunnelContractor .
+
+ste:e036 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <specifies> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:SolwayTunnel ;
+    rdf:predicate <specifies> ;
+    rdf:subject std3:TunnelDesign .
+
+ste:e037 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <informs> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:TunnelSection1 ;
+    rdf:predicate <informs> ;
+    rdf:subject std3:GeotechnicalReport .
+
+ste:e038 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <schedules> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:TBMExcavation ;
+    rdf:predicate <schedules> ;
+    rdf:subject std3:ConstructionPlan .
+
+ste:e039 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <evaluates> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:SolwayTunnel ;
+    rdf:predicate <evaluates> ;
+    rdf:subject std3:EnvironmentalAssessment .
+
+ste:e040 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <references> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:GeotechnicalReport ;
+    rdf:predicate <references> ;
+    rdf:subject std3:TunnelDesign .
+
+ste:e041 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <references> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:TunnelDesign ;
+    rdf:predicate <references> ;
+    rdf:subject std3:ConstructionPlan .
+
+ste:e042 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <complementsData> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:GeotechnicalReport ;
+    rdf:predicate <complementsData> ;
+    rdf:subject std3:EnvironmentalAssessment .
+
+ste:e043 a stv:EdgeAssertion ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <updatesInformation> ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:TunnelDesign ;
+    rdf:predicate <updatesInformation> ;
+    rdf:subject std3:ConstructionPlan .
+
+ste:e044 a stv:EdgeAssertion,
+        stv:PlanCriticalEdge ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <precedes> ;
+    stv:updateTrigger "Re-check if phased/parallel delivery is adopted." ;
+    stv:useStatement "Phase gate: design funding released by feasibility approval." ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:DesignPhase ;
+    rdf:predicate <precedes> ;
+    rdf:subject std3:FeasibilityPhase .
+
+ste:e045 a stv:EdgeAssertion,
+        stv:PlanCriticalEdge ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <precedes> ;
+    stv:updateTrigger "Re-check if early-works packages are split out." ;
+    stv:useStatement "Phase gate: approved-for-construction design required." ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:ConstructionPhase ;
+    rdf:predicate <precedes> ;
+    rdf:subject std3:DesignPhase .
+
+ste:e046 a stv:EdgeAssertion,
+        stv:PlanCriticalEdge ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <precedes> ;
+    stv:updateTrigger "Re-check if sectional commissioning is adopted." ;
+    stv:useStatement "Phase gate: systems installation complete before commissioning." ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:CommissioningPhase ;
+    rdf:predicate <precedes> ;
+    rdf:subject std3:ConstructionPhase .
+
+ste:e047 a stv:EdgeAssertion,
+        stv:PlanCriticalEdge ;
+    stv:confidence 0.6 ;
+    stv:corroborated false ;
+    stv:edgeType <precedes> ;
+    stv:updateTrigger "Re-check against regulator engagement plan." ;
+    stv:useStatement "Phase gate: safety case acceptance before public operation." ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    rdf:object std3:OperationalPhase ;
+    rdf:predicate <precedes> ;
+    rdf:subject std3:CommissioningPhase .
+
+<ConstructionPhase> a owl:Class ;
+    rdfs:label "Construction Phase" ;
+    rdfs:comment "Phase during which construction occurs" ;
+    rdfs:subClassOf dicl:LifecyclePhase .
+
+<EmergencyExit> a owl:Class ;
+    rdfs:label "Emergency Exit" ;
+    rdfs:comment "Safety exits positioned at intervals along the tunnel" ;
+    rdfs:subClassOf dice:Object .
+
+<EnvironmentalAssessment> a owl:Class ;
+    rdfs:label "Environmental Assessment" ;
+    rdfs:comment "Assessment of environmental impacts" ;
+    rdfs:subClassOf dici:InformationContentEntity .
+
+<GeotechnicalReport> a owl:Class ;
+    rdfs:label "Geotechnical Report" ;
+    rdfs:comment "Report on ground conditions" ;
+    rdfs:subClassOf dici:InformationContentEntity .
+
+<GovernmentAgency> a owl:Class ;
+    rdfs:label "Government Agency" ;
+    rdfs:comment "Government body with oversight of the project" ;
+    rdfs:subClassOf dica:FormalOrganization .
+
+<GroundTreatment> a owl:Class ;
+    rdfs:label "Ground Treatment" ;
+    rdfs:comment "Processes for stabilizing the ground around the tunnel" ;
+    rdfs:subClassOf dicp:Process .
+
+<ProjectManager> a owl:Class ;
+    rdfs:label "Project Manager" ;
+    rdfs:comment "Individual responsible for managing the project" ;
+    rdfs:subClassOf dica:Agent .
+
+<SegmentInstallation> a owl:Class ;
+    rdfs:label "Segment Installation" ;
+    rdfs:comment "Process of installing lining segments" ;
+    rdfs:subClassOf dicp:Process .
+
+<VentilationSystem> a owl:Class ;
+    rdfs:label "Ventilation System" ;
+    rdfs:comment "System for maintaining air quality in the tunnel" ;
+    rdfs:subClassOf dice:Object .
+
+<projectManager> <collaboratesWith> <engineeringConsultant> .
+
+<sitePreparation> <partOfPhase> <constructionPhase> .
+
+<solwayTunnel> a <SolwayTunnel> ;
+    rdfs:label "Solway Firth Tunnel" ;
+    <diameter> 12.0 ;
+    <identifier> "STN-2025" ;
+    <length> 22.0 ;
+    dice:hasSubOrganization <section1>,
+        <section2>,
+        <section3> ;
+    dice:purpose "Connect England and Scotland under the Solway Firth" .
+
+std3:FeasibilityPhase a stv:Lifecycle ;
+    rdfs:label "Feasibility Phase" ;
+    <precedes> std3:DesignPhase ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+<ConstructionPlan> a owl:Class ;
+    rdfs:label "Construction Plan" ;
+    rdfs:comment "Detailed plan for the construction phase" ;
+    rdfs:subClassOf dici:Plan .
+
+<ContractingCompany> a owl:Class ;
+    rdfs:label "Contracting Company" ;
+    rdfs:comment "Company responsible for construction work" ;
+    rdfs:subClassOf dica:FormalOrganization .
+
+<EngineeringFirm> a owl:Class ;
+    rdfs:label "Engineering Firm" ;
+    rdfs:comment "Organization providing engineering services" ;
+    rdfs:subClassOf dica:FormalOrganization .
+
+<ExcavationProcess> a owl:Class ;
+    rdfs:label "Excavation Process" ;
+    rdfs:comment "Process of excavating the tunnel bore" ;
+    rdfs:subClassOf dicp:Process .
+
+<Steel> a owl:Class ;
+    rdfs:label "Steel" ;
+    rdfs:comment "Steel material used for reinforcement" ;
+    rdfs:subClassOf dicbm:Material .
+
+<approves> a owl:ObjectProperty ;
+    rdfs:label "approves" ;
+    rdfs:comment "Relates an agent to something they approve" ;
+    rdfs:domain <GovernmentAgency> ;
+    rdfs:range dici:InformationContentEntity .
+
+<complementsData> a owl:ObjectProperty ;
+    rdfs:label "complements data" ;
+    rdfs:comment "Indicates documents with complementary information" ;
+    rdfs:domain dici:InformationContentEntity ;
+    rdfs:range dici:InformationContentEntity .
+
+<contractsWith> a owl:ObjectProperty ;
+    rdfs:label "contracts with" ;
+    rdfs:comment "Indicates contractual relationships between agents" ;
+    rdfs:domain dica:Agent ;
+    rdfs:range dica:Agent .
+
+<evaluates> a owl:ObjectProperty ;
+    rdfs:label "evaluates" ;
+    rdfs:comment "Relates an assessment to what it evaluates" ;
+    rdfs:domain <EnvironmentalAssessment> ;
+    rdfs:range <SolwayTunnel> .
+
+<hasBore> a owl:ObjectProperty ;
+    rdfs:label "has bore" ;
+    rdfs:comment "Relates a tunnel section to its bore" ;
+    rdfs:domain <TunnelSection> ;
+    rdfs:range <TunnelBore> .
+
+<hasLining> a owl:ObjectProperty ;
+    rdfs:label "has lining" ;
+    rdfs:comment "Relates a tunnel section to its lining" ;
+    rdfs:domain <TunnelSection> ;
+    rdfs:range <TunnelLining> .
+
+<hasSegment> a owl:ObjectProperty ;
+    rdfs:label "has segment" ;
+    rdfs:comment "Relates a tunnel lining to its segments" ;
+    rdfs:domain <TunnelLining> ;
+    rdfs:range <LiningSegment> .
+
+<hasVentilation> a owl:ObjectProperty ;
+    rdfs:label "has ventilation" ;
+    rdfs:comment "Relates the tunnel to its ventilation system" ;
+    rdfs:domain <SolwayTunnel> ;
+    rdfs:range <VentilationSystem> .
+
+<informs> a owl:ObjectProperty ;
+    rdfs:label "informs" ;
+    rdfs:comment "Relates information to what it informs" ;
+    rdfs:domain <GeotechnicalReport> ;
+    rdfs:range <TunnelSection> .
+
+<installs> a owl:ObjectProperty ;
+    rdfs:label "installs" ;
+    rdfs:comment "Relates an installation process to the component being installed" ;
+    rdfs:domain <SegmentInstallation> ;
+    rdfs:range <LiningSegment> .
+
+<lining1> a <TunnelLining> ;
+    rdfs:label "Section 1 Lining" ;
+    <hasSegment> <segment1> ;
+    <identifier> "LIN-001" ;
+    <protectedBy> <membraneWaterproofing> ;
+    <ringCount> 1040 ;
+    <thickness> 400.0 .
+
+<madeOf> a owl:ObjectProperty ;
+    rdfs:label "made of" ;
+    rdfs:comment "Relates a component to its primary material" ;
+    rdfs:domain <LiningSegment> ;
+    rdfs:range <Concrete> .
+
+<manages> a owl:ObjectProperty ;
+    rdfs:label "manages" ;
+    rdfs:comment "Relates a manager to what they manage" ;
+    rdfs:domain <ProjectManager> ;
+    rdfs:range <ConstructionPlan> .
+
+<marineGradeSteel> a <Steel> ;
+    rdfs:label "Marine Grade Reinforcement Steel" ;
+    <complementsProperties> <highStrengthConcrete> .
+
+<performs> a owl:ObjectProperty ;
+    rdfs:label "performs" ;
+    rdfs:comment "Relates an agent to a process they perform" ;
+    rdfs:domain <ContractingCompany> ;
+    rdfs:range dicp:Process .
+
+<protectedBy> a owl:ObjectProperty ;
+    rdfs:label "protected by" ;
+    rdfs:comment "Relates a component to its protective material" ;
+    rdfs:domain <TunnelLining> ;
+    rdfs:range <Waterproofing> .
+
+<reinforcedWith> a owl:ObjectProperty ;
+    rdfs:label "reinforced with" ;
+    rdfs:comment "Relates a component to its reinforcement material" ;
+    rdfs:domain <LiningSegment> ;
+    rdfs:range <Steel> .
+
+<schedules> a owl:ObjectProperty ;
+    rdfs:label "schedules" ;
+    rdfs:comment "Relates a plan to what it schedules" ;
+    rdfs:domain <ConstructionPlan> ;
+    rdfs:range dicp:Process .
+
+<section1> a <TunnelSection> ;
+    rdfs:label "Scottish Approach Section" ;
+    <chainage> 0.0 ;
+    <hasBore> <bore1> ;
+    <hasLining> <lining1> ;
+    <identifier> "SEC-001" ;
+    <length> 5.2 .
+
+<section2> a <TunnelSection> ;
+    rdfs:label "Main Undersea Section" ;
+    <chainage> 5.2 ;
+    <identifier> "SEC-002" ;
+    <length> 14.5 .
+
+<section3> a <TunnelSection> ;
+    rdfs:label "English Approach Section" ;
+    <chainage> 19.7 ;
+    <identifier> "SEC-003" ;
+    <length> 2.3 .
+
+<segment1> a <LiningSegment> ;
+    rdfs:label "Standard Segment A-Type" ;
+    <identifier> "SEG-00001" ;
+    <madeOf> <highStrengthConcrete> ;
+    <reinforcedWith> <marineGradeSteel> ;
+    <weight> 8500.0 .
+
+<sharesResources> a owl:ObjectProperty ;
+    rdfs:label "shares resources" ;
+    rdfs:comment "Indicates processes that use the same equipment or resources" ;
+    rdfs:domain dicp:Process ;
+    rdfs:range dicp:Process .
+
+<specifies> a owl:ObjectProperty ;
+    rdfs:label "specifies" ;
+    rdfs:comment "Relates design information to what it specifies" ;
+    rdfs:domain <TunnelDesign> ;
+    rdfs:range <SolwayTunnel> .
+
+<stabilizes> a owl:ObjectProperty ;
+    rdfs:label "stabilizes" ;
+    rdfs:comment "Relates a ground treatment process to the area being stabilized" ;
+    rdfs:domain <GroundTreatment> ;
+    rdfs:range <TunnelSection> .
+
+<updatesInformation> a owl:ObjectProperty ;
+    rdfs:label "updates information" ;
+    rdfs:comment "Indicates a newer document that updates an older one" ;
+    rdfs:domain dici:InformationContentEntity ;
+    rdfs:range dici:InformationContentEntity .
+
+std3:EmergencyExit1 a stv:Entity ;
+    rdfs:label "Emergency Exit 1" ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+std3:EmergencyExit2 a stv:Entity ;
+    rdfs:label "Emergency Exit 2" ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+std3:OperationalPhase a stv:Lifecycle ;
+    rdfs:label "Operational Phase" ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+std3:TunnelSection2 a stv:Entity ;
+    rdfs:label "Main Undersea Section" ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    owl:sameAs <section2> .
+
+std3:TunnelSection3 a stv:Entity ;
+    rdfs:label "English Approach Section" ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    owl:sameAs <section3> .
+
+std3:VentilationSystem a stv:Entity ;
+    rdfs:label "Main Ventilation System" ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+<TunnelDesign> a owl:Class ;
+    rdfs:label "Tunnel Design" ;
+    rdfs:comment "Design specifications for the tunnel" ;
+    rdfs:subClassOf dici:Design .
+
+<Waterproofing> a owl:Class ;
+    rdfs:label "Waterproofing" ;
+    rdfs:comment "Materials used to prevent water ingress" ;
+    rdfs:subClassOf dicbm:Material .
+
+<bore1> a <TunnelBore> ;
+    rdfs:label "Scottish Approach Bore" ;
+    <diameter> 12.0 ;
+    <identifier> "BOR-001" ;
+    <length> 5.2 .
+
+<designDoc> a <TunnelDesign> ;
+    rdfs:label "Solway Tunnel Detailed Design" ;
+    <references> <geotechnicalReport> ;
+    dici:approvalStatus "Approved for Construction" ;
+    dici:version "3.2" .
+
+<engineeringConsultant> a <EngineeringFirm> ;
+    rdfs:label "Marine Infrastructure Design Partners" ;
+    <collaboratesWith> <transportAuthority> ;
+    dica:role "Lead Designer" .
+
+<membraneWaterproofing> a <Waterproofing> ;
+    rdfs:label "HDPE Membrane Waterproofing" ;
+    <compatibleWith> <highStrengthConcrete> ;
+    <thickness> 2.5 .
+
+<tbmExcavation> a <ExcavationProcess> ;
+    rdfs:label "TBM Excavation - Main Drive" ;
+    <creates> <bore1> ;
+    <dependsOn> <sitePreparation> ;
+    <endDate> "2027-12-31T00:00:00+00:00"^^xsd:dateTime ;
+    <identifier> "PRO-EXC-001" ;
+    <partOfPhase> <constructionPhase> ;
+    <startDate> "2025-06-01T00:00:00+00:00"^^xsd:dateTime .
+
+std3:CommissioningPhase a stv:Lifecycle ;
+    rdfs:label "Commissioning Phase" ;
+    <precedes> std3:OperationalPhase ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+std3:DesignPhase a stv:Lifecycle ;
+    rdfs:label "Design Phase" ;
+    <precedes> std3:ConstructionPhase ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+std3:GroundTreatment a stv:Process ;
+    rdfs:label "Ground Treatment" ;
+    <partOfPhase> std3:ConstructionPhase ;
+    <sharesResources> std3:TBMExcavation ;
+    <stabilizes> std3:TunnelSection1 ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+std3:SegmentInstallation a stv:Process ;
+    rdfs:label "Segment Installation" ;
+    <dependsOn> std3:TBMExcavation ;
+    <installs> std3:LiningSegment1 ;
+    <partOfPhase> std3:ConstructionPhase ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+std3:TransportAuthority a stv:Agent ;
+    rdfs:label "UK Transport Authority" ;
+    <approves> std3:EnvironmentalAssessment ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+std3:TunnelContractor a stv:Agent ;
+    rdfs:label "Solway Tunnel Construction JV" ;
+    <collaboratesWith> std3:ProjectManager ;
+    <contractsWith> std3:EngineeringConsultant ;
+    <performs> std3:TBMExcavation ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+stv:Material a owl:Class ;
+    rdfs:label "D3 Material (lifted)" ;
+    rdfs:subClassOf dicbm:Material .
+
+<Concrete> a owl:Class ;
+    rdfs:label "Concrete" ;
+    rdfs:comment "Concrete material used in construction" ;
+    rdfs:subClassOf dicbm:Material .
+
+<TunnelBore> a owl:Class ;
+    rdfs:label "Tunnel Bore" ;
+    rdfs:comment "The excavated cylindrical space of the tunnel" ;
+    rdfs:subClassOf dice:Object .
+
+<compatibleWith> a owl:ObjectProperty ;
+    rdfs:label "compatible with" ;
+    rdfs:comment "Indicates materials that work well together in construction" ;
+    rdfs:domain dicbm:Material ;
+    rdfs:range dicbm:Material .
+
+<complementsProperties> a owl:ObjectProperty ;
+    rdfs:label "complements properties" ;
+    rdfs:comment "Indicates one material enhances properties of another" ;
+    rdfs:domain dicbm:Material ;
+    rdfs:range dicbm:Material .
+
+<constructionPhase> a <ConstructionPhase> ;
+    rdfs:label "Tunnel Construction Phase" ;
+    <endDate> "2028-06-30T00:00:00+00:00"^^xsd:dateTime ;
+    <startDate> "2025-01-15T00:00:00+00:00"^^xsd:dateTime .
+
+<creates> a owl:ObjectProperty ;
+    rdfs:label "creates" ;
+    rdfs:comment "Relates a process to what it creates",
+        "Relates an agent to something they create" ;
+    rdfs:domain <EngineeringFirm>,
+        <ExcavationProcess> ;
+    rdfs:range <TunnelBore>,
+        <TunnelDesign> .
+
+<dependsOn> a owl:ObjectProperty ;
+    rdfs:label "depends on" ;
+    rdfs:comment "Indicates a process that depends on another process" ;
+    rdfs:domain dicp:Process ;
+    rdfs:range dicp:Process .
+
+<hasEmergencyExit> a owl:ObjectProperty ;
+    rdfs:label "has emergency exit" ;
+    rdfs:comment "Relates the tunnel to its emergency exits" ;
+    rdfs:domain <SolwayTunnel> ;
+    rdfs:range <EmergencyExit> .
+
+<highStrengthConcrete> a <Concrete> ;
+    rdfs:label "High Strength Marine Concrete" ;
+    <compatibleWith> <marineGradeSteel> ;
+    <complementsProperties> <membraneWaterproofing> ;
+    <strength> 60.0 ;
+    <waterResistance> 8.5 .
+
+<references> a owl:ObjectProperty ;
+    rdfs:label "references" ;
+    rdfs:comment "Indicates one document refers to another" ;
+    rdfs:domain dici:InformationContentEntity ;
+    rdfs:range dici:InformationContentEntity .
+
+std3:EnvironmentalAssessment a stv:Information ;
+    rdfs:label "Environmental Impact Assessment" ;
+    <complementsData> std3:GeotechnicalReport ;
+    <evaluates> std3:SolwayTunnel ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+std3:ProjectManager a stv:Agent ;
+    rdfs:label "Lead Project Manager" ;
+    <collaboratesWith> std3:EngineeringConsultant ;
+    <manages> std3:ConstructionPlan ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+std3:SitePreparation a stv:Process ;
+    rdfs:label "Site Preparation" ;
+    <partOfPhase> std3:ConstructionPhase ;
+    <precedes> std3:ConstructionPhase ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+std3:TunnelBore1 a stv:Entity ;
+    rdfs:label "Scottish Approach Bore" ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    owl:sameAs <bore1> .
+
+std3:TunnelLining1 a stv:Entity ;
+    rdfs:label "Section 1 Lining" ;
+    <hasSegment> std3:LiningSegment1 ;
+    <protectedBy> std3:MembraneWaterproofing ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    owl:sameAs <lining1> .
+
+stv:Agent a owl:Class ;
+    rdfs:label "D3 Agent (lifted)" ;
+    rdfs:subClassOf dica:Agent .
+
+stv:Information a owl:Class ;
+    rdfs:label "D3 Information (lifted)" ;
+    rdfs:subClassOf dici:InformationContentEntity .
+
+stv:Process a owl:Class ;
+    rdfs:label "D3 Process (lifted)" ;
+    rdfs:subClassOf dicp:Process .
+
+std3:ConstructionPlan a stv:Information ;
+    rdfs:label "Construction Execution Plan" ;
+    <references> std3:TunnelDesign ;
+    <schedules> std3:TBMExcavation ;
+    <updatesInformation> std3:TunnelDesign ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+std3:GeotechnicalReport a stv:Information ;
+    rdfs:label "Solway Firth Geotechnical Assessment" ;
+    <informs> std3:TunnelSection1 ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+std3:MarineGradeSteel a stv:Material ;
+    rdfs:label "Marine Grade Steel" ;
+    <complementsProperties> std3:HighStrengthConcrete ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
+std3:MembraneWaterproofing a stv:Material ;
+    rdfs:label "HDPE Membrane Waterproofing" ;
+    <compatibleWith> std3:HighStrengthConcrete ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    owl:sameAs <membraneWaterproofing> .
+
+stv:Lifecycle a owl:Class ;
+    rdfs:label "D3 Lifecycle (lifted)" ;
+    rdfs:subClassOf dicl:LifecyclePhase .
+
+<LiningSegment> a owl:Class ;
+    rdfs:label "Lining Segment" ;
+    rdfs:comment "Individual precast concrete segments that form a ring of the tunnel lining" ;
+    rdfs:subClassOf dice:Object .
+
+<SolwayTunnel> a owl:Class ;
+    rdfs:label "Solway Firth Tunnel" ;
+    rdfs:comment "The main tunnel connecting England and Scotland under the Solway Firth" ;
+    rdfs:subClassOf dice:Object .
+
+<TunnelLining> a owl:Class ;
+    rdfs:label "Tunnel Lining" ;
+    rdfs:comment "The structural lining system that provides support to the tunnel" ;
+    rdfs:subClassOf dice:Object .
+
+<collaboratesWith> a owl:ObjectProperty ;
+    rdfs:label "collaborates with" ;
+    rdfs:comment "Indicates agents working together" ;
+    rdfs:domain dica:Agent ;
+    rdfs:range dica:Agent .
+
+std3:EngineeringConsultant a stv:Agent ;
+    rdfs:label "Marine Infrastructure Design Partners" ;
+    <collaboratesWith> std3:TransportAuthority ;
+    <creates> std3:TunnelDesign ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    owl:sameAs <engineeringConsultant> .
+
+std3:LiningSegment1 a stv:Entity ;
+    rdfs:label "Standard Segment A-Type" ;
+    <madeOf> std3:HighStrengthConcrete ;
+    <reinforcedWith> std3:MarineGradeSteel ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    owl:sameAs <segment1> .
+
+<TunnelSection> a owl:Class ;
+    rdfs:label "Tunnel Section" ;
+    rdfs:comment "A segment of the tunnel with specific properties" ;
+    rdfs:subClassOf dice:Object .
+
+<partOfPhase> a owl:ObjectProperty ;
+    rdfs:label "part of phase" ;
+    rdfs:comment "Relates a process to the lifecycle phase it belongs to" ;
+    rdfs:domain dicp:Process ;
+    rdfs:range dicl:LifecyclePhase .
+
+std3:HighStrengthConcrete a stv:Material ;
+    rdfs:label "High Strength Marine Concrete" ;
+    <compatibleWith> std3:MarineGradeSteel ;
+    <complementsProperties> std3:MembraneWaterproofing ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    owl:sameAs <highStrengthConcrete> .
+
+std3:TunnelDesign a stv:Information ;
+    rdfs:label "Solway Tunnel Detailed Design" ;
+    <references> std3:GeotechnicalReport ;
+    <specifies> std3:SolwayTunnel ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    owl:sameAs <designDoc> .
+
+std3:TunnelSection1 a stv:Entity ;
+    rdfs:label "Scottish Approach Section" ;
+    <hasBore> std3:TunnelBore1 ;
+    <hasLining> std3:TunnelLining1 ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    owl:sameAs <section1> .
+
+<precedes> a owl:ObjectProperty,
+        owl:TransitiveProperty ;
+    rdfs:label "precedes" ;
+    rdfs:comment "Relates a phase to the one that follows it" ;
+    rdfs:domain dicl:LifecyclePhase ;
+    rdfs:range dicl:LifecyclePhase .
+
+std3:SolwayTunnel a stv:Entity ;
+    rdfs:label "Solway Firth Tunnel" ;
+    <hasEmergencyExit> std3:EmergencyExit1,
+        std3:EmergencyExit2 ;
+    <hasVentilation> std3:VentilationSystem ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    owl:sameAs <solwayTunnel> ;
+    dice:hasSubOrganization std3:TunnelSection1,
+        std3:TunnelSection2,
+        std3:TunnelSection3 .
+
+stv:Entity a owl:Class ;
+    rdfs:label "D3 Entity (lifted)" ;
+    rdfs:subClassOf dice:Object .
+
+std3:TBMExcavation a stv:Process ;
+    rdfs:label "TBM Excavation - Main Drive" ;
+    <creates> std3:TunnelBore1 ;
+    <dependsOn> std3:SitePreparation ;
+    <partOfPhase> std3:ConstructionPhase ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" ;
+    owl:sameAs <tbmExcavation> .
+
+std3:ConstructionPhase a stv:Lifecycle ;
+    rdfs:label "Construction Phase" ;
+    <precedes> std3:CommissioningPhase ;
+    dct:source "apps/tunnel-ontology-visualizer/src/App.tsx" .
+
