@@ -12,3 +12,4 @@
 
 11,sheaves-for-tunnel-concept,,sheaves for tunnel concept (text overview + prototype notes),GPT-5.2-Codex,GPT-5.2-Codex,"ontology, WBS, sheaf, concept",,
 12,ontologized-allen-schedule,,interactive ontology-backed Allen interval algebra schedule CSP with JSON-LD and checker,GPT-5.2-Codex,,"ontology, temporal-logic, allen-algebra, CSP",,
+13,kglab-ontology-audit,,"self-checking KG: kglab pipeline lifts the D3 visualizer graph to RDF, SHACL provenance audit, OWL-RL inference, SPARQL-to-DataFrame plan queries",Claude,Fable 5,"ontology, knowledge_graph, kglab, SHACL, provenance, SPARQL",,results embedded at build time by pipeline/kglab_spike.py
