@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Can an intended outcome generate the work needed to achieve it? An interactive, bounded experiment in semantic project planning.">
+  <title>The work that must exist · Solway essays</title>
+  <link rel="stylesheet" href="../../common.css">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="model-data.js"></script>
+  <script defer src="engine.js"></script>
+  <script defer src="pddl.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#experiment">Skip to the experiment</a>
+  <header class="topbar"><a href="../../index.html">← Back to app index</a><a href="../../app-index.html">All Solway apps</a><span>Foray 210 / Semantics for WBS</span></header>
+  <main>
+    <section class="intro">
+      <p class="eyebrow">An essay in constructing project work</p>
+      <h1>The work that<br> <em>must exist.</em></h1>
+      <div class="opening"><p>A finished tunnel contains its equipment. It contains none of the temporary access that made installation possible.</p><p><strong>Can the outcome tell us what work is missing?</strong> Give this model a goal and permitted methods. It generates a route, then tests which actions can be avoided.</p><p class="boundary">A synthetic two-unit tunnel fit-out. The methods and acceptance rules below are supplied assumptions, not Solway engineering requirements.</p></div>
+    </section>
+    <section id="experiment" aria-labelledby="experiment-title">
+      <div class="section-head"><h2 id="experiment-title">Change the brief. Watch the work change.</h2><button id="reset" class="quiet">Reset</button></div>
+      <div class="presets" aria-label="Worked experiments">
+        <button data-preset="both" class="preset"><span>01</span> Deliver both units</button>
+        <button data-preset="trolleys" class="preset"><span>02</span> Use trolleys instead</button>
+        <button data-preset="tight" class="preset"><span>03</span> Narrow the access</button>
+        <button data-preset="one" class="preset"><span>04</span> Remove unit B</button>
+        <button data-preset="blocked" class="preset"><span>05</span> Lose the last method</button>
+      </div>
+      <div class="workbench">
+        <aside class="brief">
+          <p class="eyebrow">Your desired end state</p>
+          <fieldset><legend>Installed and accepted</legend><label class="check"><input type="checkbox" id="unit-a" checked> Unit A <span class="unit-dot a"></span></label><label class="check"><input type="checkbox" id="unit-b" checked> Unit B <span class="unit-dot b"></span></label></fieldset>
+          <p class="fixed-rule">Every requested unit needs installation and an inspection record. All temporary access must be removed before handover.</p>
+          <label class="field" for="access">Local access<select id="access"><option value="open">Open — both methods fit</option><option value="tight">Tight — gantry only</option><option value="closed">Closed — neither method fits</option></select></label>
+          <label class="field" for="methods">Permitted methods<select id="methods"><option value="both">Gantry and trolley</option><option value="gantry">Gantry only</option><option value="trolley">Trolley only</option><option value="none">No method available</option></select></label>
+          <details class="assumptions"><summary>What is supplied to the model?</summary><p>Two units begin uninstalled and available at the workface. The site starts clear. A shared gantry serves either unit; a trolley is set up and removed separately for each unit. Inspection needs an installed unit and suitable access still present. It represents a successful inspection and an acceptance record; failure and rework are outside this model. Access and method permissions remain fixed during a run.</p><p>Each action costs one step. Shortest means fewest actions, not least time, money or risk. Durations, crews, safety and physical feasibility are outside this model.</p></details>
+        </aside>
+        <div class="result-area">
+          <div id="result-summary" aria-live="polite" aria-atomic="true"></div>
+          <div class="scene" id="scene"></div>
+          <div class="playback"><button id="step-back" aria-label="Previous state">←</button><label for="step-range">Follow the route <input type="range" id="step-range" min="0" max="6" value="0"></label><button id="step-next" aria-label="Next state">→</button><button id="play">Play route</button><span id="step-label"></span></div>
+          <p class="scene-caption" id="scene-caption"></p>
+          <div class="route-head"><h3>The generated work</h3><span>Choose an action to inspect its reason</span></div>
+          <div id="route" class="route"></div>
+          <div id="action-detail" class="action-detail"></div>
+        </div>
+      </div>
+      <div id="experiment-takeaway" class="takeaway" aria-live="polite"></div>
+    </section>
+    <nav class="tabs" aria-label="Explore the result" role="tablist">
+      <button role="tab" aria-selected="true" aria-controls="panel-reasons" id="tab-reasons" data-tab="reasons">Follow the reasons</button>
+      <button role="tab" aria-selected="false" aria-controls="panel-wbs" id="tab-wbs" data-tab="wbs" tabindex="-1">Two work breakdowns</button>
+      <button role="tab" aria-selected="false" aria-controls="panel-comparison" id="tab-comparison" data-tab="comparison" tabindex="-1">Ontology &amp; PDDL</button>
+      <button role="tab" aria-selected="false" aria-controls="panel-findings" id="tab-findings" data-tab="findings" tabindex="-1">What this establishes</button>
+    </nav>
+    <section role="tabpanel" id="panel-reasons" aria-labelledby="tab-reasons" class="panel">
+      <div class="section-head"><div><p class="eyebrow">A reason for each action</p><h2>Follow an outcome back to the work supporting it.</h2></div></div>
+      <p class="measure">These links trace facts produced and consumed by this route. A later step is not automatically dependent on the step before it.</p>
+      <div id="required-functions"></div>
+      <div id="support-map"></div>
+      <div class="two-column"><div><h3>What survives a smaller scope?</h3><p>The comparison below always uses the same access and methods with both units requested. Shared work retains one identity when B is removed.</p><div id="scope-delta"></div></div><div><h3>What does “must” mean?</h3><p>For each chosen action, the solver forbids it and searches again. If another successful route exists, that action is <strong>method-dependent</strong>. If none exists, it is <strong>unavoidable in this model</strong>.</p><p>Both methods still require temporary access. A particular setup action can be avoidable even when the broader function it serves is necessary.</p><p class="boundary">This tests grounded actions against the declared methods. It does not establish necessity in every possible real project.</p></div></div>
+    </section>
+    <section role="tabpanel" id="panel-wbs" aria-labelledby="tab-wbs" class="panel" hidden>
+      <p class="eyebrow">One route, more than one useful decomposition</p><h2>A plan does not determine a unique WBS.</h2><p class="measure">Change the packaging rule. Each action is owned once; cross-package support remains visible. These are two supplied organisational choices, not a discovered best organisation.</p>
+      <div class="segmented" aria-label="Work breakdown grouping"><button id="group-product" aria-pressed="true">By delivered product</button><button id="group-trade" aria-pressed="false">By trade</button></div>
+      <div id="wbs-summary"></div><div id="wbs" class="wbs"></div><div id="interfaces"></div>
+    </section>
+    <section role="tabpanel" id="panel-comparison" aria-labelledby="tab-comparison" class="panel" hidden>
+      <p class="eyebrow">Give both routes the same problem</p><h2>Does ontology earn its place?</h2>
+      <p class="measure">One route compiles explicit semantic rules into a planning problem. The other uses a separately written PDDL domain and an independent parser and search. Both receive the same brief and count one step per action.</p>
+      <div class="comparison-flow"><div><strong>Semantic route</strong><span>Foundation → domain → local facts</span><span>Typed goals + declared process rules</span><span>Finite search → supported work packages</span></div><span class="versus">same<br>scope</span><div><strong>Direct PDDL route</strong><span>Explicit predicates + actions</span><span>Initial state + the same final obligations</span><span>Independent finite search → work packages</span></div></div>
+      <div id="comparison" aria-live="polite"></div>
+      <details><summary>Which typed obligations came from this brief?</summary><div id="semantic-obligations"></div><p class="boundary">The completion profile is explicitly authored domain knowledge. Scope chooses the local objects to which it applies. The ontology does not discover engineering requirements from their names.</p></details>
+      <div class="two-column"><div><h3>Where the meaning comes from</h3><p>The foundational layer distinguishes objects, processes, qualities and information. The domain layer classifies a requested installation as a unit that needs acceptance evidence. Explicit domain methods and local access and handover rules supply the bridge from those meanings to actions.</p><p>The Turtle file is compiled into the model used here. The compiler and rule provenance are inspectable. Merely naming something “equipment” does not tell a planner how to install it.</p></div><div><h3>The comparison we can make</h3><p>Planning parity is an informative result. The semantic route makes the origin of obligations and support links explicit; a PDDL application could add the same explanations. We have not measured human modelling effort or established that ontology is better.</p><p>Our process search is ordinary finite planning. This essay does not implement the functorial plan-transfer algorithm in the source paper.</p></div></div>
+      <h3>Inspect or reuse this exact problem</h3><div class="downloads"><button id="download-domain">PDDL domain</button><button id="download-problem">PDDL problem</button><button id="download-turtle">Turtle + result</button><button id="download-receipt">Result and assumptions</button><button id="share">Copy this experiment’s link</button></div><p id="export-status" role="status"></p>
+      <details><summary>Show the PDDL problem</summary><pre id="pddl-source"></pre></details>
+    </section>
+    <section role="tabpanel" id="panel-findings" aria-labelledby="tab-findings" class="panel" hidden>
+      <p class="eyebrow">The restricted result</p><h2>The end state is a starting point. Methods supply the bridge.</h2>
+      <div class="findings"><article><span>01</span><h3>Work can be generated.</h3><p>With explicit initial facts, final obligations and permissible actions, search produces a route without being given a project task list. Shared setup and eventual removal arise through those rules.</p></article><article><span>02</span><h3>Necessity is conditional.</h3><p>Restrict access or remove a method and previously replaceable work can become unavoidable. Remove a goal and some work disappears; a shared prerequisite can remain.</p></article><article><span>03</span><h3>Structure needs another choice.</h3><p>Causal support does not uniquely choose responsibility or hierarchy. Two packaging rules preserve the same work and expose different interfaces.</p></article></div>
+      <div class="finding-boundary"><h3>What remains unproved</h3><p>A complete WBS for a real tunnel. Automatic discovery of engineering methods. Real safety, resources, time and cost. Full OWL reasoning or general PDDL support. A measurable productivity gain from ontology. Those would each require additional evidence.</p></div>
+      <h3>Sources and lineage</h3><ul class="sources"><li><a href="https://digitalconstruction.github.io/Entities/v/0.5/">Digital Construction Entities</a> and <a href="https://digitalconstruction.github.io/Information/v/0.5/">Information</a>: the vocabulary distinction between the unit, its process, qualities and evidence.</li><li><a href="https://basic-formal-ontology.org/">Basic Formal Ontology</a>: foundational distinctions. This app uses a small declared alignment; it is not a complete BFO reasoner.</li><li><a href="https://arxiv.org/abs/2406.15961">Aguinaldo, Patterson &amp; Regli — Automating Transfer of Robot Task Plans using Functorial Data Migrations</a>, v2, 2025: ontology and actions together define a planning domain; transfer guarantees have conditions.</li><li><a href="../pddl-wbs-explainable/index.html">Earlier Solway plan-to-WBS example</a>: the supplied-plan predecessor that this essay extends with construction and counterfactual checks.</li><li><a href="ontology.ttl">Model ontology</a> · <a href="README.md">Method, limitations and rerun instructions</a> · <a href="https://github.com/lawrencerowland/Solway_tunnel_ontology/tree/main/apps/work-that-must-exist">App source and checks</a></li></ul>
+    </section>
+  </main>
+  <footer><p>Solway · Portfolio Wave · Foray 210</p><p>A declared model can establish a conditional result. It cannot certify an engineering project.</p><a href="../../app-index.html">Return to the Solway collection →</a></footer>
+  <noscript><p>This experiment needs JavaScript to generate and compare plans. The <a href="README.md">method note</a> and <a href="ontology.ttl">ontology</a> remain available.</p></noscript>
+</body>
+</html>

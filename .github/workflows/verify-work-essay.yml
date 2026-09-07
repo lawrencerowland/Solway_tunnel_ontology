@@ -1,0 +1,26 @@
+name: Verify work-generation essay
+on:
+  pull_request:
+    paths:
+      - 'apps/work-that-must-exist/**'
+      - '.github/workflows/verify-work-essay.yml'
+      - '.github/workflows/deploy.yml'
+      - 'package.json'
+      - 'app-index.csv'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: npm run test:work
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r apps/work-that-must-exist/requirements.txt
+      - run: python apps/work-that-must-exist/compile_ontology.py --check
+      - run: python apps/work-that-must-exist/test_ontology.py

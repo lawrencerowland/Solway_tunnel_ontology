@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "configurations": 48,
+  "solved": 27,
+  "infeasible": 21,
+  "semanticMatches": 48,
+  "independentPlanChecks": 81,
+  "causalLinksChecked": 369,
+  "protectionConstraintsChecked": 40,
+  "actionOmissionsRejected": 72,
+  "necessityCounterfactuals": 72,
+  "functionGroupCounterfactuals": 70,
+  "packageConservationChecks": 54,
+  "parserRejections": 14,
+  "filesSHA256": {
+    "ontology.ttl": "0f14cce337fbe92d576b3d84bc50b9c95295c31aff91adfac778d33384b577b9",
+    "model-data.js": "ca3c7555e078e8112e1df76aabee9280106d7bb7377300f55251f04a2d573962",
+    "engine.js": "0c57a09a4c9126d83bbe7bb8bd2ee8186534d251090df329c5618d9d87457b60",
+    "pddl.js": "989f7555210c10ef746f6d8178a8030e49bcf95e1cffd2daea4484588c6f78fd",
+    "comparison-tests.mjs": "d2282049e88536ccd2219439dae0a8d151f55f82d18601b66f81981c24c6bf30"
+  },
+  "boundary": "Finite symbolic-model tests only; no physical feasibility or human usability claim."
+}

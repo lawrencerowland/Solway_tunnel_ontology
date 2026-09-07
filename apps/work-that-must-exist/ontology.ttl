@@ -1,0 +1,107 @@
+@prefix f: <https://solway.example/work/foundation#> .
+@prefix d: <https://solway.example/work/domain#> .
+@prefix l: <https://solway.example/work/local#> .
+@prefix w: <https://solway.example/work/schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+# A declared synthetic model, not actual Solway engineering requirements.
+# compile_ontology.py interprets this explicit planning vocabulary. This is
+# RDF compilation with subclass validation, not an OWL planning reasoner.
+# Foundation: explicit local subclasses of BFO object/process/quality and
+# Digital Construction InformationContentEntity. No external imports or
+# full BFO/DIC consistency reasoning are performed. A method specification
+# and a generated plan step are information; neither is an executed process.
+f:PhysicalObject a owl:Class ; rdfs:subClassOf <http://purl.obolibrary.org/obo/BFO_0000030> .
+f:Process a owl:Class ; rdfs:subClassOf <http://purl.obolibrary.org/obo/BFO_0000015> .
+f:Quality a owl:Class ; rdfs:subClassOf <http://purl.obolibrary.org/obo/BFO_0000019> .
+f:InformationContent a owl:Class ; rdfs:subClassOf <https://w3id.org/digitalconstruction/0.5/Information#InformationContentEntity> .
+d:InstallationUnit a owl:Class ; rdfs:subClassOf f:PhysicalObject .
+d:TemporaryEquipment a owl:Class ; rdfs:subClassOf f:PhysicalObject, <https://w3id.org/digitalconstruction/0.5/Entities#Equipment> .
+d:InstallationQuality a owl:Class ; rdfs:subClassOf f:Quality .
+d:SiteClearQuality a owl:Class ; rdfs:subClassOf f:Quality .
+d:InspectionEvidence a owl:Class ; rdfs:subClassOf f:InformationContent .
+d:WorkProcess a owl:Class ; rdfs:subClassOf f:Process, <https://w3id.org/digitalconstruction/0.5/Entities#Process> .
+d:MethodSpecification a owl:Class ; rdfs:subClassOf f:InformationContent .
+d:PlannedProcessDescription a owl:Class ; rdfs:subClassOf f:InformationContent .
+
+l:UnitA a d:InstallationUnit ; w:key "a" ; rdfs:label "Unit A" .
+l:UnitB a d:InstallationUnit ; w:key "b" ; rdfs:label "Unit B" .
+l:Gantry a d:TemporaryEquipment .
+l:TrolleyA a d:TemporaryEquipment .
+l:TrolleyB a d:TemporaryEquipment .
+l:Vignette a w:Scenario ; rdfs:label "Two tunnel installations" ;
+  w:units ( l:UnitA l:UnitB ) ;
+  w:initialUnitFacts ( "unit-available-{unit}" ) ;
+  w:scopeFact "requested-{unit}" ;
+  w:goalProfile d:AcceptedInstallations ;
+  w:assumption "Units A and B are available at the workface before work begins." ;
+  w:assumption "A shared gantry can serve both units; each trolley serves one unit." ;
+  w:assumption "Inspection must happen while suitable access equipment is present." ;
+  w:assumption "Inspection actions represent a successful inspection and creation of an acceptance record; failed inspection and rework are not modelled." ;
+  w:assumption "Handover requires installed units, inspection evidence and no temporary equipment." ;
+  w:assumption "All actions have unit cost; duration, capacity, safety and engineering validity are outside this model." .
+
+# Local access policy supplies initial admissibility facts to the method model.
+l:OpenAccess a w:AccessPolicy ; w:key "open" ; w:allows ( "gantry" "trolley" ) .
+l:TightAccess a w:AccessPolicy ; w:key "tight" ; w:allows ( "gantry" ) .
+l:ClosedAccess a w:AccessPolicy ; w:key "closed" ; w:allows () .
+
+# Domain completion rules: goals are generated from scope and this profile.
+d:AcceptedInstallations a w:GoalProfile ;
+  w:requirements ( d:Installed d:Inspected d:SiteClear ) .
+d:Installed a w:GoalRequirement ; w:id "installed-{unit}" ; w:binding "unit" ;
+  rdfs:label "{label} is installed" ; w:meaning d:InstallationQuality ;
+  w:positive ( "installed-{unit}" ) ; w:negative () .
+d:Inspected a w:GoalRequirement ; w:id "evidence-{unit}" ; w:binding "unit" ;
+  rdfs:label "{label} has inspection evidence" ; w:meaning d:InspectionEvidence ;
+  w:positive ( "evidence-{unit}" ) ; w:negative () .
+d:SiteClear a w:GoalRequirement ; w:id "site-clear" ; w:binding "site" ;
+  rdfs:label "The site is clear of temporary equipment" ; w:meaning d:SiteClearQuality ;
+  w:positive () ; w:negative ( "gantry-present" "trolley-a-present" "trolley-b-present" ) .
+
+# Reusable domain methods are action schemas, not a project-specific task list.
+# Unit-bound schemas are grounded against local objects by the compiler/runtime.
+d:GantrySetup a w:ActionTemplate, d:MethodSpecification ; w:describesProcess d:WorkProcess ; w:order 1 ;
+  w:id "gantry-setup" ; w:binding "site" ; w:method "gantry" ; w:kind "enable" ;
+  w:trade "Access crew" ; rdfs:label "Set up the shared gantry" ;
+  w:positive ( "allowed-gantry" ) ;
+  w:negative ( "gantry-present" "trolley-a-present" "trolley-b-present" ) ;
+  w:add ( "gantry-present" ) ; w:delete () .
+d:GantryInstall a w:ActionTemplate, d:MethodSpecification ; w:describesProcess d:WorkProcess ; w:order 2 ;
+  w:id "gantry-install-{unit}" ; w:binding "unit" ; w:method "gantry" ; w:kind "install" ;
+  w:trade "Installation crew" ; rdfs:label "Install {label} from the gantry" ;
+  w:positive ( "gantry-present" "unit-available-{unit}" "requested-{unit}" ) ;
+  w:negative ( "installed-{unit}" ) ; w:add ( "installed-{unit}" ) ; w:delete () .
+d:GantryInspect a w:ActionTemplate, d:MethodSpecification ; w:describesProcess d:WorkProcess ; w:order 3 ;
+  w:id "gantry-inspect-{unit}" ; w:binding "unit" ; w:method "gantry" ; w:kind "inspect" ;
+  w:trade "Inspection crew" ; rdfs:label "Inspect {label} from the gantry" ;
+  w:positive ( "gantry-present" "installed-{unit}" "requested-{unit}" ) ;
+  w:negative ( "evidence-{unit}" ) ; w:add ( "evidence-{unit}" ) ; w:delete () .
+d:GantryRemove a w:ActionTemplate, d:MethodSpecification ; w:describesProcess d:WorkProcess ; w:order 4 ;
+  w:id "gantry-remove" ; w:binding "site" ; w:method "gantry" ; w:kind "remove" ;
+  w:trade "Access crew" ; rdfs:label "Remove the shared gantry" ;
+  w:positive ( "gantry-present" ) ; w:negative () ;
+  w:add () ; w:delete ( "gantry-present" ) .
+d:TrolleySetup a w:ActionTemplate, d:MethodSpecification ; w:describesProcess d:WorkProcess ; w:order 5 ;
+  w:id "trolley-setup-{unit}" ; w:binding "unit" ; w:method "trolley" ; w:kind "enable" ;
+  w:trade "Access crew" ; rdfs:label "Position a trolley for {label}" ;
+  w:positive ( "allowed-trolley" "unit-available-{unit}" "requested-{unit}" ) ;
+  w:negative ( "installed-{unit}" "trolley-{unit}-present" "gantry-present" ) ;
+  w:add ( "trolley-{unit}-present" ) ; w:delete () .
+d:TrolleyInstall a w:ActionTemplate, d:MethodSpecification ; w:describesProcess d:WorkProcess ; w:order 6 ;
+  w:id "trolley-install-{unit}" ; w:binding "unit" ; w:method "trolley" ; w:kind "install" ;
+  w:trade "Installation crew" ; rdfs:label "Install {label} from its trolley" ;
+  w:positive ( "trolley-{unit}-present" "unit-available-{unit}" "requested-{unit}" ) ;
+  w:negative ( "installed-{unit}" ) ; w:add ( "installed-{unit}" ) ; w:delete () .
+d:TrolleyInspect a w:ActionTemplate, d:MethodSpecification ; w:describesProcess d:WorkProcess ; w:order 7 ;
+  w:id "trolley-inspect-{unit}" ; w:binding "unit" ; w:method "trolley" ; w:kind "inspect" ;
+  w:trade "Inspection crew" ; rdfs:label "Inspect {label} from its trolley" ;
+  w:positive ( "trolley-{unit}-present" "installed-{unit}" "requested-{unit}" ) ;
+  w:negative ( "evidence-{unit}" ) ; w:add ( "evidence-{unit}" ) ; w:delete () .
+d:TrolleyRemove a w:ActionTemplate, d:MethodSpecification ; w:describesProcess d:WorkProcess ; w:order 8 ;
+  w:id "trolley-remove-{unit}" ; w:binding "unit" ; w:method "trolley" ; w:kind "remove" ;
+  w:trade "Access crew" ; rdfs:label "Remove the trolley for {label}" ;
+  w:positive ( "trolley-{unit}-present" ) ; w:negative () ;
+  w:add () ; w:delete ( "trolley-{unit}-present" ) .
