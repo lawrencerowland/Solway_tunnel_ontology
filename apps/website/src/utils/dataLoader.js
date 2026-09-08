@@ -1,4 +1,5 @@
 import { Parser, Store } from 'n3';
+import { siteLinks } from '../siteLinks.js';
 
 const ALLOWED_PREFIXES = [
   'st:',
@@ -66,7 +67,7 @@ const inferGroup = (types = []) => {
 };
 
 export async function loadOntologyGraph() {
-  const response = await fetch(`${import.meta.env.BASE_URL}data/solway_tunnel_ontology.ttl`);
+  const response = await fetch(siteLinks.ontologyData);
   if (!response.ok) {
     throw new Error('Unable to load ontology data.');
   }

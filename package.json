@@ -30,7 +30,8 @@
     "build": "node scripts/build-all.js",
     "preview": "vite preview",
     "test": "vitest",
-    "test:work": "node apps/work-that-must-exist/test-engine.mjs && node apps/work-that-must-exist/comparison-tests.mjs"
+    "test:work": "node apps/work-that-must-exist/test-engine.mjs && node apps/work-that-must-exist/comparison-tests.mjs",
+    "test:game": "node apps/semantic-tunnel-planner/test-game.mjs"
   },
   "eslintConfig": {
     "extends": [

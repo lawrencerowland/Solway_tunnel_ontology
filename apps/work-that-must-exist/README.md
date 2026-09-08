@@ -24,6 +24,8 @@ The comparison offers no ontology search advantage: equivalent transition system
 
 Grouping the same actions by installation outcome or delivery trade changes responsibility boundaries and counted causal interfaces. It does not prove one grouping is the unique or best WBS. Shared actions must occur once in every grouping even when they support both units. Fact-support links and separate protection constraints preserve access until its consumers finish. Interface counts describe these links between supplied packages, not estimated coordination effort.
 
+The work-breakdown panel also separates product, proposed process, temporary means and information evidence. Its items are drawn from the current brief, solved actions and obligations; its links are the result's computed fact supports. This preserves the useful process/product explanation from former app 4 without carrying forward its unequal-scope comparison. See the [curation note](../../CURATION.md) for lineage, the preserved broader TBM example and the distinct supplied-plan provenance work left open by former app 5.
+
 ## Reproduce
 
 Open `index.html` directly, or serve the repository and navigate to this app. No service, account, external planner, or model API is required for the calculations.

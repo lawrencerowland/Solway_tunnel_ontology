@@ -12,47 +12,42 @@ import Insights from './pages/Insights.jsx';
 import Glossary from './pages/Glossary.jsx';
 import SolwayTunnel from './pages/projects/SolwayTunnel.jsx';
 import FibrationDemoNotes from './pages/FibrationDemoNotes.jsx';
+import { siteLinks, websiteBasename } from './siteLinks.js';
 
 function Navbar() {
   return (
     <nav className="flex flex-wrap justify-around gap-x-8 p-4 border-b mb-4">
-      <Link className="hover:text-accent-600 hover:underline decoration-2" to="/">Home</Link>
-      <Link className="hover:text-accent-600 hover:underline decoration-2" to="/projects">Projects</Link>
-      <Link className="hover:text-accent-600 hover:underline decoration-2" to="/sandbox">Tools Sandbox</Link>
-      <Link className="hover:text-accent-600 hover:underline decoration-2" to="/ai-tools">AI Tools</Link>
-      <Link className="hover:text-accent-600 hover:underline decoration-2" to="/brief">Brief for AI agent</Link>
-      <Link className="hover:text-accent-600 hover:underline decoration-2" to="/storyboard">Storyboard</Link>
-      <Link className="hover:text-accent-600 hover:underline decoration-2" to="/insights">Insights</Link>
+      <a className="hover:text-accent-600 hover:underline decoration-2" href={siteLinks.home}>Solway</a>
+      <a className="hover:text-accent-600 hover:underline decoration-2" href={siteLinks.game}>The handover game</a>
+      <a className="hover:text-accent-600 hover:underline decoration-2" href={siteLinks.essay}>The work that must exist</a>
+      <Link className="hover:text-accent-600 hover:underline decoration-2" to="/projects/solway-tunnel/">Ontology explorer</Link>
       <Link className="hover:text-accent-600 hover:underline decoration-2" to="/glossary">Glossary</Link>
-      <Link className="hover:text-accent-600 hover:underline decoration-2" to="/fibration-demo-notes">Fibration demo notes</Link>
-      <a className="hover:text-accent-600 hover:underline decoration-2" href="../../app-index.html">App Index</a>
+      <a className="hover:text-accent-600 hover:underline decoration-2" href={siteLinks.apps}>All Solway apps</a>
+      <a className="hover:text-accent-600 hover:underline decoration-2" href={siteLinks.forays}>All forays</a>
     </nav>
   );
 }
 
 function App() {
-  const baseUrl = import.meta.env.BASE_URL;
-  const baseFromPath = window.location.pathname.replace(
-    /(projects\/solway-tunnel\/|projects\/|glossary\/|ai-tools\/|brief\/|sandbox\/|storyboard\/|insights\/|fibration-demo-notes\/)$/,
-    ''
-  );
-  const basename = baseUrl === './' ? baseFromPath : baseUrl;
-
   return (
-    <BrowserRouter basename={basename}>
+    <BrowserRouter basename={websiteBasename}>
       <Navbar />
       <div className="container mx-auto px-4">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/index.html" element={<Home />} />
           <Route path="/projects" element={<Projects />} />
+          <Route path="/projects/index.html" element={<Projects />} />
           <Route path="/sandbox" element={<Sandbox />} />
           <Route path="/ai-tools" element={<AITools />} />
           <Route path="/brief" element={<Brief />} />
           <Route path="/storyboard" element={<Storyboard />} />
           <Route path="/insights" element={<Insights />} />
           <Route path="/glossary" element={<Glossary />} />
+          <Route path="/glossary/index.html" element={<Glossary />} />
           <Route path="/fibration-demo-notes" element={<FibrationDemoNotes />} />
           <Route path="/projects/solway-tunnel" element={<SolwayTunnel />} />
+          <Route path="/projects/solway-tunnel/index.html" element={<SolwayTunnel />} />
         </Routes>
       </div>
     </BrowserRouter>

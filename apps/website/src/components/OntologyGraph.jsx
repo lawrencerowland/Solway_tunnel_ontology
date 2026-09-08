@@ -51,7 +51,9 @@ function normalizeLinkEndpoint(endpoint) {
 
 const OntologyGraph = forwardRef(function OntologyGraph(_, ref) {
   const containerRef = useRef(null);
+  const canvasContainerRef = useRef(null);
   const graphRef = useRef(null);
+  const [graphWidth, setGraphWidth] = useState(320);
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [selectedNode, setSelectedNode] = useState(null);
   const [error, setError] = useState('');
@@ -60,6 +62,15 @@ const OntologyGraph = forwardRef(function OntologyGraph(_, ref) {
   const [toast, setToast] = useState(null);
 
   const neighborMap = useMemo(() => buildNeighborMap(graphData.links), [graphData.links]);
+  useEffect(() => {
+    const element = canvasContainerRef.current;
+    if (!element) return;
+    const resize = () => setGraphWidth(Math.max(200, element.clientWidth - 2));
+    resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
   const nodeMap = useMemo(() => {
     const map = new Map();
     graphData.nodes.forEach(node => map.set(node.id, node));
@@ -288,10 +299,12 @@ const OntologyGraph = forwardRef(function OntologyGraph(_, ref) {
         id="ontology-graph-container"
         className="grid gap-4 lg:grid-cols-[2fr,1fr]"
       >
-        <div className="min-h-[24rem] rounded-lg border bg-white">
+        <div ref={canvasContainerRef} className="min-h-[24rem] rounded-lg border bg-white" style={{minWidth:0,overflow:'hidden'}}>
           <noscript>Interactive ontology graph (requires JavaScript).</noscript>
           <ForceGraph2D
             ref={graphRef}
+            width={graphWidth}
+            height={460}
             graphData={filteredData}
             nodeLabel={node => `${node.label}\n${node.group}`}
             linkLabel={link => link.label}
