@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - 'apps/work-that-must-exist/**'
+      - 'apps/semantic-tunnel-planner/**'
+      - 'apps/website/**'
+      - 'scripts/**'
       - '.github/workflows/verify-work-essay.yml'
       - '.github/workflows/deploy.yml'
       - 'package.json'
@@ -17,10 +20,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
+      - run: npm ci
       - run: npm run test:work
+      - run: npm run test:game
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - run: pip install -r apps/work-that-must-exist/requirements.txt
       - run: python apps/work-that-must-exist/compile_ontology.py --check
       - run: python apps/work-that-must-exist/test_ontology.py
+      - run: npm run build

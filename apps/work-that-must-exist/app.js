@@ -3,7 +3,7 @@
   const $ = id => document.getElementById(id);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const presets = {both:{scope:'both',access:'open',methods:'both'},trolleys:{scope:'both',access:'open',methods:'trolley'},tight:{scope:'both',access:'tight',methods:'both'},one:{scope:'A',access:'tight',methods:'both'},blocked:{scope:'both',access:'tight',methods:'trolley'}};
-  let config = {...presets.both}, result, comparison, selected = 0, step = 0, groupMode = 'product', activeTab = 'reasons', timer;
+  let config = {...presets.both}, result, comparison, selected = 0, step = 0, groupMode = 'product', activeTab = 'reasons', timer, meaningView = 'product', meaningSelection = '';
   const cache = new Map();
   const solve = c => {const key=JSON.stringify(c);if(!cache.has(key))cache.set(key,WorkModel.solve(c));return cache.get(key);};
   const scopeUnits = c => c.scope === 'both' ? ['A','B'] : c.scope === 'none' ? [] : [c.scope];
@@ -70,12 +70,31 @@
     $('scope-delta').innerHTML=`<p><strong>${delta.beforeCount} → ${delta.afterCount} actions.</strong> ${config.scope==='both'?'Both units are still requested. Uncheck B to see what survives.':'Compared with delivering both units under these conditions.'}</p><ul class="delta-list">${delta.retained.map(a=>`<li><span class="kept">Retained</span>${esc(shortLabel(a))}</li>`).join('')}${delta.removed.map(a=>`<li><span class="removed">Removed</span>${esc(shortLabel(a))}</li>`).join('')}${delta.added.map(a=>`<li><span>Added</span>${esc(shortLabel(a))}</li>`).join('')}</ul>`;
   }
   function renderWBS(){
+    renderMeaning();
     const p=WorkModel.packagePlan(result,groupMode), names=Object.fromEntries(p.packages.map(x=>[x.id,x.label]));
     $('group-product').setAttribute('aria-pressed',String(groupMode==='product'));$('group-trade').setAttribute('aria-pressed',String(groupMode==='trade'));
     $('wbs-summary').innerHTML=`<p><strong>${p.actionCount} actions · ${p.packages.length} packages · ${p.interfaces.length} cross-package links.</strong> ${esc(p.criterion)}</p>`;
     $('wbs').innerHTML=p.packages.map(g=>`<article class="package" data-package="${esc(g.id)}"><h3>${esc(g.label)}</h3><p class="boundary">Owner: ${esc(g.owner)}</p><ul>${g.actions.map(a=>`<li data-wbs-action="${esc(a.id)}">${esc(a.label)}<span>${a.supportedUnits.length?`Supports ${a.supportedUnits.map(u=>`Unit ${u}`).join(' and ')}`:'Supports site handover'}</span></li>`).join('')}</ul></article>`).join('')||'<p class="empty">No work packages are generated for this brief.</p>';
     const unique=[...new Map(p.interfaces.map(e=>[`${e.fromPackage}|${e.toPackage}|${e.fact}|${e.kind}`,e])).values()];
     $('interfaces').innerHTML=unique.length?`<h3>Interfaces preserved across the packages</h3><ul>${unique.map(e=>`<li><strong>${esc(names[e.fromPackage])} → ${esc(names[e.toPackage])}</strong>: ${esc(factName(e.fact,e.polarity==='negative'))}${e.kind==='protection'?' — preserve access until its consumer finishes':''}.</li>`).join('')}</ul><p class="boundary">These are fact-support and protection links, not durations or a resource-loaded schedule.</p>`:'';
+  }
+  function renderMeaning(){
+    const unitItems=scopeUnits(config).map(unit=>({id:`product-${unit}`,label:`Unit ${unit}`,category:'Physical product',explanation:`Unit ${unit} is a requested physical installation. Its installed condition and its acceptance evidence are separate completion obligations.`,actions:result.actions.filter(a=>a.supportedUnits.includes(unit)),goals:result.obligations.filter(o=>o.unit===unit)}));
+    const workItems=result.actions.map(a=>({id:a.id,label:a.label,category:'Proposed process',explanation:'This is one proposed process in the computed route. It contributes through its effects and causal support; its description is not a physical part of the installed unit.',actions:[a],goals:result.obligations.filter(o=>a.supportedBy.includes(o.id))}));
+    const accessFacts=[...new Set(result.actions.filter(a=>a.kind==='enable').flatMap(a=>a.add))];
+    const meansItems=accessFacts.map(fact=>({id:fact,label:factName(fact).replace(/ present$/,''),category:'Temporary physical means',explanation:'This equipment provides access during work. It must be absent at handover. Using equipment is different from making it part of the finished product.',actions:result.actions.filter(a=>[...a.positive,...a.negative,...a.add,...a.delete].includes(fact)),goals:result.obligations.filter(o=>o.negative.includes(fact))}));
+    const evidenceItems=result.obligations.filter(o=>o.category==='InformationContent').map(o=>({id:o.id,label:o.label,category:'Information evidence',explanation:'An acceptance record is information about the installation. It is distinct from the physical unit and from the inspection process that produces it.',actions:result.actions.filter(a=>a.supportedBy.includes(o.id)),goals:[o]}));
+    const collections={product:unitItems,work:workItems,means:meansItems,evidence:evidenceItems},items=collections[meaningView];
+    if(!items.some(item=>item.id===meaningSelection))meaningSelection=items[0]?.id||'';
+    document.querySelectorAll('[data-meaning-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.meaningView===meaningView)));
+    $('meaning-map').innerHTML=items.length?`<div class="meaning-cards">${items.map(item=>`<button data-meaning-item="${esc(item.id)}" aria-pressed="${item.id===meaningSelection}"><small>${esc(item.category)}</small><strong>${esc(item.label)}</strong></button>`).join('')}</div>`:`<p class="empty">${result.status==='solved'?'This brief generates no items in this view.':'No feasible route was found, so no work or temporary means are proposed.'}</p>`;
+    const item=items.find(x=>x.id===meaningSelection);
+    if(!item){$('meaning-detail').innerHTML='';return;}
+    const ids=new Set(item.actions.map(a=>a.id));
+    const links=result.supports.filter(e=>meaningView==='work'?(ids.has(e.from)||ids.has(e.to)):(ids.has(e.from)&&(ids.has(e.to)||item.goals.some(o=>`goal:${o.id}`===e.to))));
+    const nodeName=id=>id==='initial'?'Initial condition':id.startsWith('goal:')?goalName(id.slice(5)):actionName(id);
+    $('meaning-detail').innerHTML=`<h3>${esc(item.label)}</h3><p>${esc(item.explanation)}</p><div class="meaning-columns"><div><h4>Work connected to this item</h4>${item.actions.length?`<ul>${item.actions.map(a=>`<li>${esc(a.label)}</li>`).join('')}</ul>`:`<p>${result.status==='solved'?'No work is needed.':'The obligation is declared, but no completion route exists.'}</p>`}</div><div><h4>Computed support</h4>${links.length?`<ul>${links.map(e=>`<li><strong>${esc(nodeName(e.from))}</strong> → ${esc(nodeName(e.to))}<small>Via ${esc(factName(e.fact,e.polarity==='negative'))}</small></li>`).join('')}</ul>`:'<p>No fact-support link is present in this route for this view.</p>'}</div></div>`;
+    $('meaning-map').querySelectorAll('[data-meaning-item]').forEach(b=>b.addEventListener('click',()=>{meaningSelection=b.dataset.meaningItem;renderMeaning();}));
   }
   function renderComparison(){
     comparison=PDDL.compare(config,WorkModel.exportPDDL(config));
@@ -101,6 +120,7 @@
   $('play').addEventListener('click',()=>{if(timer){stop();return;}if(step===result.actions.length)step=0;$('play').textContent='Pause';timer=setInterval(()=>{step++;selected=Math.max(0,step-1);renderScene();renderRoute();if(step===result.actions.length)stop();},900);});
   document.querySelectorAll('[data-tab]').forEach(b=>{b.addEventListener('click',()=>tab(b.dataset.tab));b.addEventListener('keydown',e=>{const names=['reasons','wbs','comparison','findings'];if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const index=e.key==='Home'?0:e.key==='End'?3:(names.indexOf(activeTab)+(e.key==='ArrowRight'?1:3))%4;tab(names[index],true);}});});
   $('group-product').addEventListener('click',()=>{groupMode='product';renderWBS();});$('group-trade').addEventListener('click',()=>{groupMode='trade';renderWBS();});
+  document.querySelectorAll('[data-meaning-view]').forEach(b=>b.addEventListener('click',()=>{meaningView=b.dataset.meaningView;meaningSelection='';renderMeaning();}));
   $('download-domain').addEventListener('click',()=>download('direct-domain.pddl',comparison.directPDDL.domain,'text/plain'));
   $('download-problem').addEventListener('click',()=>download('tunnel-problem.pddl',comparison.directPDDL.problem,'text/plain'));
   $('download-turtle').addEventListener('click',()=>download('work-and-reasons.ttl',WorkModel.exportTurtle(config,result),'text/turtle'));

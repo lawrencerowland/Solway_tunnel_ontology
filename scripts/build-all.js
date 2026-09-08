@@ -34,3 +34,7 @@ cpSync(join(root, 'app-index.csv'), join(docsDir, 'app-index.csv'));
 cpSync(join(root, 'pics'), join(docsDir, 'pics'), { recursive: true });
 cpSync(join(root, 'common.css'), join(docsDir, 'common.css'));
 
+
+if (existsSync(join(root, 'CURATION.md'))) cpSync(join(root, 'CURATION.md'), join(docsDir, 'CURATION.md'));
+// The website uses the shared public data from its own deployed app route.
+if (existsSync(join(root, 'public', 'data'))) cpSync(join(root, 'public', 'data'), join(docsDir, 'apps', 'website', 'data'), { recursive: true });
