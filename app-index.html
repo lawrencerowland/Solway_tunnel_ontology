@@ -93,7 +93,11 @@ function createCards(data){
                 img.src='pics/blank.png';
             }
         };
-        card.appendChild(img);
+        const previewLink=document.createElement('a');
+        previewLink.href=item.path ? item.path : 'apps/'+item.name+'/index.html';
+        previewLink.setAttribute('aria-label','Open '+item.name);
+        previewLink.appendChild(img);
+        card.appendChild(previewLink);
         const title=document.createElement('h3');
         const link=document.createElement('a');
         link.href=item.path ? item.path : 'apps/'+item.name+'/index.html';
