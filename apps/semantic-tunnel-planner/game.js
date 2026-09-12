@@ -75,5 +75,5 @@
   $('import').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;if(f.size>30000){$('save-status').textContent='This file is too large for a saved shift.';e.target.value='';return;}try{const r=G.restore(await f.text()),v=G.view(r);if(v.status==='invalid'){$('save-status').textContent=v.reason;return;}auto=false;method='gantry';selected='';update(r,'Saved shift loaded; work is paused.');$('save-status').textContent='Saved decisions replayed successfully.';}catch(_){$('save-status').textContent='That saved shift could not be read.';}finally{e.target.value='';}});
   document.addEventListener('visibilitychange',()=>{if(document.hidden){auto=false;render();}});
   render();
-  if(G.view(state).active||G.view(state).event)showNextStep();
+  window.addEventListener('pageshow',()=>{if(G.view(state).active||G.view(state).event)requestAnimationFrame(()=>requestAnimationFrame(showNextStep));});
 })();
