@@ -14,10 +14,21 @@
 .example-card h3{margin-top:0;margin-bottom:0.5em;font-size:1.1em;}
 .example-card img{width:100%;height:auto;margin-bottom:0.5em;border-radius:4px;}
 </style>
+<style>
+/* Scenario-first orientation: scoped to avoid changing the models below. */
+.pw-scenario{box-sizing:border-box;display:grid;grid-template-columns:minmax(150px,240px) minmax(0,1fr);gap:clamp(18px,3vw,32px);align-items:center;width:100%;max-width:1100px;margin:24px auto;padding:clamp(18px,3vw,28px);background:#f3f0e6;color:#203e3b;border:1px solid #d5dacf;border-radius:16px;text-align:left;font-family:system-ui,sans-serif;line-height:1.55}
+.pw-scenario figure{margin:0;min-width:0}.pw-scenario img{display:block;width:100%;height:210px;object-fit:contain;border-radius:8px;background:#f9f7ef}.pw-scenario figcaption{font-size:11px;line-height:1.4;color:#52665e;margin-top:8px}.pw-scenario .pw-kicker{font-size:11px;letter-spacing:.11em;text-transform:uppercase;font-weight:700;color:#476f62;margin:0 0 8px}.pw-scenario h2{font-size:clamp(21px,2.7vw,30px);line-height:1.2;letter-spacing:-.025em;margin:0 0 12px;color:#203e3b;max-width:none}.pw-scenario p{font-size:15px;line-height:1.6;max-width:none;margin:0 0 12px;color:#304b44}.pw-scenario .pw-question{font-weight:700;margin:0;color:#165c4c}
+@media(max-width:600px){.pw-scenario{grid-template-columns:1fr}.pw-scenario>div{grid-row:1}.pw-scenario img{height:165px}.pw-scenario figcaption{max-width:440px}.pw-scenario{margin:16px auto}}
+</style>
 </head>
 <body>
 <p><a href="index.html">Solway home</a> · <a href="https://lawrencerowland.github.io/side-projects.html#playgrounds">All forays</a></p>
 <h1>Solway experiments</h1>
+<section class="pw-scenario" aria-label="Scenario and motivating question">
+  <figure><img src="https://lawrencerowland.github.io/images/scenarios/tunnel.svg" alt="Illustrative tunnel section connecting two shores beneath the Solway" width="640" height="400" decoding="async"><figcaption>Illustrative scene; the experiments below state their own assumptions.</figcaption></figure>
+  <div><p class="pw-kicker">Toy scenario</p><h2>Imagine delivering a tunnel beneath the Solway.</h2><p>A finished tunnel needs more than permanent lining: excavation, temporary access and support, installed systems, inspections and evidence all play different roles. Smaller installation examples let us test those distinctions without pretending to engineer the whole tunnel.</p><p class="pw-question">Can a description of the desired result explain the work needed to achieve it?</p></div>
+</section>
+
 <p>Start with <a href="apps/semantic-tunnel-planner/index.html">The handover game</a> or inspect <a href="apps/work-that-must-exist/index.html">The work that must exist</a>. The remaining apps explore related questions.</p>
 <div class="filter" id="filter"></div>
 <div id="examples"></div>
