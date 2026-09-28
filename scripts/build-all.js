@@ -28,6 +28,13 @@ for (const app of apps) {
   }
 }
 
+// Standalone teaching apps live directly in apps/, alongside the Vite folders.
+// Always refresh them from source so a tracked historical docs copy cannot ship.
+for (const file of readdirSync(appsDir).filter(name => name.endsWith('.html') && statSync(join(appsDir, name)).isFile())) {
+  mkdirSync(join(docsDir, 'apps'), { recursive: true });
+  cpSync(join(appsDir, file), join(docsDir, 'apps', file));
+}
+
 cpSync(join(root, 'index.html'), join(docsDir, 'index.html'));
 cpSync(join(root, 'app-index.html'), join(docsDir, 'app-index.html'));
 cpSync(join(root, 'app-index.csv'), join(docsDir, 'app-index.csv'));

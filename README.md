@@ -72,3 +72,7 @@ https://<org>.github.io/<repo>/<app-folder>/
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+## Milestones and declared interface checks
+
+`apps/solway_firth_tunnel_fibration_demo.html` retains the tunnel gates, workstreams and deliverables. Manual date changes and exemptions are separated from the supplied forward-delay policy; version/status/date checks do not verify the engineering acceptance evidence. The in-app explanation links to the campaign method example in Functors for Projects. Run `node tests/milestone-interface.cjs` before publishing. The build refreshes standalone HTML apps from source as well as building app folders.

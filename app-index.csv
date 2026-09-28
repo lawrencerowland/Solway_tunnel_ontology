@@ -5,9 +5,8 @@
 6,global-WBS-by-sheaf,,local data to global WBS using a sheaf canvas concept + prototype,GPT-5.2-Codex,,"ontology, WBS, sheaf, diagnostics",,
 7,sheaf-wbs-prototype,apps/sheaf_wbs_prototype.html,local data to global WBS via sheaves (single-file prototype),GPT-5.2-Codex,,"ontology, WBS, sheaf, prototype",,
 8,two-possible-means,,local data to global WBS proposal with sheaf-based mini-demo,GPT-5.2-Codex,,"ontology, WBS, sheaf, proposal",,
-9,solway-firth-tunnel-fibration-demo,apps/solway_firth_tunnel_fibration_demo.html,interactive fibration example for the Solway Firth tunnel milestones,GPT-5.2-Codex,,"ontology, fibration, milestones, demo",,
+9,solway-firth-tunnel-fibration-demo,apps/solway_firth_tunnel_fibration_demo.html,"Explore tunnel gates, deliverable dates and declared interface checks; distinguish manual slips, propagated offsets and the fibration analogy.",GPT-5.2-Codex,,"ontology, fibration, milestones, demo",,
 10,solway-sheaf-wbs-prototype,,local data to global WBS via sheaves (Solway Firth prototype),GPT-5.2-Codex,,"ontology, WBS, sheaf, prototype",,
-
 11,sheaves-for-tunnel-concept,,sheaves for tunnel concept (text overview + prototype notes),GPT-5.2-Codex,GPT-5.2-Codex,"ontology, WBS, sheaf, concept",,
 12,ontologized-allen-schedule,,interactive ontology-backed Allen interval algebra schedule CSP with JSON-LD and checker,GPT-5.2-Codex,,"ontology, temporal-logic, allen-algebra, CSP",,
 13,kglab-ontology-audit,,"self-checking KG: kglab pipeline lifts the D3 visualizer graph to RDF, SHACL provenance audit, OWL-RL inference, SPARQL-to-DataFrame plan queries",Claude,Fable 5,"ontology, knowledge_graph, kglab, SHACL, provenance, SPARQL",,results embedded at build time by pipeline/kglab_spike.py
