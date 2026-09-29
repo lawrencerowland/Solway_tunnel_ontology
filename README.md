@@ -42,7 +42,7 @@ By default this serves the `portfolio-state-machine` template. The server loads 
 
 ## Adding a New App
 
-1. Create `apps/<app-name>/` with a `src` folder and `index.html`. Include `<a href="../../index.html">Back to app index</a>` in the HTML.
+1. Create `apps/<app-name>/` with `index.html` (and a `src` folder for a Vite app). Link separately to `<a href="../../index.html">Solway overview</a>` and `<a href="../../app-index.html">All Solway apps</a>`, plus the estate [Projects](https://lawrencerowland.github.io/side-projects.html) and [Library](https://lawrencerowland.github.io/library.html).
 2. Add a screenshot as `pics/<number>.png` and a row to `app-index.csv` with the same number in the `#` column.
 3. Run and test locally with `APP=<app-name> npm start` and `npm test`.
 4. Build with `npm run build` when ready.
@@ -57,11 +57,15 @@ By default this serves the `portfolio-state-machine` template. The server loads 
 
 ## Deploying to GitHub Pages
 
-Push your changes to the **main** branch and enable GitHub Pages in the repo settings using *Deploy from branch* with the root folder. Each app folder then becomes available at:
+The existing GitHub Actions workflow checks the models, builds the current source into `docs/`, then publishes that build as a Pages artifact after a push to **main**. Static app companions are copied with their app folders. Historical tracked files under `docs/` are not the source to edit. Each app is served at:
 
 ```
-https://<org>.github.io/<repo>/<app-folder>/
+https://<org>.github.io/<repo>/apps/<app-name>/
 ```
+
+## Readable method companions
+
+[The work that must exist — method & limits](apps/work-that-must-exist/method.html) pairs a short first comparison with the complete, unchanged [method source](apps/work-that-must-exist/README.md). Keep the full source text, references and results in step when that note changes. Run `node tests/method-reader.cjs` to check text parity, source links, reader routes and the catalogue. Use the reader page for prose anchors; the experiment’s hash stores its configuration and selected view.
 
 ## Learn More
 

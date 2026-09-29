@@ -23,6 +23,7 @@ jobs:
       - run: npm ci
       - run: npm run test:work
       - run: npm run test:game
+      - run: node tests/method-reader.cjs
       - run: node tests/milestone-interface.cjs
       - uses: actions/setup-python@v5
         with:
