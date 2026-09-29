@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Prototype web apps for better project delivery</title>
+<title>Solway experiments · Semantic project planning</title>
 <link rel="stylesheet" href="./common.css">
 <style>
 .filter{margin-bottom:1em;}
@@ -22,17 +22,17 @@
 </style>
 </head>
 <body>
-<p><a href="index.html">Solway home</a> · <a href="https://lawrencerowland.github.io/side-projects.html#playgrounds">All forays</a></p>
+<nav aria-label="Solway and estate navigation"><a href="index.html">Solway overview</a> · <a href="app-index.html" aria-current="page">All Solway apps</a> · <a href="https://lawrencerowland.github.io/side-projects.html">Projects</a> · <a href="https://lawrencerowland.github.io/library.html">Library</a></nav>
 <h1>Solway experiments</h1>
 <section class="pw-scenario" aria-label="Scenario and motivating question">
   <figure><img src="https://lawrencerowland.github.io/Solway_tunnel_ontology/pics/scenarios/tunnel.svg" alt="Illustrative tunnel section connecting two shores beneath the Solway" width="640" height="400" decoding="async"><figcaption>Illustrative scene; the experiments below state their own assumptions.</figcaption></figure>
   <div><p class="pw-kicker">Toy scenario</p><h2>Imagine delivering a tunnel beneath the Solway.</h2><p>A finished tunnel needs more than permanent lining: excavation, temporary access and support, installed systems, inspections and evidence all play different roles. Smaller installation examples let us test those distinctions without pretending to engineer the whole tunnel.</p><p class="pw-question">Can a description of the desired result explain the work needed to achieve it?</p></div>
 </section>
 
-<p>Start with <a href="apps/semantic-tunnel-planner/index.html">The handover game</a> or inspect <a href="apps/work-that-must-exist/index.html">The work that must exist</a>. The remaining apps explore related questions.</p>
+<p>Start with <a href="apps/semantic-tunnel-planner/index.html">The handover game</a> or inspect <a href="apps/work-that-must-exist/index.html">The work that must exist</a>. Read the essay’s <a href="apps/work-that-must-exist/method.html">method &amp; limits</a>. The remaining apps explore related questions.</p>
 <div class="filter" id="filter"></div>
 <div id="examples"></div>
-<p><a href="CURATION.md">Collection changes and provenance</a></p>
+<p><a href="CURATION.md" download>Collection changes and provenance source (Markdown)</a></p>
 <script>
 function parseCSV(text){
     const lines=text.trim().split(/\r?\n/).filter(l=>l.trim());

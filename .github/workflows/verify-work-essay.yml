@@ -10,6 +10,9 @@ on:
       - '.github/workflows/deploy.yml'
       - 'package.json'
       - 'app-index.csv'
+      - 'app-index.html'
+      - 'index.html'
+      - 'tests/method-reader.cjs'
 permissions:
   contents: read
 jobs:
@@ -23,6 +26,7 @@ jobs:
       - run: npm ci
       - run: npm run test:work
       - run: npm run test:game
+      - run: node tests/method-reader.cjs
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
