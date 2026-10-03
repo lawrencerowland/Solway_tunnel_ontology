@@ -8,6 +8,7 @@ export const siteLinks = {
   home: new URL('index.html', collectionURL).href,
   apps: new URL('app-index.html', collectionURL).href,
   game: new URL('apps/semantic-tunnel-planner/index.html', collectionURL).href,
+  earlyEssai: new URL('apps/digital-construction-ontology/index.html', collectionURL).href,
   essay: new URL('apps/work-that-must-exist/index.html', collectionURL).href,
   explanation: new URL('apps/work-that-must-exist/index.html#scope=both&access=open&methods=both&view=wbs', collectionURL).href,
   ontologyData: new URL('apps/website/data/solway_tunnel_ontology.ttl', collectionURL).href,

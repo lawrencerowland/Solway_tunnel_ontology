@@ -43,3 +43,9 @@ A future scale-up should give both ontology and PDDL the same declared scope, ad
 Importing an external plan, associating generated packages with source steps, and keeping the mapping run separate from construction execution remain useful requirements from app 5. Resuming them requires a proper parser, independent plan validation and conforming provenance relationships. The current essay is deliberately a restricted propositional planner and exports its own explanation vocabulary. It is not a general PDDL importer or a completed PROV-O implementation.
 
 The current evidence boundary remains finite symbolic behaviour. These experiments do not establish engineering validity, practitioner adoption or a solver advantage for ontology.
+
+## Early essai relocated: Digital Construction ontology
+
+3 October 2026. [What can an ontology say about a project?](apps/digital-construction-ontology/index.html) brings three public examples into the Foray 210 enquiry: the DiCon 0.5 module map, Tokyo stadium and HS2 roles and appointments. Their own contexts, source pins, corrections, datasets, graph functions, saved ontology files and vendor license remain intact. The [retention record](apps/digital-construction-ontology/README.md) explains each case’s scope.
+
+The new entrance asks what a project description still lacks before it can explain necessary work. It connects the vocabulary, facts and evidence to the original ambition for an explainable WBS and a same-scenario PDDL comparison. It does not turn these graphs into a work generator, claim new inference or certify their project assertions. The two synthetic planning starting points above remain distinct from this earlier investigation.

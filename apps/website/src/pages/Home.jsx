@@ -11,7 +11,7 @@ export default function Home() {
         <h2 className="font-serif text-xl"><a className="underline" href={siteLinks.essay}>The work that must exist</a></h2>
         <p>Generate work from an intended outcome. Change the goal or method, trace shared support, and compare the semantic route with executable PDDL.</p>
       </section>
-      <p className="font-sans">Solway is a collection of synthetic experiments in semantic project planning. Begin with a small handover challenge, then inspect how typed outcomes, reusable methods and causal support generate a work breakdown. The broader tunnel ontology remains an illustration of how project concepts can connect; it is not an engineered tunnel design.</p>
+      <p className="font-sans">Solway is a collection of experiments in semantic project planning. The tunnel planning models are synthetic. Begin with a small handover challenge, then inspect how typed outcomes, reusable methods and causal support generate a work breakdown. The broader tunnel ontology remains an illustration of how project concepts can connect; it is not an engineered tunnel design.</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 mt-4">
         <PageCard>
           <a className="text-accent-600 hover:underline" href={siteLinks.game}>Play The handover game</a>
@@ -30,6 +30,7 @@ export default function Home() {
           <p className="text-sm text-slate-600">Definitions and ontology reference.</p>
         </PageCard>
       </div>
+      <p className="text-sm text-slate-600">The <a className="underline" href={siteLinks.earlyEssai}>Digital Construction early essai</a> asks what an ontology can say about a project before work generation. Its DiCon module map, Tokyo stadium and HS2 roles snapshot retain their own contexts and evidence limits.</p>
       <p className="text-sm text-slate-600"><a className="underline" href={siteLinks.forays}>Return to all forays</a> · <a className="underline" href={siteLinks.apps}>All Solway apps</a> · <a className="underline" href={siteLinks.curation}>What was preserved and retired</a></p>
     </div>
   );

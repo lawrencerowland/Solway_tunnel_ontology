@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - 'apps/work-that-must-exist/**'
+      - 'apps/digital-construction-ontology/**'
+      - 'tests/digital-construction-ontology.cjs'
+      - 'tests/fixtures/digital-construction-ontology-original.json'
       - 'apps/semantic-tunnel-planner/**'
       - 'apps/website/**'
       - 'scripts/**'
@@ -27,6 +30,7 @@ jobs:
       - run: npm run test:work
       - run: npm run test:game
       - run: node tests/method-reader.cjs
+      - run: node --test tests/digital-construction-ontology.cjs
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -34,3 +38,8 @@ jobs:
       - run: python apps/work-that-must-exist/compile_ontology.py --check
       - run: python apps/work-that-must-exist/test_ontology.py
       - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: solway-site-preview
+          path: docs
+          retention-days: 7

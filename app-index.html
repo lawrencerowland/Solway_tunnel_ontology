@@ -29,7 +29,7 @@
   <div><p class="pw-kicker">Toy scenario</p><h2>Imagine delivering a tunnel beneath the Solway.</h2><p>A finished tunnel needs more than permanent lining: excavation, temporary access and support, installed systems, inspections and evidence all play different roles. Smaller installation examples let us test those distinctions without pretending to engineer the whole tunnel.</p><p class="pw-question">Can a description of the desired result explain the work needed to achieve it?</p></div>
 </section>
 
-<p>Start with <a href="apps/semantic-tunnel-planner/index.html">The handover game</a> or inspect <a href="apps/work-that-must-exist/index.html">The work that must exist</a>. Read the essay’s <a href="apps/work-that-must-exist/method.html">method &amp; limits</a>. The remaining apps explore related questions.</p>
+<p>Start with <a href="apps/semantic-tunnel-planner/index.html">The handover game</a> or inspect <a href="apps/work-that-must-exist/index.html">The work that must exist</a>. Read the essay’s <a href="apps/work-that-must-exist/method.html">method &amp; limits</a>. The <a href="apps/digital-construction-ontology/index.html">Digital Construction early essai</a> inspects the vocabulary and project descriptions that precede work generation, keeping its Tokyo and HS2 contexts. The remaining apps explore related questions.</p>
 <div class="filter" id="filter"></div>
 <div id="examples"></div>
 <p><a href="CURATION.md" download>Collection changes and provenance source (Markdown)</a></p>
@@ -84,9 +84,10 @@ function createCards(data){
         card.className='example-card';
         card.dataset.tags=item.tags;
         const img=document.createElement('img');
-        // Use the numeric id to load the matching screenshot in pics/
+        // Prefer an explicit source image; otherwise use the numeric screenshot in pics/
         img.alt=item.name;
         const paths=[
+            item.image,
             'pics/'+item['#']+'.png',
             'pics/'+item['#']+'.PNG',
             'pics/'+item['#']+'.png.png',
@@ -94,7 +95,7 @@ function createCards(data){
             'pics/'+item['#']+'.png.PNG',
             'pics/'+item['#']+'.PNG.PNG',
             'pics/'+item['#']+'.webp'
-        ];
+        ].filter(Boolean);
         let idx=0;
         img.src=paths[idx++];
         img.onerror=()=>{
