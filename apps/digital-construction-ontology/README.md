@@ -112,3 +112,7 @@ Browser QA route:
 5. Use keyboard-only cards and controls, then check a phone-width layout for horizontal overflow and legible inspector/source links.
 
 Browser, deployed-route and human-use checks are separate integration tasks; this receipt records the source/model/jsdom validation, not a deployment claim.
+
+### Migration browser check — 3 October 2026
+
+The new Solway introduction, homepage entrance and return journey were checked in the browser. Both project case selectors render; HS2 Turtle downloads as the retained 97,643-byte RDF record. Model/source/vendor parity is unchanged. The full PR build passes; deployment remains pending merge.

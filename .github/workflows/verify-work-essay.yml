@@ -38,3 +38,8 @@ jobs:
       - run: python apps/work-that-must-exist/compile_ontology.py --check
       - run: python apps/work-that-must-exist/test_ontology.py
       - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: solway-site-preview
+          path: docs
+          retention-days: 7
