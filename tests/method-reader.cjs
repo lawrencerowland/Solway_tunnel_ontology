@@ -68,7 +68,7 @@ async function main() {
   catalogue.window.eval(catalogue.window.document.querySelector('script').textContent);
   await new Promise(resolve => setImmediate(resolve));
   const cards = [...catalogue.window.document.querySelectorAll('.example-card')];
-  equal(cards.length, 12, 'All 12 current collection cards are rendered.');
+  equal(cards.length, 13, 'All 13 current collection cards are rendered.');
   for (const card of cards) {
     const ref = card.querySelector('h3 a').getAttribute('href');
     const url = new URL(ref, 'https://local.example/');
@@ -78,6 +78,9 @@ async function main() {
       check(fs.existsSync(path.join(root, target)), `Catalogue destination exists: ${ref}`);
     }
   }
+  const earlyEssai = cards.find(card => card.querySelector('h3 a').getAttribute('href') === 'apps/digital-construction-ontology/index.html');
+  equal(earlyEssai.querySelector('img').getAttribute('src'), 'pics/15.jpg', 'The early essai uses its retained screenshot directly.');
+  check(fs.existsSync(path.join(root, earlyEssai.querySelector('img').getAttribute('src'))), 'Retained early-essai image exists.');
   const filters = [...catalogue.window.document.querySelectorAll('.filter button')];
   check(filters.length > 1, 'Existing topic filters remain available.');
   for (const filter of filters) {
@@ -89,7 +92,7 @@ async function main() {
     }
   }
   filters[0].click();
-  equal(cards.filter(card => card.style.display === 'inline-block').length, 12, 'All resets the complete catalogue.');
+  equal(cards.filter(card => card.style.display === 'inline-block').length, 13, 'All resets the complete catalogue.');
   catalogue.window.close();
   console.log(`Method reader: ${checks} source, route and catalogue checks passed.`);
 }

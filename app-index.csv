@@ -1,13 +1,14 @@
-#,name,path,description,origin,model,tags,explainer post,notes
-1,The handover game,apps/semantic-tunnel-planner/index.html,"Choose the work needed for handover; learn how product, process, temporary means and evidence differ.",Codex,GPT-6,"education, ontology, WBS, game",,Rebuilt as an interactive completion game
-2,push-out-pull-back,,"stop getting mixed up between push outs and pullbacks, products and Co products",Claude,Sonnet 3.5,"education, pushout, product",,
-3,tunnel-ontology-visualizer,,a knowledge graph for the tunnel based on an ontology with tabs for each type of entitity,Claude,cant remember,"ontology, WBS, knowledge_graph, alternate_perspectives",,
-6,global-WBS-by-sheaf,,local data to global WBS using a sheaf canvas concept + prototype,GPT-5.2-Codex,,"ontology, WBS, sheaf, diagnostics",,
-7,sheaf-wbs-prototype,apps/sheaf_wbs_prototype.html,local data to global WBS via sheaves (single-file prototype),GPT-5.2-Codex,,"ontology, WBS, sheaf, prototype",,
-8,two-possible-means,,local data to global WBS proposal with sheaf-based mini-demo,GPT-5.2-Codex,,"ontology, WBS, sheaf, proposal",,
-9,solway-firth-tunnel-fibration-demo,apps/solway_firth_tunnel_fibration_demo.html,"Explore tunnel gates, deliverable dates and declared interface checks; distinguish manual slips, propagated offsets and the fibration analogy.",GPT-5.2-Codex,,"ontology, fibration, milestones, demo",,
-10,solway-sheaf-wbs-prototype,,local data to global WBS via sheaves (Solway Firth prototype),GPT-5.2-Codex,,"ontology, WBS, sheaf, prototype",,
-11,sheaves-for-tunnel-concept,,sheaves for tunnel concept (text overview + prototype notes),GPT-5.2-Codex,GPT-5.2-Codex,"ontology, WBS, sheaf, concept",,
-12,ontologized-allen-schedule,,interactive ontology-backed Allen interval algebra schedule CSP with JSON-LD and checker,GPT-5.2-Codex,,"ontology, temporal-logic, allen-algebra, CSP",,
-13,kglab-ontology-audit,,"self-checking KG: kglab pipeline lifts the D3 visualizer graph to RDF, SHACL provenance audit, OWL-RL inference, SPARQL-to-DataFrame plan queries",Claude,Fable 5,"ontology, knowledge_graph, kglab, SHACL, provenance, SPARQL",,results embedded at build time by pipeline/kglab_spike.py
-14,The work that must exist,apps/work-that-must-exist/index.html,"Generate work from goals; change methods and scope; inspect unavoidable functions, shared support and an executable ontology–PDDL comparison.",Codex,GPT-6,"ontology, WBS, PDDL, planning, visual essay",,Synthetic finite model with independent verification
+#,name,path,description,origin,model,tags,explainer post,notes,image
+1,The handover game,apps/semantic-tunnel-planner/index.html,"Choose the work needed for handover; learn how product, process, temporary means and evidence differ.",Codex,GPT-6,"education, ontology, WBS, game",,Rebuilt as an interactive completion game,
+2,push-out-pull-back,,"stop getting mixed up between push outs and pullbacks, products and Co products",Claude,Sonnet 3.5,"education, pushout, product",,,
+3,tunnel-ontology-visualizer,,a knowledge graph for the tunnel based on an ontology with tabs for each type of entitity,Claude,cant remember,"ontology, WBS, knowledge_graph, alternate_perspectives",,,
+6,global-WBS-by-sheaf,,local data to global WBS using a sheaf canvas concept + prototype,GPT-5.2-Codex,,"ontology, WBS, sheaf, diagnostics",,,
+7,sheaf-wbs-prototype,apps/sheaf_wbs_prototype.html,local data to global WBS via sheaves (single-file prototype),GPT-5.2-Codex,,"ontology, WBS, sheaf, prototype",,,
+8,two-possible-means,,local data to global WBS proposal with sheaf-based mini-demo,GPT-5.2-Codex,,"ontology, WBS, sheaf, proposal",,,
+9,solway-firth-tunnel-fibration-demo,apps/solway_firth_tunnel_fibration_demo.html,"Explore tunnel gates, deliverable dates and declared interface checks; distinguish manual slips, propagated offsets and the fibration analogy.",GPT-5.2-Codex,,"ontology, fibration, milestones, demo",,,
+10,solway-sheaf-wbs-prototype,,local data to global WBS via sheaves (Solway Firth prototype),GPT-5.2-Codex,,"ontology, WBS, sheaf, prototype",,,
+11,sheaves-for-tunnel-concept,,sheaves for tunnel concept (text overview + prototype notes),GPT-5.2-Codex,GPT-5.2-Codex,"ontology, WBS, sheaf, concept",,,
+12,ontologized-allen-schedule,,interactive ontology-backed Allen interval algebra schedule CSP with JSON-LD and checker,GPT-5.2-Codex,,"ontology, temporal-logic, allen-algebra, CSP",,,
+13,kglab-ontology-audit,,"self-checking KG: kglab pipeline lifts the D3 visualizer graph to RDF, SHACL provenance audit, OWL-RL inference, SPARQL-to-DataFrame plan queries",Claude,Fable 5,"ontology, knowledge_graph, kglab, SHACL, provenance, SPARQL",,results embedded at build time by pipeline/kglab_spike.py,
+14,The work that must exist,apps/work-that-must-exist/index.html,"Generate work from goals; change methods and scope; inspect unavoidable functions, shared support and an executable ontology–PDDL comparison.",Codex,GPT-6,"ontology, WBS, PDDL, planning, visual essay",,Synthetic finite model with independent verification,
+15,Digital Construction ontology — early essai,apps/digital-construction-ontology/index.html,"What can an ontology say about a project? Inspect DiCon modules, Tokyo stadium and HS2 roles; see what is still needed to explain required work.",Public examples / Codex,,"ontology, WBS, early essai",,Three retained cases with source and evidence boundaries,pics/15.jpg

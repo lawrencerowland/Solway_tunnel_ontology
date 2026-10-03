@@ -1,0 +1,11 @@
+/* The early-essai entrance is separate from the retained explorer styling. */
+.essai-frame,.essai-bridge{max-width:1412px;margin:0 auto;padding:24px;background:#faf8f1;border-bottom:1px solid #d9dfd6}
+.essai-frame nav{display:flex;flex-wrap:wrap;gap:12px 24px;font-size:.9rem;margin-bottom:28px}
+.essai-frame h1{display:block;border:0;padding:0;font:clamp(2rem,4.8vw,3.4rem)/1.12 Georgia,serif;max-width:950px;margin:12px 0}
+.essai-frame>p{max-width:940px}.essai-frame .essai-question{font-size:1.15rem;color:#12594f;margin:12px 0}
+.essai-bridge{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 28px;background:#f0f5ef;font-size:.9rem;padding-top:20px;padding-bottom:20px}
+.essai-bridge h2{font:1.25rem Georgia,serif}.essai-bridge p{margin-bottom:0}.essai-next{grid-column:1/-1;border-top:1px solid #c5d5d2;padding-top:16px}
+#case-title{font-size:clamp(1.7rem,3.6vw,2.55rem);line-height:1.15;margin:.3rem 0 1rem;letter-spacing:-.035em}
+.essai-skip{position:absolute;left:1rem;top:-100px;padding:1rem;background:white;z-index:9999}.essai-skip:focus{top:1rem}
+a:focus-visible{outline:3px solid #bb6e13;outline-offset:3px}footer.essai-frame{border-top:1px solid #d9dfd6;border-bottom:0}footer.essai-frame nav{margin-bottom:0}
+@media(max-width:720px){.essai-bridge{grid-template-columns:1fr;gap:16px}.essai-frame,.essai-bridge{padding:20px 16px}.essai-frame nav{margin-bottom:20px;gap:10px 18px}}

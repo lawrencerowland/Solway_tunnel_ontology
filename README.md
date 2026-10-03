@@ -1,6 +1,6 @@
 # Solway tunnel innovation project
 
-An example of how to use ontologies to form reliable project plans, profiiling different approaches all focused around the example of building a tunnel under the Solway Firth
+Experiments in using ontologies to explain project work, centred on a synthetic tunnel beneath the Solway Firth. The Digital Construction early essai also retains its original Tokyo stadium and HS2 contexts to examine vocabulary, project descriptions and evidence before work generation.
 
 
 ## Getting Started
@@ -43,7 +43,7 @@ By default this serves the `portfolio-state-machine` template. The server loads 
 ## Adding a New App
 
 1. Create `apps/<app-name>/` with `index.html` (and a `src` folder for a Vite app). Link separately to `<a href="../../index.html">Solway overview</a>` and `<a href="../../app-index.html">All Solway apps</a>`, plus the estate [Projects](https://lawrencerowland.github.io/side-projects.html) and [Library](https://lawrencerowland.github.io/library.html).
-2. Add a screenshot as `pics/<number>.png` and a row to `app-index.csv` with the same number in the `#` column.
+2. Add a screenshot as `pics/<number>.png` and a row to `app-index.csv` with the same number in the `#` column. The optional `image` column can point directly to a retained image in another format.
 3. Run and test locally with `APP=<app-name> npm start` and `npm test`.
 4. Build with `npm run build` when ready.
 ## Design & Style Guidelines
@@ -80,3 +80,9 @@ This project is licensed under the [MIT License](LICENSE).
 ## Milestones and declared interface checks
 
 `apps/solway_firth_tunnel_fibration_demo.html` retains the tunnel gates, workstreams and deliverables. Manual date changes and exemptions are separated from the supplied forward-delay policy; version/status/date checks do not verify the engineering acceptance evidence. The in-app explanation links to the campaign method example in Functors for Projects. Run `node tests/milestone-interface.cjs` before publishing. The build refreshes standalone HTML apps from source as well as building app folders.
+
+## Early essai: Digital Construction ontology
+
+[What can an ontology say about a project?](apps/digital-construction-ontology/index.html) keeps the DiCon module map, Tokyo stadium model and HS2 roles snapshot together. Its entrance connects these public cases to Foray 210’s explainable-WBS question and states the missing planning ingredients. The explorer does not derive work or add ontology inference. The [retention record](apps/digital-construction-ontology/README.md) preserves the case sources, corrections, licensing and evidence limits.
+
+Run `node --test tests/digital-construction-ontology.cjs` for retained topology, saved source hashes, terms, RDF round-trips, native controls and Solway routes. The same check runs before deployment and on relevant pull requests.
